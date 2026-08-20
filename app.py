@@ -36,9 +36,9 @@ def index():
     global current_job
     if request.method == 'POST':
         photos = []
-        for f in request.files.getlist('photos'):
+        for key in ['photo1', 'photo2', 'photo3']:
+            f = request.files.get(key)
             if f and f.filename:
-                # Give every image a unique name so mobile cameras don't overwrite each other
                 base, ext = os.path.splitext(f.filename)
                 unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
@@ -70,6 +70,47 @@ def weekly():
     history_data = load_history()
     total_hours = sum(parse_hours(job.get('hours', 0)) for job in history_data)
     return render_template('weekly.html', history=history_data, total_hours=total_hours)
+
+@app.route('/delete/<int:index>', methods=['POST'])
+def delete_job(index):
+    history = load_history()
+    if 0 <= index < len(history):
+        history.pop(index)
+        with open(HISTORY_FILE, 'w') as f:
+            json.dump(history, f)
+    return redirect(url_for('history'))
+
+@app.route('/edit/<int:index>', methods=['GET', 'POST'])
+def edit_job(index):
+    history = load_history()
+    if not (0 <= index < len(history)):
+        return redirect(url_for('history'))
+    
+    job = history[index]
+    if request.method == 'POST':
+        job['date'] = request.form.get('date')
+        job['hours'] = request.form.get('hours')
+        job['destination'] = request.form.get('destination')
+        job['notes'] = request.form.get('notes')
+        job['materials'] = request.form.get('materials')
+        
+        photos = job.get('photos', [])
+        for key in ['photo1', 'photo2', 'photo3']:
+            f = request.files.get(key)
+            if f and f.filename:
+                base, ext = os.path.splitext(f.filename)
+                unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                f.save(filepath)
+                photos.append(unique_name)
+        job['photos'] = photos
+        
+        history[index] = job
+        with open(HISTORY_FILE, 'w') as f:
+            json.dump(history, f)
+        return redirect(url_for('history'))
+        
+    return render_template('edit.html', job=job, index=index)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

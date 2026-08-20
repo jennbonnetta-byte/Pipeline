@@ -11,7 +11,8 @@
         .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
         label { font-weight: bold; display: block; margin-top: 15px; }
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #0056b3; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+        .photo-box { background: #f8f9fa; padding: 10px; border: 1px dashed #ccc; border-radius: 4px; margin-top: 5px; }
+        button { background: #0056b3; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; margin-top: 25px; cursor: pointer; }
         .nav-group { display: flex; justify-content: space-between; margin-top: 15px; }
         .nav-group a { color: #0056b3; text-decoration: none; font-weight: bold; font-size: 14px; }
     </style>
@@ -36,8 +37,17 @@
             <label>Materials Used:</label>
             <textarea name="materials" rows="3" placeholder="2x 3/4 inch copper elbows, flux, solder..." required></textarea>
 
-            <label>Photos of Work (Select multiple):</label>
-            <input type="file" name="photos" accept="image/*" multiple>
+            <label>Job Photos (Optional up to 3):</label>
+            <div class="photo-box">
+                <label style="font-weight:normal; font-size:13px; margin-top:5px;">Photo 1:</label>
+                <input type="file" name="photo1" accept="image/*">
+                
+                <label style="font-weight:normal; font-size:13px; margin-top:10px;">Photo 2:</label>
+                <input type="file" name="photo2" accept="image/*">
+                
+                <label style="font-weight:normal; font-size:13px; margin-top:10px;">Photo 3:</label>
+                <input type="file" name="photo3" accept="image/*">
+            </div>
 
             <button type="submit">Generate Boss Report</button>
         </form>
