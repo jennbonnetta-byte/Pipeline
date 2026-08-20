@@ -47,7 +47,6 @@ def home():
 @app.route('/entry', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # Single photo input field
         photo_urls = upload_to_cloudinary(request.files.getlist('photos'))
         job = {
             'date': request.form.get('date'),
@@ -76,6 +75,12 @@ def weekly():
     history_data = load_history()
     total_hours = sum(float(re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0)))[0]) if re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0))) else 0 for j in history_data)
     return render_template('weekly.html', history=history_data, total_hours=total_hours)
+
+@app.route('/weekly-report')
+def weekly_report():
+    history_data = load_history()
+    total_hours = sum(float(re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0)))[0]) if re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0))) else 0 for j in history_data)
+    return render_template('weekly_report.html', history=history_data, total_hours=total_hours)
 
 @app.route('/gallery')
 def gallery():
