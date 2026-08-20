@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Report Card</title>
+    <style>
+        body { font-family: sans-serif; background: #eef2f3; margin: 0; padding: 15px; }
+        .card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        h3 { text-align: center; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 8px; margin-top: 0; }
+        .section { margin-bottom: 12px; }
+        .label { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; }
+        .value { font-size: 16px; color: #111; margin-top: 2px; white-space: pre-wrap; }
+        .photo-link-box { background: #f0f4f8; border: 1px solid #bce8f1; padding: 10px; border-radius: 6px; text-align: center; margin-top: 15px; }
+        .photo-link-box a { color: #0056b3; text-decoration: none; font-weight: bold; font-size: 14px; display: block; }
+        .btn-group { display: flex; gap: 8px; margin-top: 20px; }
+        a.btn { flex: 1; text-align: center; background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; }
+        a.primary { background: #28a745; }
+        a.secondary { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>🚰 PipeLine Daily Report</h3>
+        
+        <div class="section">
+            <div class="label">Date</div>
+            <div class="value">{{ job.date }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Hours Logged</div>
+            <div class="value">{{ job.hours }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Job Address</div>
+            <div class="value">{{ job.destination }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Work Summary</div>
+            <div class="value">{{ job.notes }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Materials Used</div>
+            <div class="value">{{ job.materials }}</div>
+        </div>
+
+        {% if job.photos and job_index is not none %}
+        <div class="photo-link-box">
+            <a href="/job-photos/{{ job_index }}">📷 View Job Photos ({{ job.photos|length }} attached)</a>
+        </div>
+        {% endif %}
+
+        <div class="btn-group">
+            <a href="/" class="btn">New</a>
+            <a href="/history" class="btn secondary">History</a>
+            <a href="/weekly" class="btn" style="background:#ffc107; color:#333;">Weekly</a>
+            <a href="#" class="btn primary" onclick="window.print();">Save</a>
+        </div>
+    </div>
+</body>
+</html>

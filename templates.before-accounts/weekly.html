@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Weekly Summary</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #0056b3; margin-top: 0; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        .total-box { background: #e3f2fd; border: 2px solid #0056b3; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
+        .total-number { font-size: 28px; font-weight: bold; color: #0056b3; margin-top: 5px; }
+        .report-btn { display: block; text-align: center; background: #28a745; color: white; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-bottom: 20px; font-size: 15px; }
+        .job-card { background: #f8f9fa; border-left: 4px solid #28a745; padding: 12px; margin-bottom: 10px; border-radius: 6px; font-size: 14px; }
+        .back-btn { display: block; text-align: center; background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📊 Weekly Summary</h2>
+        <div class="subtitle">Hours & Totals Overview</div>
+
+        <div class="total-box">
+            <div style="font-size: 13px; color: #555; text-transform: uppercase; font-weight: bold;">Total Hours Logged</div>
+            <div class="total-number">{{ total_hours }} Hours</div>
+        </div>
+
+        <a href="/weekly-report" class="report-btn">📄 Generate Weekly Boss Report</a>
+
+        <h3 style="font-size: 15px; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Logged Breakdown</h3>
+        {% if history %}
+            {% for job in history %}
+            <div class="job-card">
+                <strong>{{ job.date }}</strong> ({{ job.hours }} hrs)<br>
+                <span style="color: #555;">{{ job.destination }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #666;">No hours logged yet!</p>
+        {% endif %}
+
+        <a href="/" class="back-btn">⬅ Back to Dashboard</a>
+    </div>
+</body>
+</html>
