@@ -1,23 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Photo Gallery</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-        img { width: 50px; height: 50px; object-fit: cover; margin-right: 5px; }
+        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        .card { background: #f8f9fa; border-left: 4px solid #17a2b8; padding: 12px; margin-bottom: 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .card-info { font-size: 14px; }
+        .btn-view { background: #17a2b8; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .back-btn { display: block; text-align: center; background: #0056b3; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h2>📷 Work Photo Gallery</h2>
-    {% for job in history %}
-        {% if job.photos %}
-        <div class="card">
-            <strong>{{ job.date }}</strong> - {{ job.destination }}<br>
-            <a href="/job-photos/{{ loop.index0 }}">View Photos</a>
-        </div>
+    <div class="container">
+        <h2>📷 Work Photo Gallery</h2>
+        <div class="subtitle">All jobs with attached photos</div>
+
+        {% set ns = namespace(found=false) %}
+        {% for job in history %}
+            {% if job.photos %}
+                {% set ns.found = true %}
+                <div class="card">
+                    <div class="card-info">
+                        <strong>{{ job.date }}</strong><br>
+                        <span style="color: #555;">{{ job.destination }}</span><br>
+                        <small style="color: #0056b3;">{{ job.photos|length }} photo(s)</small>
+                    </div>
+                    <a href="/job-photos/{{ loop.index0 }}" class="btn-view">View 📷</a>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {% if not ns.found %}
+            <p style="text-align: center; color: #666; padding: 30px 0;">No job photos found yet!</p>
         {% endif %}
-    {% endfor %}
-    <a href="/">⬅ Back to Home</a>
+
+        <a href="/" class="back-btn">⬅ Back to Dashboard</a>
+    </div>
 </body>
 </html>

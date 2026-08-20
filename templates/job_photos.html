@@ -1,20 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Job Photos</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .photo-card { margin-bottom: 20px; text-align: center; background: #fff; padding: 10px; border-radius: 6px; }
-        img { width: 100%; border-radius: 4px; cursor: pointer; }
+        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        .photo-card { margin-bottom: 20px; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
+        .photo-card img { width: 100%; max-height: 350px; object-fit: contain; border-radius: 4px; cursor: pointer; background: #000; }
+        .tap-hint { font-size: 11px; color: #666; margin-top: 5px; }
+        .back-btn { display: block; text-align: center; background: #0056b3; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+        
+        #modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        #modal img { max-width: 95%; max-height: 90%; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h2>📷 Job Photos</h2>
-    {% for photo_url in job.photos %}
-    <div class="photo-card">
-        <a href="{{ photo_url }}" target="_blank"><img src="{{ photo_url }}"></a>
+    <div class="container">
+        <h2>📷 Job Photo Log</h2>
+        <div class="subtitle">{{ job.date }} — {{ job.destination }}</div>
+
+        {% if job.photos %}
+            {% for photo in job.photos %}
+            <div class="photo-card">
+                {% if photo.startswith('http') or photo.startswith('data:') %}
+                    <img src="{{ photo }}" alt="Job Photo" onclick="openModal(this.src)">
+                {% else %}
+                    <img src="{{ url_for('static', filename='uploads/' + photo) }}" alt="Job Photo" onclick="openModal(this.src)">
+                {% endif %}
+                <div class="tap-hint">Tap to preview</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #666; padding: 30px 0;">No photos attached to this job log.</p>
+        {% endif %}
+
+        <a href="/history" class="back-btn">⬅ Back to History</a>
     </div>
-    {% endfor %}
-    <a href="/history">⬅ Back</a>
+
+    <div id="modal" onclick="this.style.display='none'">
+        <img id="modal-img" src="">
+    </div>
+
+    <script>
+        function openModal(src) {
+            document.getElementById('modal-img').src = src;
+            document.getElementById('modal').style.display = 'flex';
+        }
+    </script>
 </body>
 </html>

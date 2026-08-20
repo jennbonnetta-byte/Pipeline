@@ -1,21 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Dashboard</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; text-align: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: auto; }
-        a { background: #0056b3; color: white; padding: 30px 10px; border-radius: 10px; text-decoration: none; font-weight: bold; }
-        a.secondary { background: #6c757d; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 450px; margin: auto; padding-top: 10px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: #0056b3; margin: 0; font-size: 26px; }
+        .header p { color: #666; font-size: 14px; margin-top: 5px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .menu-card { background: white; padding: 18px 20px; border-radius: 10px; text-decoration: none; color: #333; font-weight: bold; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s ease, background 0.1s ease; border-left: 5px solid #0056b3; }
+        .menu-card:active { transform: scale(0.98); }
+        .menu-card.secondary { border-left-color: #17a2b8; }
+        .menu-card.warning { border-left-color: #ffc107; }
+        .menu-card.dark { border-left-color: #6c757d; }
+        .icon { font-size: 24px; margin-right: 15px; }
+        .text-group div:last-child { font-size: 12px; font-weight: normal; color: #666; margin-top: 2px; }
     </style>
 </head>
 <body>
-    <h2>🚰 PipeLine Dashboard</h2>
-    <div class="grid">
-        <a href="/entry">➕ Daily Entry</a>
-        <a href="/history" class="secondary">📁 History</a>
-        <a href="/weekly" class="secondary">📊 Weekly</a>
-        <a href="/gallery" class="secondary">📷 Photo Gallery</a>
+    <div class="container">
+        <div class="header">
+            <h1>🚰 PipeLine</h1>
+            <p>Plumber Job & Hours Management</p>
+        </div>
+
+        <div class="menu-grid">
+            <a href="/entry" class="menu-card">
+                <span class="icon">➕</span>
+                <div class="text-group">
+                    <div>New Daily Entry</div>
+                    <div>Log hours, materials, and photos</div>
+                </div>
+            </a>
+
+            <a href="/history" class="menu-card secondary">
+                <span class="icon">📁</span>
+                <div class="text-group">
+                    <div>Job History</div>
+                    <div>View, edit, or delete past logs</div>
+                </div>
+            </a>
+
+            <a href="/weekly" class="menu-card warning">
+                <span class="icon">📊</span>
+                <div class="text-group">
+                    <div>Weekly Summary</div>
+                    <div>Total hours overview</div>
+                </div>
+            </a>
+
+            <a href="/gallery" class="menu-card dark">
+                <span class="icon">📷</span>
+                <div class="text-group">
+                    <div>Work Photo Gallery</div>
+                    <div>Browse all attached job pictures</div>
+                </div>
+            </a>
+        </div>
     </div>
 </body>
 </html>
