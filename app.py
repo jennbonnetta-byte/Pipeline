@@ -29,10 +29,9 @@ def parse_hours(h_str):
         return float(numbers[0])
     return 0.0
 
-def save_uploaded_files(files_dict):
+def save_uploaded_files(files_list):
     photos = []
-    for key in ['photo1', 'photo2', 'photo3']:
-        f = files_dict.get(key)
+    for f in files_list:
         if f and f.filename and f.filename.strip() != '':
             base, ext = os.path.splitext(f.filename)
             unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
@@ -44,7 +43,9 @@ def save_uploaded_files(files_dict):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        photos = save_uploaded_files(request.files)
+        # Combined Batch 1 and Batch 2
+        all_files = request.files.getlist('photos') + request.files.getlist('photos2')
+        photos = save_uploaded_files(all_files)
         job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
@@ -104,7 +105,8 @@ def edit_job(index):
         job['notes'] = request.form.get('notes')
         job['materials'] = request.form.get('materials')
         
-        new_photos = save_uploaded_files(request.files)
+        all_files = request.files.getlist('photos') + request.files.getlist('photos2')
+        new_photos = save_uploaded_files(all_files)
         if new_photos:
             job['photos'] = job.get('photos', []) + new_photos
             
