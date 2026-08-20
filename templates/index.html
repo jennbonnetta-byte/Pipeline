@@ -12,7 +12,8 @@
         label { font-weight: bold; display: block; margin-top: 15px; }
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { background: #0056b3; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; margin-top: 20px; cursor: pointer; }
-        .nav-link { display: block; text-align: center; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight: bold; }
+        .nav-group { display: flex; justify-content: space-between; margin-top: 15px; }
+        .nav-group a { color: #0056b3; text-decoration: none; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -26,10 +27,7 @@
             <label>Hours Worked:</label>
             <input type="text" name="hours" placeholder="e.g., 7.5" required>
 
-            <label>Starting Location (Mileage Default):</label>
-            <input type="text" name="start_loc" value="Shop HQ - 123 Plumbing Way" required>
-
-            <label>Job Site / Destination:</label>
+            <label>Job Address / Destination:</label>
             <input type="text" name="destination" placeholder="Client address or name" required>
 
             <label>Work Performed (Notes):</label>
@@ -43,7 +41,10 @@
 
             <button type="submit">Generate Boss Report</button>
         </form>
-        <a href="/weekly" class="nav-link">📊 View Weekly Review & History</a>
+        <div class="nav-group">
+            <a href="/history">📁 Job History</a>
+            <a href="/weekly">📊 Weekly Summary & Totals</a>
+        </div>
     </div>
 </body>
 </html>
