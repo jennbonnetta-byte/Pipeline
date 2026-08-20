@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        img { width: 50px; height: 50px; object-fit: cover; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h2>📷 Work Photo Gallery</h2>
+    {% for job in history %}
+        {% if job.photos %}
+        <div class="card">
+            <strong>{{ job.date }}</strong> - {{ job.destination }}<br>
+            <a href="/job-photos/{{ loop.index0 }}">View Photos</a>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <a href="/">⬅ Back to Home</a>
+</body>
+</html>
