@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import os
 import json
 import re
 import time
 import cloudinary
 import cloudinary.uploader
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("PIPELINE_SECRET_KEY")
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -50,6 +52,37 @@ def upload_to_cloudinary(files_list):
             except Exception as e:
                 print(f"❌ CLOUDINARY UPLOAD ERROR: {e}")
     return urls
+
+@app.before_request
+def require_login():
+    if request.endpoint == "login" or request.path.startswith("/static/"):
+        return None
+    if not session.get("authenticated"):
+        return redirect(url_for("login"))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        expected_username = os.environ.get("PIPELINE_USERNAME", "")
+        password_hash = os.environ.get("PIPELINE_PASSWORD_HASH", "")
+
+        if username == expected_username and password_hash and check_password_hash(password_hash, password):
+            session["authenticated"] = True
+            return redirect(url_for("home"))
+
+        return render_template("login.html", error="Invalid username or password.")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 
 @app.route('/')
 def home():
