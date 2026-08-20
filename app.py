@@ -2,12 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 import re
-import time
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'static/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# --- PASTE YOUR CLOUDINARY KEYS HERE ---
+cloudinary.config(
+  cloud_name = "zdcnva6y",
+  api_key = "324287761859815",
+  api_secret = "4s2beTrT3cRCVPDiwrWsBQfJhjE"
+)
 
 HISTORY_FILE = 'history.json'
 
@@ -23,36 +28,31 @@ def save_history(job):
     history.insert(0, job)
     with open(HISTORY_FILE, 'w') as f: json.dump(history, f)
 
-def parse_hours(h_str):
-    numbers = re.findall(r"[-+]?\d*\.\d+|\d+", str(h_str))
-    if numbers:
-        return float(numbers[0])
-    return 0.0
-
-def save_uploaded_files(files_list):
-    photos = []
+def upload_to_cloudinary(files_list):
+    urls = []
     for f in files_list:
-        if f and f.filename and f.filename.strip() != '':
-            base, ext = os.path.splitext(f.filename)
-            unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-            f.save(filepath)
-            photos.append(unique_name)
-    return photos
+        if f and f.filename:
+            try:
+                # Upload to cloud instead of saving locally
+                response = cloudinary.uploader.upload(f)
+                urls.append(response['secure_url'])
+            except Exception as e:
+                print(f"Cloud upload failed: {e}")
+    return urls
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         # Combined Batch 1 and Batch 2
         all_files = request.files.getlist('photos') + request.files.getlist('photos2')
-        photos = save_uploaded_files(all_files)
+        photo_urls = upload_to_cloudinary(all_files)
         job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
             'notes': request.form.get('notes'),
             'destination': request.form.get('destination'),
             'materials': request.form.get('materials'),
-            'photos': photos
+            'photos': photo_urls
         }
         save_history(job)
         return redirect(url_for('report'))
@@ -71,15 +71,13 @@ def history():
 @app.route('/weekly')
 def weekly():
     history_data = load_history()
-    total_hours = sum(parse_hours(job.get('hours', 0)) for job in history_data)
-    return render_template('weekly.html', history=history_data, total_hours=total_hours)
+    return render_template('weekly.html', history=history_data, total_hours=sum(float(re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0)))[0] if re.findall(r"[-+]?\d*\.\d+|\d+", str(j.get('hours', 0))) else 0) for j in history_data))
 
 @app.route('/job-photos/<int:index>')
 def job_photos(index):
     history = load_history()
     if 0 <= index < len(history):
-        job = history[index]
-        return render_template('job_photos.html', job=job, index=index)
+        return render_template('job_photos.html', job=history[index])
     return redirect(url_for('history'))
 
 @app.route('/delete/<int:index>', methods=['POST'])
@@ -87,35 +85,22 @@ def delete_job(index):
     history = load_history()
     if 0 <= index < len(history):
         history.pop(index)
-        with open(HISTORY_FILE, 'w') as f:
-            json.dump(history, f)
+        with open(HISTORY_FILE, 'w') as f: json.dump(history, f)
     return redirect(url_for('history'))
 
 @app.route('/edit/<int:index>', methods=['GET', 'POST'])
 def edit_job(index):
     history = load_history()
-    if not (0 <= index < len(history)):
-        return redirect(url_for('history'))
-    
+    if not (0 <= index < len(history)): return redirect(url_for('history'))
     job = history[index]
     if request.method == 'POST':
-        job['date'] = request.form.get('date')
-        job['hours'] = request.form.get('hours')
-        job['destination'] = request.form.get('destination')
-        job['notes'] = request.form.get('notes')
-        job['materials'] = request.form.get('materials')
-        
-        all_files = request.files.getlist('photos') + request.files.getlist('photos2')
-        new_photos = save_uploaded_files(all_files)
-        if new_photos:
-            job['photos'] = job.get('photos', []) + new_photos
-            
+        job.update({k: request.form.get(k) for k in ['date','hours','destination','notes','materials']})
+        new_urls = upload_to_cloudinary(request.files.getlist('photos') + request.files.getlist('photos2'))
+        job['photos'] = job.get('photos', []) + new_urls
         history[index] = job
-        with open(HISTORY_FILE, 'w') as f:
-            json.dump(history, f)
+        with open(HISTORY_FILE, 'w') as f: json.dump(history, f)
         return redirect(url_for('history'))
-        
-    return render_template('edit.html', job=job, index=index)
+    return render_template('edit.html', job=job)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
