@@ -29,11 +29,8 @@ def parse_hours(h_str):
         return float(numbers[0])
     return 0.0
 
-current_job = {}
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global current_job
     if request.method == 'POST':
         photos = []
         for key in ['photo1', 'photo2', 'photo3']:
@@ -45,7 +42,7 @@ def index():
                 f.save(filepath)
                 photos.append(unique_name)
         
-        current_job = {
+        job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
             'notes': request.form.get('notes'),
@@ -53,13 +50,15 @@ def index():
             'materials': request.form.get('materials'),
             'photos': photos
         }
-        save_history(current_job)
+        save_history(job)
         return redirect(url_for('report'))
     return render_template('index.html')
 
 @app.route('/report')
 def report():
-    return render_template('report.html', job=current_job)
+    history = load_history()
+    job = history[0] if history else {}
+    return render_template('report.html', job=job)
 
 @app.route('/history')
 def history():
