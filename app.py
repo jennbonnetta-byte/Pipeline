@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 import re
+import time
 import cloudinary
 import cloudinary.uploader
 
@@ -36,17 +37,14 @@ def upload_to_cloudinary(files_list):
     for f in files_list:
         if f and f.filename and f.filename.strip() != '':
             try:
-                # 1. Save locally first to guarantee a stable upload handle
                 temp_filename = f"temp_{int(time.time())}_{f.filename}"
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
                 f.save(temp_path)
                 
-                # 2. Upload from the safe local path to Cloudinary
                 response = cloudinary.uploader.upload(temp_path)
                 if 'secure_url' in response:
                     urls.append(response['secure_url'])
                 
-                # 3. Clean up the temporary local file
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
             except Exception as e:
