@@ -2,9 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 import re
-import base64
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
+
+# Configure your free Cloudinary account here
+cloudinary.config(
+  cloud_name = "your_cloud_name",
+  api_key = "your_api_key",
+  api_secret = "your_api_secret"
+)
 
 HISTORY_FILE = 'history.json'
 
@@ -26,20 +34,25 @@ def parse_hours(h_str):
         return float(numbers[0])
     return 0.0
 
-def process_photos(files_dict):
+def upload_photos_to_cloud(files_dict):
     photos = []
     for key in ['photo1', 'photo2', 'photo3']:
         f = files_dict.get(key)
         if f and f.filename and f.filename.strip() != '':
-            img_bytes = f.read()
-            encoded = base64.b64encode(img_bytes).decode('utf-8')
-            photos.append(f"data:image/jpeg;base64,{encoded}")
+            try:
+                # Upload directly to your Cloudinary cloud storage
+                upload_result = cloudinary.uploader.upload(f)
+                secure_url = upload_result.get('secure_url')
+                if secure_url:
+                    photos.append(secure_url)
+            except Exception as e:
+                print(f"Upload error: {e}")
     return photos
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        photos = process_photos(request.files)
+        photos = upload_photos_to_cloud(request.files)
         job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
@@ -77,8 +90,12 @@ def delete_job(index):
             json.dump(history, f)
     return redirect(url_for('history'))
 
-@app.route('/edit/<int:index>', methods=['GET', 'POST'])
+@app.route('/edit/<int:index>', methods=['GET', 'Posts'])
 def edit_job(index):
+    pass # Kept standard for brevity
+    
+@app.route('/edit/<int:index>', methods=['GET', 'POST'])
+def edit_job_real(index):
     history = load_history()
     if not (0 <= index < len(history)):
         return redirect(url_for('history'))
@@ -91,7 +108,7 @@ def edit_job(index):
         job['notes'] = request.form.get('notes')
         job['materials'] = request.form.get('materials')
         
-        new_photos = process_photos(request.files)
+        new_photos = upload_photos_to_cloud(request.files)
         if new_photos:
             job['photos'] = job.get('photos', []) + new_photos
             
