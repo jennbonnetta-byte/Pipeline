@@ -7,11 +7,11 @@ import cloudinary.uploader
 
 app = Flask(__name__)
 
-# --- PASTE YOUR CLOUDINARY KEYS HERE ---
+# --- PASTE YOUR ACTUAL CLOUDINARY KEYS HERE ---
 cloudinary.config(
-  cloud_name = "YOUR_CLOUD_NAME",
-  api_key = "YOUR_API_KEY",
-  api_secret = "YOUR_API_SECRET"
+  cloud_name = "zdcnva6y",
+  api_key = "324287761859815",
+  api_secret = "4s2beTrT3cRCVPDiwrWsBQfJhjE"
 )
 
 HISTORY_FILE = 'history.json'
@@ -37,7 +37,8 @@ def upload_to_cloudinary(files_list):
                 if 'secure_url' in response:
                     urls.append(response['secure_url'])
             except Exception as e:
-                print(f"Cloud upload error: {e}")
+                # This will print the exact reason to your Render logs if it fails
+                print(f"❌ CLOUDINARY UPLOAD ERROR: {e}")
     return urls
 
 @app.route('/')
