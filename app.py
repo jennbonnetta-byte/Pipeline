@@ -11,11 +11,12 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- PASTE YOUR CLOUDINARY KEYS HERE ---
+# Cloudinary configuration
 cloudinary.config(
-  cloud_name = "zdcnva6y",,
-  api_key = "324287761859815",
-  api_secret = "4s2beTrT3cRCVPDiwrWsBQfJhjE"
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+)
 )
 
 HISTORY_FILE = 'history.json'
