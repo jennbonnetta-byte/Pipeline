@@ -51,7 +51,7 @@
         <div class="section">
             <div class="label">Job Photos ({{ job.photos|length }})</div>
             {% for photo in job.photos %}
-                <img src="{{ url_for('static', filename='uploads/' + photo) }}" alt="Job Photo">
+                <img src="{{ photo }}" alt="Job Photo">
             {% endfor %}
         </div>
         {% endif %}

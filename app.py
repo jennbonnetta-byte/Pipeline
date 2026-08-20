@@ -2,12 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 import re
-import time
+import base64
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'static/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 HISTORY_FILE = 'history.json'
 
@@ -29,19 +26,20 @@ def parse_hours(h_str):
         return float(numbers[0])
     return 0.0
 
+def process_photos(files_dict):
+    photos = []
+    for key in ['photo1', 'photo2', 'photo3']:
+        f = files_dict.get(key)
+        if f and f.filename and f.filename.strip() != '':
+            img_bytes = f.read()
+            encoded = base64.b64encode(img_bytes).decode('utf-8')
+            photos.append(f"data:image/jpeg;base64,{encoded}")
+    return photos
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        photos = []
-        for key in ['photo1', 'photo2', 'photo3']:
-            f = request.files.get(key)
-            if f and f.filename:
-                base, ext = os.path.splitext(f.filename)
-                unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-                f.save(filepath)
-                photos.append(unique_name)
-        
+        photos = process_photos(request.files)
         job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
@@ -93,17 +91,10 @@ def edit_job(index):
         job['notes'] = request.form.get('notes')
         job['materials'] = request.form.get('materials')
         
-        photos = job.get('photos', [])
-        for key in ['photo1', 'photo2', 'photo3']:
-            f = request.files.get(key)
-            if f and f.filename:
-                base, ext = os.path.splitext(f.filename)
-                unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-                f.save(filepath)
-                photos.append(unique_name)
-        job['photos'] = photos
-        
+        new_photos = process_photos(request.files)
+        if new_photos:
+            job['photos'] = job.get('photos', []) + new_photos
+            
         history[index] = job
         with open(HISTORY_FILE, 'w') as f:
             json.dump(history, f)
