@@ -10,9 +10,13 @@
         h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
         .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
         .photo-card { margin-bottom: 20px; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
-        .photo-card img { width: 100%; max-height: 350px; object-fit: contain; border-radius: 4px; cursor: pointer; background: #000; }
+        .photo-card img { width: 100%; max-height: 350px; object-fit: contain; border-radius: 4px; cursor: pointer; }
         .tap-hint { font-size: 11px; color: #666; margin-top: 5px; }
         .back-btn { display: block; text-align: center; background: #0056b3; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+        
+        /* Modal Styles for Preview */
+        #modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        #modal img { max-width: 95%; max-height: 90%; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -23,11 +27,8 @@
         {% if job.photos %}
             {% for photo in job.photos %}
             <div class="photo-card">
-                <!-- Clicking the image opens it full size in a new tab -->
-                <a href="{{ url_for('static', filename='uploads/' + photo) }}" target="_blank">
-                    <img src="{{ url_for('static', filename='uploads/' + photo) }}" alt="Job Photo">
-                </a>
-                <div class="tap-hint">Tap image to open full-size</div>
+                <img src="{{ url_for('static', filename='uploads/' + photo) }}" alt="Job Photo" onclick="openModal(this.src)">
+                <div class="tap-hint">Tap to preview</div>
             </div>
             {% endfor %}
         {% else %}
@@ -36,5 +37,17 @@
 
         <a href="/history" class="back-btn">⬅ Back to History</a>
     </div>
+
+    <!-- The Modal Overlay -->
+    <div id="modal" onclick="this.style.display='none'">
+        <img id="modal-img" src="">
+    </div>
+
+    <script>
+        function openModal(src) {
+            document.getElementById('modal-img').src = src;
+            document.getElementById('modal').style.display = 'flex';
+        }
+    </script>
 </body>
 </html>
