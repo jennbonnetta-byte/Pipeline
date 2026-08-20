@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Plumber Daily Log</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #0056b3; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+        .nav-link { display: block; text-align: center; margin-top: 15px; color: #0056b3; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🚰 PipeLine</h2>
+        <div class="subtitle">Daily Job Tracker</div>
+        <form method="POST" enctype="multipart/form-data">
+            <label>Date:</label>
+            <input type="date" name="date" required>
+
+            <label>Hours Worked:</label>
+            <input type="text" name="hours" placeholder="e.g., 7.5" required>
+
+            <label>Starting Location (Mileage Default):</label>
+            <input type="text" name="start_loc" value="Shop HQ - 123 Plumbing Way" required>
+
+            <label>Job Site / Destination:</label>
+            <input type="text" name="destination" placeholder="Client address or name" required>
+
+            <label>Work Performed (Notes):</label>
+            <textarea name="notes" rows="4" placeholder="Fixed main line leak..." required></textarea>
+
+            <label>Materials Used:</label>
+            <textarea name="materials" rows="3" placeholder="2x 3/4 inch copper elbows, flux, solder..." required></textarea>
+
+            <label>Photos of Work (Select multiple):</label>
+            <input type="file" name="photos" accept="image/*" multiple>
+
+            <button type="submit">Generate Boss Report</button>
+        </form>
+        <a href="/weekly" class="nav-link">📊 View Weekly Review & History</a>
+    </div>
+</body>
+</html>

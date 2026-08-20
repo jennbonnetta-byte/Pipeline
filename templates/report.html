@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Report Card</title>
+    <style>
+        body { font-family: sans-serif; background: #eef2f3; margin: 0; padding: 15px; }
+        .card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        h3 { text-align: center; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 8px; margin-top: 0; }
+        .section { margin-bottom: 12px; }
+        .label { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; }
+        .value { font-size: 16px; color: #111; margin-top: 2px; white-space: pre-wrap; }
+        img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 6px; margin-top: 5px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        a { flex: 1; text-align: center; background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; }
+        a.primary { background: #28a745; }
+        a.secondary { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>🚰 PipeLine Daily Report</h3>
+        
+        <div class="section">
+            <div class="label">Date</div>
+            <div class="value">{{ job.date }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Hours Logged</div>
+            <div class="value">{{ job.hours }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Mileage Route</div>
+            <div class="value">From: {{ job.start_loc }}<br>To: {{ job.destination }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Work Summary</div>
+            <div class="value">{{ job.notes }}</div>
+        </div>
+
+        <div class="section">
+            <div class="label">Materials Used</div>
+            <div class="value">{{ job.materials }}</div>
+        </div>
+
+        {% if job.photos %}
+        <div class="section">
+            <div class="label">Job Photos ({{ job.photos|length }})</div>
+            {% for photo in job.photos %}
+                <img src="{{ url_for('static', filename='uploads/' + photo) }}" alt="Job Photo">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="btn-group">
+            <a href="/">New Entry</a>
+            <a href="/weekly" class="secondary">Weekly</a>
+            <a href="#" class="primary" onclick="window.print();">Save Image</a>
+        </div>
+    </div>
+</body>
+</html>
