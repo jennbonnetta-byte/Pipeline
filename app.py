@@ -7,12 +7,11 @@ import cloudinary.uploader
 
 app = Flask(__name__)
 
-# --- PASTE YOUR ACTUAL CLOUDINARY DETAILS HERE ---
+# --- PASTE YOUR CLOUDINARY KEYS HERE ---
 cloudinary.config(
-  cloud_name = "zdcnva6y",
-  api_key = "324287761859815",
-  api_secret = "4s2beTrT3cRCVPDiwrWsBQfJhjE"
-
+  cloud_name = "YOUR_CLOUD_NAME",
+  api_key = "YOUR_API_KEY",
+  api_secret = "YOUR_API_SECRET"
 )
 
 HISTORY_FILE = 'history.json'
@@ -34,7 +33,6 @@ def upload_to_cloudinary(files_list):
     for f in files_list:
         if f and f.filename and f.filename.strip() != '':
             try:
-                # Upload directly to your permanent Cloudinary cloud storage
                 response = cloudinary.uploader.upload(f)
                 if 'secure_url' in response:
                     urls.append(response['secure_url'])
@@ -49,8 +47,8 @@ def home():
 @app.route('/entry', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        all_files = request.files.getlist('photos') + request.files.getlist('photos2')
-        photo_urls = upload_to_cloudinary(all_files)
+        # Single photo input field
+        photo_urls = upload_to_cloudinary(request.files.getlist('photos'))
         job = {
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
@@ -105,7 +103,7 @@ def edit_job(index):
     job = history[index]
     if request.method == 'POST':
         job.update({k: request.form.get(k) for k in ['date','hours','destination','notes','materials']})
-        new_urls = upload_to_cloudinary(request.files.getlist('photos') + request.files.getlist('photos2'))
+        new_urls = upload_to_cloudinary(request.files.getlist('photos'))
         job['photos'] = job.get('photos', []) + new_urls
         history[index] = job
         with open(HISTORY_FILE, 'w') as f: json.dump(history, f)

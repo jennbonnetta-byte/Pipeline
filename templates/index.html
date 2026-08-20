@@ -3,40 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PipeLine - Plumber Daily Log</title>
+    <title>PipeLine - Daily Entry</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
-        label { font-weight: bold; display: block; margin-top: 15px; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .box { background: #f9f9f9; padding: 10px; border: 1px solid #eee; margin-top: 5px; border-radius: 4px; }
-        button { background: #0056b3; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-size: 16px; margin-top: 25px; cursor: pointer; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #0056b3; margin-top: 0; }
+        label { font-weight: 600; display: block; margin-top: 15px; font-size: 14px; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .box { background: #f9f9f9; padding: 12px; border: 1px dashed #bbb; margin-top: 5px; border-radius: 6px; }
+        button { background: #0056b3; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        .back-link { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🚰 PipeLine</h2>
+        <h2>➕ New Daily Entry</h2>
         <form method="POST" enctype="multipart/form-data">
             <label>Date:</label>
             <input type="date" name="date" required>
-            <label>Hours:</label>
-            <input type="text" name="hours" placeholder="e.g., 7.5" required>
-            <label>Job Address:</label>
-            <input type="text" name="destination" required>
-            <label>Notes:</label>
-            <textarea name="notes" rows="3" required></textarea>
-            <label>Materials:</label>
-            <textarea name="materials" rows="2" required></textarea>
 
-            <label>Photos (Batch 1):</label>
+            <label>Hours Worked:</label>
+            <input type="text" name="hours" placeholder="e.g., 7.5" required>
+
+            <label>Job Address:</label>
+            <input type="text" name="destination" placeholder="Client address or name" required>
+
+            <label>Work Performed (Notes):</label>
+            <textarea name="notes" rows="3" placeholder="Fixed main line leak..." required></textarea>
+
+            <label>Materials Used:</label>
+            <textarea name="materials" rows="2" placeholder="Copper elbows, flux, solder..." required></textarea>
+
+            <label>Job Photos:</label>
             <input class="box" type="file" name="photos" accept="image/*" multiple>
-            
-            <label>Photos (Batch 2):</label>
-            <input class="box" type="file" name="photos2" accept="image/*" multiple>
 
             <button type="submit">Generate Boss Report</button>
         </form>
+        <a href="/" class="back-link">⬅ Back to Dashboard</a>
     </div>
 </body>
 </html>
