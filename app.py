@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import json
 import re
+import time
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
@@ -34,9 +35,15 @@ current_job = {}
 def index():
     global current_job
     if request.method == 'POST':
-        photos = [f.filename for f in request.files.getlist('photos') if f and f.filename]
+        photos = []
         for f in request.files.getlist('photos'):
-            if f and f.filename: f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+            if f and f.filename:
+                # Give every image a unique name so mobile cameras don't overwrite each other
+                base, ext = os.path.splitext(f.filename)
+                unique_name = f"{base}_{int(time.time())}_{os.urandom(2).hex()}{ext}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                f.save(filepath)
+                photos.append(unique_name)
         
         current_job = {
             'date': request.form.get('date'),
