@@ -6,12 +6,15 @@ import cloudinary
 import cloudinary.uploader
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# --- PASTE YOUR ACTUAL CLOUDINARY KEYS HERE ---
+# --- PASTE YOUR CLOUDINARY KEYS HERE ---
 cloudinary.config(
-  cloud_name = "zdcnva6y",
-  api_key = "324287761859815",
-  api_secret = "4s2beTrT3cRCVPDiwrWsBQfJhjE"
+  cloud_name = "YOUR_CLOUD_NAME",
+  api_key = "YOUR_API_KEY",
+  api_secret = "YOUR_API_SECRET"
 )
 
 HISTORY_FILE = 'history.json'
@@ -33,11 +36,20 @@ def upload_to_cloudinary(files_list):
     for f in files_list:
         if f and f.filename and f.filename.strip() != '':
             try:
-                response = cloudinary.uploader.upload(f)
+                # 1. Save locally first to guarantee a stable upload handle
+                temp_filename = f"temp_{int(time.time())}_{f.filename}"
+                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
+                f.save(temp_path)
+                
+                # 2. Upload from the safe local path to Cloudinary
+                response = cloudinary.uploader.upload(temp_path)
                 if 'secure_url' in response:
                     urls.append(response['secure_url'])
+                
+                # 3. Clean up the temporary local file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
             except Exception as e:
-                # This will print the exact reason to your Render logs if it fails
                 print(f"❌ CLOUDINARY UPLOAD ERROR: {e}")
     return urls
 
