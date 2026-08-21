@@ -1450,8 +1450,18 @@ def get_payroll_daily_totals(user_id):
             job_id = row[0]
             job_date = row[1]
 
+            # Normalize PostgreSQL date values and TEXT dates to datetime.date.
             if hasattr(job_date, "date"):
                 job_date = job_date.date()
+            elif isinstance(job_date, str):
+                from datetime import date
+                try:
+                    job_date = date.fromisoformat(job_date[:10])
+                except ValueError:
+                    job_date = None
+
+            if job_date is None:
+                continue
 
             try:
                 hours = float(row[4] or 0)
@@ -1466,7 +1476,6 @@ def get_payroll_daily_totals(user_id):
                 }
 
             daily[job_date]["hours"] += hours
-
             daily[job_date]["jobs"].append({
                 "id": job_id,
                 "start_time": row[2],
@@ -1831,66 +1840,51 @@ def pay_summary():
 
     user_id = session['user_id']
 
-    # Payroll uses daily totals rather than treating each
-    # service call as a separate payroll entry.
-    payroll_data = get_payroll_daily_totals(user_id)
+    # Pay is intentionally independent from Reports.
+    # Get only the jobs belonging to the selected payroll period.
+    report_jobs = get_report_period_jobs(user_id, period)
 
-    if period == 'biweekly':
-        daily_data = payroll_data
-    else:
-        # Keep the existing period selection available while
-        # using daily aggregation for payroll.
-        report_jobs = get_report_period_jobs(user_id, period)
+    daily_map = {}
 
-        daily_map = {}
+    for job in report_jobs:
+        job_date = job.get('date')
 
-        for job in report_jobs:
-            job_date = job.get('date')
-
-            if hasattr(job_date, 'date'):
-                job_date = job_date.date()
-
+        if hasattr(job_date, 'date'):
+            job_date = job_date.date()
+        elif isinstance(job_date, str):
+            from datetime import date
             try:
-                hours = float(job.get('hours') or 0)
-            except (TypeError, ValueError):
-                hours = 0.0
+                job_date = date.fromisoformat(job_date[:10])
+            except ValueError:
+                continue
 
-            if job_date not in daily_map:
-                daily_map[job_date] = {
-                    'date': job_date,
-                    'hours': 0.0,
-                    'jobs': []
-                }
+        try:
+            hours = float(job.get('hours') or 0)
+        except (TypeError, ValueError):
+            hours = 0.0
 
-            daily_map[job_date]['hours'] += hours
-            daily_map[job_date]['jobs'].append(job)
+        if job_date not in daily_map:
+            daily_map[job_date] = {
+                'date': job_date,
+                'hours': 0.0,
+                'jobs': []
+            }
 
-        daily_data = {
-            'start': min(daily_map.keys()) if daily_map else None,
-            'end': max(daily_map.keys()) if daily_map else None,
-            'payday': None,
-            'days': [
-                {
-                    **day,
-                    'hours': round(day['hours'], 2)
-                }
-                for day in sorted(
-                    daily_map.values(),
-                    key=lambda x: x['date']
-                )
-            ],
-            'total_hours': round(
-                sum(day['hours'] for day in daily_map.values()),
-                2
-            )
-        }
+        daily_map[job_date]['hours'] += hours
+        daily_map[job_date]['jobs'].append(job)
 
-    total_hours = daily_data['total_hours']
+    daily_rows = []
 
-    pay = calculate_pay(
-        user_id,
-        total_hours
+    for day in sorted(daily_map.values(), key=lambda x: x['date']):
+        day['hours'] = round(day['hours'], 2)
+        daily_rows.append(day)
+
+    total_hours = round(
+        sum(day['hours'] for day in daily_rows),
+        2
     )
+
+    pay = calculate_pay(user_id, total_hours)
 
     period_labels = {
         'daily': 'Daily',
@@ -1904,9 +1898,17 @@ def pay_summary():
         period
     )
 
+    daily_data = {
+        'start': daily_rows[0]['date'] if daily_rows else None,
+        'end': daily_rows[-1]['date'] if daily_rows else None,
+        'payday': period_info.get('payday'),
+        'days': daily_rows,
+        'total_hours': total_hours
+    }
+
     return render_template(
         'pay_summary.html',
-        history=daily_data['days'],
+        history=daily_rows,
         daily_payroll=daily_data,
         total_hours=total_hours,
         pay_summary=pay,
