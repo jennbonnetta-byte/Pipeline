@@ -1870,8 +1870,14 @@ def pay_summary():
                 'jobs': []
             }
 
+        # Normalize job data for the Pay page.
+        # The database stores hours as TEXT, but the template
+        # needs a real number for numeric formatting.
+        pay_job = dict(job)
+        pay_job['hours'] = hours
+
         daily_map[job_date]['hours'] += hours
-        daily_map[job_date]['jobs'].append(job)
+        daily_map[job_date]['jobs'].append(pay_job)
 
     daily_rows = []
 
