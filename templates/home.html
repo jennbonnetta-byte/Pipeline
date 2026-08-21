@@ -615,6 +615,11 @@
         Reports
     </a>
 
+    <a href="{{ url_for('pay_summary', period='weekly') }}" class="menu-item">
+        <span class="menu-icon">💰</span>
+        Pay
+    </a>
+
     <a href="{{ url_for('sent_reports') }}" class="menu-item">
         <span class="menu-icon">📨</span>
         Sent Reports
@@ -680,6 +685,14 @@
             <div class="card-title">Reports</div>
             <div class="card-description">
                 Hours &amp; job summaries
+            </div>
+        </a>
+
+        <a href="{{ url_for('pay_summary', period='weekly') }}" class="dashboard-card">
+            <div class="card-icon">💰</div>
+            <div class="card-title">Pay</div>
+            <div class="card-description">
+                Daily, weekly &amp; bi-weekly earnings
             </div>
         </a>
 
