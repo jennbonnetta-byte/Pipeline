@@ -460,15 +460,39 @@ def save_job(user_id, job):
     conn = get_db()
     try:
         cur = conn.cursor()
+
+        start_time = job.get("start_time") or None
+        end_time = job.get("end_time") or None
+
+        # Calculate hours on the server so payroll cannot rely
+        # on a client-supplied hidden field.
+        calculated_hours = job.get("hours")
+
+        if start_time and end_time:
+            start_parts = [int(x) for x in start_time.split(":")]
+            end_parts = [int(x) for x in end_time.split(":")]
+
+            start_minutes = start_parts[0] * 60 + start_parts[1]
+            end_minutes = end_parts[0] * 60 + end_parts[1]
+
+            # Allow an overnight service call.
+            if end_minutes < start_minutes:
+                end_minutes += 24 * 60
+
+            calculated_hours = f"{(end_minutes - start_minutes) / 60:.2f}"
+
         cur.execute(
             """INSERT INTO jobs
-               (user_id, date, hours, notes, destination, materials, photos, client_id)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+               (user_id, date, hours, start_time, end_time,
+                notes, destination, materials, photos, client_id)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                RETURNING id""",
             (
                 user_id,
                 job.get("date"),
-                job.get("hours"),
+                calculated_hours,
+                start_time,
+                end_time,
                 job.get("notes"),
                 job.get("destination"),
                 job.get("materials"),
@@ -476,6 +500,7 @@ def save_job(user_id, job):
                 job.get("client_id") or None
             )
         )
+
         job_id = cur.fetchone()[0]
         conn.commit()
         cur.close()
@@ -862,6 +887,8 @@ def index():
             'user': session['user'],
             'date': request.form.get('date'),
             'hours': request.form.get('hours'),
+            'start_time': request.form.get('start_time'),
+            'end_time': request.form.get('end_time'),
             'notes': request.form.get('notes'),
             'destination': request.form.get('destination'),
             'materials': request.form.get('materials'),

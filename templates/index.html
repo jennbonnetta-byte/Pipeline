@@ -366,34 +366,44 @@
             </div>
 
 
-            <!-- HOURS -->
-
-            <div class="field">
-
-                <label for="hours">
-                    Hours Worked <span class="required">*</span>
+            <!-- TIME TRACKING -->
+                                                                   <div class="field">
+                                                                       <label>
+                    Time Worked <span class="required">*</span>
                 </label>
 
-                <div class="hours-wrap">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div>
+                        <label for="start_time" style="font-size:.85rem;">
+                            Start Time
+                        </label>
+                        <input
+                            type="time"
+                            id="start_time"
+                            name="start_time"
+                            required
+                        >
+                    </div>
 
-                    <input
-                        type="number"
-                        id="hours"
-                        name="hours"
-                        value="{{ last_job_values.get('hours', '') }}"
-                    placeholder="e.g. 7.5"
-                        min="0"
-                        step="0.25"
-                        inputmode="decimal"
-                        required
-                    >
-
-                    <span class="hours-unit">hours</span>
-
+                    <div>
+                        <label for="end_time" style="font-size:.85rem;">
+                            End Time
+                        </label>
+                        <input
+                            type="time"
+                            id="end_time"
+                            name="end_time"
+                            required
+                        >
+                    </div>
                 </div>
 
-            </div>
+                <div id="calculatedHours" style="margin-top:10px;font-weight:700;">
+                    Total: <span id="hoursDisplay">0.00</span> hours
+                </div>
 
+                <input type="hidden" id="hours" name="hours" value="">
+                                                                   </div>
 
             <!-- CLIENT -->
 
@@ -605,6 +615,43 @@
             `${year}-${month}-${day}`;
     }
 
+
+    // Calculate hours automatically from start/end time.
+    const startTimeInput = document.getElementById("start_time");
+    const endTimeInput = document.getElementById("end_time");
+    const hoursInput = document.getElementById("hours");
+    const hoursDisplay = document.getElementById("hoursDisplay");
+
+    function calculateHours() {
+        if (!startTimeInput || !endTimeInput || !hoursInput || !hoursDisplay) {
+            return;
+        }
+
+        if (!startTimeInput.value || !endTimeInput.value) {
+            hoursInput.value = "";
+            hoursDisplay.textContent = "0.00";
+            return;
+        }
+
+        const [startHour, startMinute] = startTimeInput.value.split(":").map(Number);
+        const [endHour, endMinute] = endTimeInput.value.split(":").map(Number);
+
+        let startMinutes = startHour * 60 + startMinute;
+        let endMinutes = endHour * 60 + endMinute;
+
+        // Allow an overnight service call.
+        if (endMinutes < startMinutes) {
+            endMinutes += 24 * 60;
+        }
+
+        const totalHours = (endMinutes - startMinutes) / 60;
+
+        hoursInput.value = totalHours.toFixed(2);
+        hoursDisplay.textContent = totalHours.toFixed(2);
+    }
+
+    startTimeInput?.addEventListener("change", calculateHours);
+    endTimeInput?.addEventListener("change", calculateHours);
 
     // Photo previews.
     const photoInput =
