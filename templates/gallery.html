@@ -3,43 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PipeLine - Photo Gallery</title>
+
+    <title>PipeLine - Photos</title>
+
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #0056b3; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
-        .card { background: #f8f9fa; border-left: 4px solid #17a2b8; padding: 12px; margin-bottom: 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .card-info { font-size: 14px; }
-        .btn-view { background: #17a2b8; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .back-btn { display: block; text-align: center; background: #0056b3; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* HEADER */
+
+        .header {
+            height: 105px;
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            font-size: 34px;
+            width: 42px;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: white;
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 23px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        /* CONTENT */
+
+        .content {
+            max-width: 900px;
+            margin: auto;
+            padding: 30px 18px 60px;
+        }
+
+        .page-title {
+            font-size: 31px;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: #7b8999;
+            margin: 7px 0 25px;
+        }
+
+        /* JOB SECTION */
+
+        .job-section {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e3eaf2;
+            margin-bottom: 22px;
+            overflow: hidden;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .job-header {
+            padding: 17px 18px;
+            border-bottom: 1px solid #edf0f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .job-title {
+            font-weight: 800;
+            font-size: 17px;
+        }
+
+        .job-meta {
+            color: #8491a1;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .photo-count {
+            background: #eaf6ff;
+            color: #087bc4;
+            padding: 7px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        /* PHOTO GRID */
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            background: #e8edf2;
+        }
+
+        .photo {
+            aspect-ratio: 1 / 1;
+            background: #dfe6ed;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .2s ease;
+        }
+
+        .photo:active img {
+            transform: scale(.96);
+        }
+
+        .empty {
+            padding: 45px 20px;
+            text-align: center;
+            color: #8996a5;
+            background: white;
+        }
+
+        .empty-icon {
+            font-size: 50px;
+            margin-bottom: 12px;
+        }
+
+        /* FULLSCREEN VIEWER */
+
+        .viewer {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.95);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .viewer.open {
+            display: flex;
+        }
+
+        .viewer img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .viewer-close {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            width: 48px;
+            height: 48px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.15);
+            color: white;
+            font-size: 30px;
+            z-index: 101;
+        }
+
+        .viewer-caption {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        @media (min-width: 650px) {
+            .photo-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
-    <div class="container">
-        <h2>📷 Work Photo Gallery</h2>
-        <div class="subtitle">All jobs with attached photos</div>
 
-        {% set ns = namespace(found=false) %}
-        {% for job in history %}
-            {% if job.photos %}
-                {% set ns.found = true %}
-                <div class="card">
-                    <div class="card-info">
-                        <strong>{{ job.date }}</strong><br>
-                        <span style="color: #555;">{{ job.destination }}</span><br>
-                        <small style="color: #0056b3;">{{ job.photos|length }} photo(s)</small>
-                    </div>
-                    <a href="/job-photos/{{ loop.index0 }}" class="btn-view">View 📷</a>
-                </div>
-            {% endif %}
-        {% endfor %}
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
 
-        {% if not ns.found %}
-            <p style="text-align: center; color: #666; padding: 30px 0;">No job photos found yet!</p>
+<header class="header">
+
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}"
+             alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">Photos</div>
+        <div class="header-subtitle">Your job photos</div>
+    </div>
+
+</header>
+
+
+<main class="content">
+
+    <h1 class="page-title">Work Photos</h1>
+
+    <p class="page-subtitle">
+        Photos uploaded with your jobs.
+    </p>
+
+
+    {% set photo_jobs = [] %}
+
+    {% for job in history %}
+
+        {% if job.photos %}
+
+            {% set _ = photo_jobs.append(job) %}
+
         {% endif %}
 
-        <a href="/" class="back-btn">⬅ Back to Dashboard</a>
-    </div>
+    {% endfor %}
+
+
+    {% if photo_jobs %}
+
+        {% for job in photo_jobs %}
+
+        <section class="job-section">
+
+            <div class="job-header">
+
+                <div>
+                    <div class="job-title">
+                        Job #{{ job.id }}
+                        {% if job.destination %}
+                            · {{ job.destination }}
+                        {% endif %}
+                    </div>
+
+                    <div class="job-meta">
+                        {{ job.date or 'No date' }}
+                        {% if job.hours %}
+                            · {{ job.hours }} hours
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="photo-count">
+                    {{ job.photos|length }} photo{% if job.photos|length != 1 %}s{% endif %}
+                </div>
+
+            </div>
+
+
+            <div class="photo-grid">
+
+                {% for photo in job.photos %}
+
+                <div class="photo"
+                     onclick="openPhoto(
+                        '{{ photo|e }}',
+                        'Job #{{ job.id }}{% if job.destination %} · {{ job.destination|e }}{% endif %}'
+                     )">
+
+                    <img
+                        src="{{ photo }}"
+                        alt="Job {{ job.id }} photo"
+                        loading="lazy"
+                    >
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="job-section">
+
+            <div class="empty">
+
+                <div class="empty-icon">📷</div>
+
+                <strong>No photos yet</strong>
+
+                <p>
+                    Photos you upload while creating a daily
+                    entry will appear here.
+                </p>
+
+                <a href="{{ url_for('index') }}"
+                   style="
+                       display:inline-block;
+                       margin-top:12px;
+                       padding:12px 20px;
+                       background:#087bc4;
+                       color:white;
+                       border-radius:10px;
+                       font-weight:700;
+                   ">
+                    Add a Job
+                </a>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</main>
+
+
+<!-- FULLSCREEN PHOTO VIEWER -->
+
+<div class="viewer" id="viewer" onclick="closePhoto()">
+
+    <button class="viewer-close"
+            onclick="event.stopPropagation(); closePhoto()">
+        ×
+    </button>
+
+    <img id="viewerImage" src="" alt="">
+
+    <div class="viewer-caption" id="viewerCaption"></div>
+
+</div>
+
+
+<script>
+
+function openPhoto(url, caption) {
+
+    document.getElementById("viewerImage").src = url;
+    document.getElementById("viewerCaption").textContent = caption;
+
+    document.getElementById("viewer").classList.add("open");
+
+    document.body.style.overflow = "hidden";
+}
+
+
+function closePhoto() {
+
+    document.getElementById("viewer").classList.remove("open");
+
+    document.getElementById("viewerImage").src = "";
+
+    document.body.style.overflow = "";
+
+}
+
+</script>
+
 </body>
 </html>

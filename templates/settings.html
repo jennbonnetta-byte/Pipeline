@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Settings</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .intro {
+            color: #7c8999;
+            margin: 7px 0 24px;
+            line-height: 1.5;
+        }
+
+        .settings-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 5px 18px rgba(22,54,86,.06);
+            transition: transform .12s, box-shadow .12s;
+        }
+
+        .settings-card:active {
+            transform: scale(.98);
+        }
+
+        .settings-icon {
+            width: 52px;
+            height: 52px;
+            flex-shrink: 0;
+            border-radius: 15px;
+            background: #e7f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+        }
+
+        .settings-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 850;
+            margin-bottom: 4px;
+        }
+
+        .settings-description {
+            color: #7c8999;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .arrow {
+            color: #9aa7b5;
+            font-size: 25px;
+            flex-shrink: 0;
+        }
+
+        .section-label {
+            color: #7c8999;
+            font-size: 11px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 25px 4px 10px;
+        }
+
+        .danger .settings-icon {
+            background: #fff1f0;
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img
+            src="{{ url_for('static', filename='pipeline-icon.png') }}"
+            alt="PipeLine"
+        >
+    </a>
+
+    <div>
+        <div class="header-title">Settings</div>
+        <div class="header-subtitle">Customize your PipeLine</div>
+    </div>
+
+</header>
+
+<main class="content">
+
+    <h1>⚙️ Settings</h1>
+
+    <p class="intro">
+        Configure how PipeLine calculates, reports, and manages your work.
+    </p>
+
+
+    <div class="section-label">Payroll</div>
+
+    <a href="{{ url_for('pay_settings') }}" class="settings-card">
+
+        <div class="settings-icon">💰</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Pay &amp; Payroll</div>
+            <div class="settings-description">
+                Hourly rate, overtime, deductions, pension, EI, CPP and pay periods.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <div class="section-label">Reports</div>
+
+    <a href="{{ url_for('report_settings') }}" class="settings-card">
+
+        <div class="settings-icon">📊</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Reports &amp; Preferences</div>
+            <div class="settings-description">
+                Report periods, report contents, photos and display options.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <a href="{{ url_for('email_settings') }}" class="settings-card">
+
+        <div class="settings-icon">📧</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Email &amp; Reports</div>
+            <div class="settings-description">
+                Boss email, report delivery and attachment preferences.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <div class="section-label">App</div>
+
+    <a href="{{ url_for('app_settings') }}" class="settings-card">
+
+        <div class="settings-icon">📱</div>
+
+        <div class="settings-text">
+            <div class="settings-title">App Preferences</div>
+            <div class="settings-description">
+                Business information, defaults, date formats and confirmations.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <a href="{{ url_for('appearance_settings') }}" class="settings-card">
+
+        <div class="settings-icon">🎨</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Appearance</div>
+            <div class="settings-description">
+                Theme, layout and visual preferences.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <div class="section-label">Account</div>
+
+    <a href="{{ url_for('account_settings') }}" class="settings-card">
+
+        <div class="settings-icon">🔒</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Security &amp; Account</div>
+            <div class="settings-description">
+                Password, login and account options.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <a href="#" class="settings-card">
+
+        <div class="settings-icon">💾</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Data &amp; Backup</div>
+            <div class="settings-description">
+                Export, backup and manage your PipeLine data.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+
+    <div class="section-label">Danger Zone</div>
+
+    <a href="#" class="settings-card danger">
+
+        <div class="settings-icon">⚠️</div>
+
+        <div class="settings-text">
+            <div class="settings-title">Delete Account</div>
+            <div class="settings-description">
+                Permanently remove your PipeLine account and data.
+            </div>
+        </div>
+
+        <div class="arrow">›</div>
+
+    </a>
+
+</main>
+
+</body>
+</html>

@@ -2,44 +2,899 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
     <title>PipeLine - Daily Entry</title>
+
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: #0056b3; margin-top: 0; }
-        label { font-weight: 600; display: block; margin-top: 15px; font-size: 14px; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        .box { background: #f9f9f9; padding: 12px; border: 1px dashed #bbb; margin-top: 5px; border-radius: 6px; }
-        button { background: #0056b3; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; }
-        .back-link { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* HEADER */
+
+        .header {
+            height: 105px;
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            font-size: 38px;
+            width: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: white;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        /* PAGE */
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        .intro h1 {
+            margin: 0;
+            font-size: 31px;
+            letter-spacing: -.5px;
+        }
+
+        .intro p {
+            margin: 7px 0 25px;
+            color: #7c8999;
+        }
+
+        /* FORM */
+
+        .form-card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 22px;
+            padding: 21px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #263a54;
+        }
+
+        .required {
+            color: #087bc4;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #dce4ed;
+            border-radius: 13px;
+            padding: 14px;
+            background: #f9fbfd;
+            color: #172b45;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            transition: border .15s, box-shadow .15s;
+        }
+
+        input {
+            min-height: 51px;
+        }
+
+        textarea {
+            min-height: 105px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        /* HOURS */
+
+        .hours-wrap {
+            position: relative;
+        }
+
+        .hours-wrap input {
+            padding-right: 65px;
+        }
+
+        .hours-unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a97a6;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* PHOTO UPLOAD */
+
+        .photo-box {
+            border: 2px dashed #b9d8ed;
+            background: #f5fbff;
+            border-radius: 17px;
+            padding: 22px 15px;
+            text-align: center;
+        }
+
+        .photo-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 10px;
+            background: #e5f5ff;
+            color: #087bc4;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 31px;
+        }
+
+        .photo-title {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .photo-help {
+            color: #7e8c9c;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .photo-button {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 11px 17px;
+            border-radius: 11px;
+            background: #087bc4;
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        #photos {
+            display: none;
+        }
+
+        /* PREVIEWS */
+
+        .preview-title {
+            margin-top: 17px;
+            margin-bottom: 9px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #617187;
+            text-align: left;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .preview {
+            aspect-ratio: 1;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #e6ebf0;
+        }
+
+        .preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* SAVE */
+
+        .save-button {
+            width: 100%;
+            min-height: 58px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            margin-top: 5px;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+            cursor: pointer;
+        }
+
+        .save-button:active {
+            transform: scale(.98);
+        }
+
+        .save-button:disabled {
+            opacity: .65;
+        }
+
+        .cancel {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: #6f7e90;
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 430px) {
+
+            .header {
+                height: 96px;
+                padding: 16px;
+            }
+
+            .logo {
+                width: 52px;
+                height: 52px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 25px 14px 45px;
+            }
+
+            .form-card {
+                padding: 17px;
+                border-radius: 19px;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
-    <div class="container">
-        <h2>➕ New Daily Entry</h2>
-        <form method="POST" enctype="multipart/form-data">
-            <label>Date:</label>
-            <input type="date" name="date" required>
 
-            <label>Hours Worked:</label>
-            <input type="text" name="hours" placeholder="e.g., 7.5" required>
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
 
-            <label>Job Address:</label>
-            <input type="text" name="destination" placeholder="Client address or name" required>
+<header class="header">
 
-            <label>Work Performed (Notes):</label>
-            <textarea name="notes" rows="3" placeholder="Fixed main line leak..." required></textarea>
+    <a href="{{ url_for('home') }}" class="back">‹</a>
 
-            <label>Materials Used:</label>
-            <textarea name="materials" rows="2" placeholder="Copper elbows, flux, solder..." required></textarea>
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}"
+             alt="PipeLine">
+    </a>
 
-            <label>Job Photos:</label>
-            <input class="box" type="file" name="photos" accept="image/*" multiple>
-
-            <button type="submit">Generate Boss Report</button>
-        </form>
-        <a href="/" class="back-link">⬅ Back to Dashboard</a>
+    <div>
+        <div class="header-title">New Daily Entry</div>
+        <div class="header-subtitle">Record today's work</div>
     </div>
+
+</header>
+
+
+<main class="content">
+
+    <section class="intro">
+        <h1>Daily Entry</h1>
+        <p>Capture the details while they're fresh.</p>
+    </section>
+
+
+    <div class="form-card">
+
+        <form method="POST"
+              enctype="multipart/form-data"
+              id="jobForm">
+
+            <!-- DATE -->
+
+            <div class="field">
+
+                <label for="date">
+                    Date <span class="required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    required
+                >
+
+            </div>
+
+
+            <!-- HOURS -->
+
+            <div class="field">
+
+                <label for="hours">
+                    Hours Worked <span class="required">*</span>
+                </label>
+
+                <div class="hours-wrap">
+
+                    <input
+                        type="number"
+                        id="hours"
+                        name="hours"
+                        value="{{ last_job_values.get('hours', '') }}"
+                    placeholder="e.g. 7.5"
+                        min="0"
+                        step="0.25"
+                        inputmode="decimal"
+                        required
+                    >
+
+                    <span class="hours-unit">hours</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- CLIENT -->
+
+            <div class="field">
+
+                <label for="client_id">
+                    Client
+                    <span style="color:#7c8999;font-weight:600;">
+                        (Optional)
+                    </span>
+                </label>
+
+                <select
+                    id="client_id"
+                    name="client_id"
+                    style="
+                        width:100%;
+                        min-height:51px;
+                        border:1px solid #dce4ed;
+                        border-radius:13px;
+                        padding:14px;
+                        background:#f9fbfd;
+                        color:#172b45;
+                        font-family:inherit;
+                        font-size:16px;
+                        outline:none;
+                    "
+                >
+                    <option value="">
+                        No Client / Other Job
+                    </option>
+
+                    {% for client in clients %}
+                    <option value="{{ client.id }}"
+                        {% if last_job_values.get('client_id')|string == client.id|string %}selected{% endif %}>
+                        {{ client.name }}
+                        {% if client.contact_person %}
+                            — {{ client.contact_person }}
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <div style="
+                    color:#7c8999;
+                    font-size:12px;
+                    margin-top:6px;
+                ">
+                    Select a saved client, or leave blank for jobs without a client.
+                </div>
+
+            </div>
+
+
+            <!-- DESTINATION -->
+
+            <div class="field">
+
+                <label for="destination">
+                    Job Address / Client <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="destination"
+                    name="destination"
+                    value="{{ last_job_values.get('destination', '') }}"
+                    placeholder="Client name or job address"
+                    autocomplete="street-address"
+                    required
+                >
+
+            </div>
+
+
+            <!-- NOTES -->
+
+            <div class="field">
+
+                <label for="notes">
+                    Work Performed <span class="required">*</span>
+                </label>
+
+                <textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="What work was completed today?"
+                    required
+                >{{ last_job_values.get('notes', '') }}</textarea>
+
+            </div>
+
+
+            <!-- MATERIALS -->
+
+            <div class="field">
+
+                <label for="materials">
+                    Materials Used <span class="required">*</span>
+                </label>
+
+                <textarea
+                    id="materials"
+                    name="materials"
+                    placeholder="Copper elbows, flux, solder..."
+                    required
+                >{{ last_job_values.get('materials', '') }}</textarea>
+
+            </div>
+
+
+            <!-- PHOTOS -->
+
+            <div class="field">
+
+                <label>
+                    Job Photos
+                </label>
+
+                <div class="photo-box">
+
+                    <div class="photo-icon">
+                        📷
+                    </div>
+
+                    <div class="photo-title">
+                        Add Job Photos
+                    </div>
+
+                    <div class="photo-help">
+                        Take photos or choose them from your gallery.
+                    </div>
+
+                    <label for="photos" class="photo-button">
+                        Choose Photos
+                    </label>
+
+                    <input
+                        type="file"
+                        id="photos"
+                        name="photos"
+                        accept="image/*"
+                        multiple
+                    >
+
+                    <div
+                        id="previewContainer"
+                        style="display:none;"
+                    >
+
+                        <div class="preview-title">
+                            Selected Photos
+                        </div>
+
+                        <div
+                            class="preview-grid"
+                            id="previewGrid"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SAVE -->
+
+            <button
+                type="submit"
+                class="save-button"
+                id="saveButton"
+            >
+                Save Daily Entry
+            </button>
+
+        </form>
+
+        <a href="{{ url_for('home') }}" class="cancel">
+            Cancel
+        </a>
+
+    </div>
+
+</main>
+
+
+<script>
+
+    // Automatically use today's date.
+    const dateInput = document.getElementById("date");
+
+    if (!dateInput.value) {
+
+        const today = new Date();
+
+        const year = today.getFullYear();
+
+        const month = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        dateInput.value =
+            `${year}-${month}-${day}`;
+    }
+
+
+    // Photo previews.
+    const photoInput =
+        document.getElementById("photos");
+
+    const previewContainer =
+        document.getElementById("previewContainer");
+
+    const previewGrid =
+        document.getElementById("previewGrid");
+
+
+    photoInput.addEventListener("change", function () {
+
+        previewGrid.innerHTML = "";
+
+        const files = Array.from(this.files);
+
+        if (!files.length) {
+
+            previewContainer.style.display = "none";
+
+            return;
+        }
+
+        previewContainer.style.display = "block";
+
+        files.forEach(function(file) {
+
+            if (!file.type.startsWith("image/")) {
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+
+                const wrapper =
+                    document.createElement("div");
+
+                wrapper.className = "preview";
+
+                const image =
+                    document.createElement("img");
+
+                image.src = event.target.result;
+
+                image.alt = "Selected photo";
+
+                wrapper.appendChild(image);
+
+                previewGrid.appendChild(wrapper);
+            };
+
+            reader.readAsDataURL(file);
+
+        });
+
+    });
+
+
+    // Prevent accidental double submissions.
+    document.getElementById("jobForm")
+        .addEventListener("submit", function() {
+
+            const button =
+                document.getElementById("saveButton");
+
+            button.disabled = true;
+
+            button.textContent =
+                "Saving Entry...";
+
+        });
+
+</script>
+
 </body>
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('jobForm');
+    if (!form) return;
+
+    const draftKey = 'pipeline_daily_entry_draft';
+    const autosaveEnabled = {{ 'true' if settings_autosave_drafts else 'false' }};
+
+    const fields = [
+        'hours',
+        'client_id',
+        'destination',
+        'notes',
+        'materials'
+    ];
+
+    function getDraft() {
+        try {
+            const raw = localStorage.getItem(draftKey);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function saveDraft() {
+        if (!autosaveEnabled) return;
+
+        const draft = {};
+
+        fields.forEach(function (id) {
+            const field = document.getElementById(id);
+            if (field) {
+                draft[id] = field.value || '';
+            }
+        });
+
+        const hasData = fields.some(function (id) {
+            return draft[id] && draft[id].trim() !== '';
+        });
+
+        if (hasData) {
+            draft.savedAt = new Date().toISOString();
+            localStorage.setItem(draftKey, JSON.stringify(draft));
+
+            updateDraftSaveStatus(draft.savedAt);
+        }
+    }
+
+    function updateDraftSaveStatus(savedAt) {
+        const status = document.getElementById('draftSaveStatus');
+        if (!status || !savedAt) return;
+
+        function refresh() {
+            const seconds = Math.max(
+                0,
+                Math.floor((Date.now() - new Date(savedAt).getTime()) / 1000)
+            );
+
+            let text;
+
+            if (seconds < 5) {
+                text = 'just now';
+            } else if (seconds < 60) {
+                text = seconds + ' second' + (seconds === 1 ? '' : 's') + ' ago';
+            } else {
+                const minutes = Math.floor(seconds / 60);
+
+                if (minutes < 60) {
+                    text = minutes + ' minute' + (minutes === 1 ? '' : 's') + ' ago';
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    text = hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+                }
+            }
+
+            status.textContent = '💾 Draft saved · ' + text;
+        }
+
+        refresh();
+
+        if (window.draftStatusTimer) {
+            clearInterval(window.draftStatusTimer);
+        }
+
+        window.draftStatusTimer = setInterval(refresh, 1000);
+    }
+
+    function clearDraft() {
+        localStorage.removeItem(draftKey);
+
+        if (window.draftStatusTimer) {
+            clearInterval(window.draftStatusTimer);
+            window.draftStatusTimer = null;
+        }
+    }
+
+    function restoreDraft(draft) {
+        fields.forEach(function (id) {
+            const field = document.getElementById(id);
+
+            if (field && draft[id] !== undefined) {
+                field.value = draft[id];
+            }
+        });
+    }
+
+    function showDraftNotice(draft) {
+
+        const existing = document.getElementById('draftNotice');
+        if (existing) existing.remove();
+
+        const notice = document.createElement('div');
+        notice.id = 'draftNotice';
+
+        notice.style.cssText = `
+            margin-bottom:18px;
+            padding:16px;
+            border-radius:15px;
+            background:#eef8ff;
+            border:1px solid #cce9fb;
+            color:#183b56;
+        `;
+
+        notice.innerHTML = `
+            <div style="font-weight:850;font-size:15px;margin-bottom:5px;">
+                💾 Draft Found
+            </div>
+
+            <div style="font-size:13px;color:#607286;margin-bottom:6px;">
+                You have an unfinished daily entry.
+            </div>
+
+            <div id="draftSaveStatus"
+                 style="font-size:12px;color:#087bc4;font-weight:700;margin-bottom:13px;">
+                💾 Draft saved · just now
+            </div>
+
+            <div style="display:flex;gap:9px;flex-wrap:wrap;">
+                <button type="button" id="resumeDraft"
+                    style="
+                        border:0;
+                        border-radius:10px;
+                        padding:10px 14px;
+                        background:#087bc4;
+                        color:white;
+                        font-weight:800;
+                    ">
+                    Resume Draft
+                </button>
+
+                <button type="button" id="discardDraft"
+                    style="
+                        border:1px solid #dce4ed;
+                        border-radius:10px;
+                        padding:10px 14px;
+                        background:white;
+                        color:#66758a;
+                        font-weight:800;
+                    ">
+                    Discard
+                </button>
+            </div>
+        `;
+
+        form.parentNode.insertBefore(notice, form);
+
+        document.getElementById('resumeDraft').addEventListener('click', function () {
+            restoreDraft(draft);
+            notice.remove();
+        });
+
+        document.getElementById('discardDraft').addEventListener('click', function () {
+            clearDraft();
+            notice.remove();
+        });
+    }
+
+    if (autosaveEnabled) {
+
+        fields.forEach(function (id) {
+            const field = document.getElementById(id);
+
+            if (field) {
+                field.addEventListener('input', saveDraft);
+                field.addEventListener('change', saveDraft);
+            }
+        });
+
+        window.addEventListener('beforeunload', saveDraft);
+
+        const existingDraft = getDraft();
+
+        if (existingDraft) {
+            const hasData = fields.some(function (id) {
+                return existingDraft[id] &&
+                       String(existingDraft[id]).trim() !== '';
+            });
+
+            if (hasData) {
+                showDraftNotice(existingDraft);
+                updateDraftSaveStatus(existingDraft.savedAt);
+            }
+        }
+    }
+
+    form.addEventListener('submit', function () {
+        clearDraft();
+    });
+
+});
+</script>

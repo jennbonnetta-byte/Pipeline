@@ -1,0 +1,617 @@
+/* =========================================================
+   PipeLine Global Appearance System
+   ========================================================= */
+
+:root {
+    --pipeline-accent: #087bc4;
+    --pipeline-accent-dark: #075fa4;
+
+    --pipeline-bg: #f3f7fc;
+    --pipeline-surface: #ffffff;
+    --pipeline-surface-2: #f8fafc;
+
+    --pipeline-text: #10213b;
+    --pipeline-muted: #7c8999;
+    --pipeline-border: #e3eaf2;
+
+    --pipeline-radius: 20px;
+    --pipeline-spacing: 16px;
+    --pipeline-font-size: 16px;
+
+    --pipeline-shadow:
+        0 7px 22px rgba(22, 54, 86, .07);
+}
+
+/* =========================================================
+   Themes
+   ========================================================= */
+
+.pipeline-theme-light {
+    --pipeline-bg: #f3f7fc;
+    --pipeline-surface: #ffffff;
+    --pipeline-surface-2: #f8fafc;
+    --pipeline-text: #10213b;
+    --pipeline-muted: #7c8999;
+    --pipeline-border: #e3eaf2;
+}
+
+.pipeline-theme-dark {
+    --pipeline-bg: #101820;
+    --pipeline-surface: #18232e;
+    --pipeline-surface-2: #111b24;
+    --pipeline-text: #edf4fa;
+    --pipeline-muted: #a9b7c5;
+    --pipeline-border: #2b3a47;
+
+    --pipeline-shadow:
+        0 7px 22px rgba(0, 0, 0, .28);
+}
+
+/* Device theme */
+@media (prefers-color-scheme: dark) {
+    .pipeline-theme-system {
+        --pipeline-bg: #101820;
+        --pipeline-surface: #18232e;
+        --pipeline-surface-2: #111b24;
+        --pipeline-text: #edf4fa;
+        --pipeline-muted: #a9b7c5;
+        --pipeline-border: #2b3a47;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .pipeline-theme-system {
+        --pipeline-bg: #f3f7fc;
+        --pipeline-surface: #ffffff;
+        --pipeline-surface-2: #f8fafc;
+        --pipeline-text: #10213b;
+        --pipeline-muted: #7c8999;
+        --pipeline-border: #e3eaf2;
+    }
+}
+
+/* =========================================================
+   Accent colours
+   ========================================================= */
+
+.pipeline-accent-blue {
+    --pipeline-accent: #087bc4;
+    --pipeline-accent-dark: #075fa4;
+}
+
+.pipeline-accent-teal {
+    --pipeline-accent: #008f8c;
+    --pipeline-accent-dark: #006f6c;
+}
+
+.pipeline-accent-green {
+    --pipeline-accent: #2f9e44;
+    --pipeline-accent-dark: #237a35;
+}
+
+.pipeline-accent-purple {
+    --pipeline-accent: #7950f2;
+    --pipeline-accent-dark: #5f3dc4;
+}
+
+.pipeline-accent-orange {
+    --pipeline-accent: #e67700;
+    --pipeline-accent-dark: #c45f00;
+}
+
+.pipeline-accent-red {
+    --pipeline-accent: #d6333f;
+    --pipeline-accent-dark: #ad2731;
+}
+
+/* =========================================================
+   Layout density
+   ========================================================= */
+
+.pipeline-density-compact {
+    --pipeline-spacing: 10px;
+}
+
+.pipeline-density-comfortable {
+    --pipeline-spacing: 16px;
+}
+
+.pipeline-density-spacious {
+    --pipeline-spacing: 24px;
+}
+
+/* =========================================================
+   Card styles
+   ========================================================= */
+
+.pipeline-cards-standard {
+    --pipeline-radius: 10px;
+}
+
+.pipeline-cards-rounded {
+    --pipeline-radius: 20px;
+}
+
+.pipeline-cards-minimal {
+    --pipeline-radius: 8px;
+    --pipeline-shadow: none;
+}
+
+/* =========================================================
+   Font size
+   ========================================================= */
+
+.pipeline-font-small {
+    --pipeline-font-size: 14px;
+}
+
+.pipeline-font-default {
+    --pipeline-font-size: 16px;
+}
+
+.pipeline-font-large {
+    --pipeline-font-size: 18px;
+}
+
+/* =========================================================
+   Global document
+   ========================================================= */
+
+body {
+    background-color: var(--pipeline-bg);
+    color: var(--pipeline-text);
+    font-size: var(--pipeline-font-size);
+}
+
+/* =========================================================
+   Common surfaces
+   ========================================================= */
+
+.pipeline-surface,
+.card,
+.dashboard-card,
+.settings-card,
+.menu-item,
+.job-card,
+.panel,
+.section,
+.total-box {
+    background-color: var(--pipeline-surface);
+    color: var(--pipeline-text);
+    border-color: var(--pipeline-border);
+}
+
+.card,
+.dashboard-card,
+.settings-card,
+.job-card,
+.panel,
+.section {
+    border-radius: var(--pipeline-radius);
+    box-shadow: var(--pipeline-shadow);
+}
+
+/* =========================================================
+   Common text
+   ========================================================= */
+
+.card-title,
+.settings-title,
+.section-title,
+.dashboard-card .card-title {
+    color: var(--pipeline-text);
+}
+
+.card-description,
+.settings-description,
+.help,
+.subtitle,
+.intro,
+.muted {
+    color: var(--pipeline-muted);
+}
+
+/* =========================================================
+   Accent elements
+   ========================================================= */
+
+a {
+    color: var(--pipeline-accent);
+}
+
+button,
+.save-button,
+.primary,
+.report-btn {
+    border-color: var(--pipeline-accent);
+}
+
+.card-icon,
+.settings-icon {
+    color: var(--pipeline-accent);
+}
+
+.dashboard-card:hover,
+.settings-card:hover {
+    border-color: var(--pipeline-accent);
+}
+
+/* =========================================================
+   Inputs
+   ========================================================= */
+
+input,
+select,
+textarea {
+    background-color: var(--pipeline-surface-2);
+    color: var(--pipeline-text);
+    border-color: var(--pipeline-border);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--pipeline-accent);
+}
+
+/* =========================================================
+   Layout spacing
+   ========================================================= */
+
+.dashboard-grid {
+    gap: var(--pipeline-spacing);
+}
+
+.pipeline-density-compact .card,
+.pipeline-density-compact .dashboard-card,
+.pipeline-density-compact .settings-card {
+    padding: 12px;
+}
+
+.pipeline-density-comfortable .card,
+.pipeline-density-comfortable .dashboard-card,
+.pipeline-density-comfortable .settings-card {
+    padding: 18px;
+}
+
+.pipeline-density-spacious .card,
+.pipeline-density-spacious .dashboard-card,
+.pipeline-density-spacious .settings-card {
+    padding: 26px;
+}
+
+/* =========================================================
+   Dashboard layout
+   ========================================================= */
+
+.pipeline-dashboard-compact .dashboard-card {
+    min-height: auto;
+}
+
+.pipeline-dashboard-expanded .dashboard-card {
+    min-height: 150px;
+}
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+.pipeline-no-animations *,
+.pipeline-no-animations *::before,
+.pipeline-no-animations *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+
+/* =========================================================
+   Dark-mode fixes for common elements
+   ========================================================= */
+
+.pipeline-theme-dark .header {
+    background: linear-gradient(
+        135deg,
+        #06131f,
+        #102b40
+    );
+}
+
+.pipeline-theme-dark .card,
+.pipeline-theme-dark .dashboard-card,
+.pipeline-theme-dark .settings-card,
+.pipeline-theme-dark .job-card {
+    box-shadow: var(--pipeline-shadow);
+}
+
+.pipeline-theme-dark input,
+.pipeline-theme-dark select,
+.pipeline-theme-dark textarea {
+    background-color: var(--pipeline-surface-2);
+    color: var(--pipeline-text);
+}
+
+.pipeline-theme-dark .help,
+.pipeline-theme-dark .intro,
+.pipeline-theme-dark .subtitle,
+.pipeline-theme-dark .card-description,
+.pipeline-theme-dark .settings-description {
+    color: var(--pipeline-muted);
+}
+
+/* =========================================================
+   PipeLine - Strong Global Theme Overrides
+   These rules intentionally come LAST so they override
+   older page-specific styles.
+   ========================================================= */
+
+html,
+body {
+    background-color: var(--pipeline-bg) !important;
+    color: var(--pipeline-text) !important;
+}
+
+/* Main containers */
+.container,
+.content,
+.card,
+.panel,
+.section,
+.dashboard-card,
+.settings-card,
+.job-card,
+.photo-card,
+.job-item,
+.total-box {
+    background-color: var(--pipeline-surface) !important;
+    color: var(--pipeline-text) !important;
+    border-color: var(--pipeline-border) !important;
+}
+
+/* Secondary/light surfaces */
+.job-card,
+.job-item,
+.photo-card {
+    background-color: var(--pipeline-surface-2) !important;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.card-title,
+.settings-title,
+.section-title,
+.total-number {
+    color: var(--pipeline-text) !important;
+}
+
+/* Secondary text */
+.subtitle,
+.description,
+.card-description,
+.settings-description,
+.help,
+.label,
+.muted,
+.tap-hint {
+    color: var(--pipeline-muted) !important;
+}
+
+/* Accent text */
+h2,
+h3,
+.section-title,
+.settings-icon,
+.card-icon,
+.total-number,
+.job-date,
+.job-header {
+    color: var(--pipeline-accent) !important;
+}
+
+/* Links */
+a {
+    color: var(--pipeline-accent);
+}
+
+/* Form controls */
+input,
+select,
+textarea {
+    background-color: var(--pipeline-surface-2) !important;
+    color: var(--pipeline-text) !important;
+    border-color: var(--pipeline-border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--pipeline-muted) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--pipeline-accent) !important;
+}
+
+/* Common buttons */
+button,
+.save-button,
+.primary,
+.btn-primary,
+.report-btn {
+    background-color: var(--pipeline-accent);
+    border-color: var(--pipeline-accent);
+}
+
+/* Dark theme inputs */
+.pipeline-theme-dark input,
+.pipeline-theme-dark select,
+.pipeline-theme-dark textarea {
+    background-color: #111b24 !important;
+    color: #edf4fa !important;
+}
+
+/* Dark theme common borders */
+.pipeline-theme-dark .container,
+.pipeline-theme-dark .card,
+.pipeline-theme-dark .dashboard-card,
+.pipeline-theme-dark .settings-card,
+.pipeline-theme-dark .job-card,
+.pipeline-theme-dark .job-item,
+.pipeline-theme-dark .photo-card {
+    border-color: #2b3a47 !important;
+}
+
+/* Minimal cards */
+.pipeline-cards-minimal .card,
+.pipeline-cards-minimal .dashboard-card,
+.pipeline-cards-minimal .settings-card,
+.pipeline-cards-minimal .job-card {
+    box-shadow: none !important;
+}
+
+/* Larger/smaller typography */
+.pipeline-font-small {
+    --pipeline-font-size: 14px;
+}
+
+.pipeline-font-default {
+    --pipeline-font-size: 16px;
+}
+
+.pipeline-font-large {
+    --pipeline-font-size: 18px;
+}
+
+.pipeline-font-large h1 {
+    font-size: 2rem;
+}
+
+.pipeline-font-large h2 {
+    font-size: 1.7rem;
+}
+
+.pipeline-font-small h1 {
+    font-size: 1.7rem;
+}
+
+.pipeline-font-small h2 {
+    font-size: 1.45rem;
+}
+
+/* Density */
+.pipeline-density-compact .card,
+.pipeline-density-compact .dashboard-card,
+.pipeline-density-compact .settings-card,
+.pipeline-density-compact .job-card {
+    padding: 12px !important;
+}
+
+.pipeline-density-spacious .card,
+.pipeline-density-spacious .dashboard-card,
+.pipeline-density-spacious .settings-card,
+.pipeline-density-spacious .job-card {
+    padding: 26px !important;
+}
+
+/* Rounded */
+.pipeline-cards-rounded .card,
+.pipeline-cards-rounded .dashboard-card,
+.pipeline-cards-rounded .settings-card,
+.pipeline-cards-rounded .job-card {
+    border-radius: 20px !important;
+}
+
+/* Standard */
+.pipeline-cards-standard .card,
+.pipeline-cards-standard .dashboard-card,
+.pipeline-cards-standard .settings-card,
+.pipeline-cards-standard .job-card {
+    border-radius: 10px !important;
+}
+
+/* Minimal */
+.pipeline-cards-minimal .card,
+.pipeline-cards-minimal .dashboard-card,
+.pipeline-cards-minimal .settings-card,
+.pipeline-cards-minimal .job-card {
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+/* Animation switch */
+.pipeline-no-animations *,
+.pipeline-no-animations *::before,
+.pipeline-no-animations *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+}
+
+/* Keep intentional overlays dark */
+#modal,
+.modal,
+.photo-modal,
+.image-modal {
+    background-color: rgba(0,0,0,.9) !important;
+}
+
+/* Keep danger/error notices recognizable */
+.error,
+.danger,
+.alert-danger {
+    color: #b42318 !important;
+    background-color: #fff1f0 !important;
+}
+
+/* Dark-mode danger notices */
+.pipeline-theme-dark .error,
+.pipeline-theme-dark .danger,
+.pipeline-theme-dark .alert-danger {
+    color: #ffb4ad !important;
+    background-color: #351a1a !important;
+}
+
+
+/* =========================================================
+   Follow Device / System Theme
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+
+    .pipeline-theme-system {
+        --pipeline-bg: #101820 !important;
+        --pipeline-surface: #18232e !important;
+        --pipeline-surface-2: #111b24 !important;
+        --pipeline-text: #edf4fa !important;
+        --pipeline-muted: #a9b7c5 !important;
+        --pipeline-border: #2b3a47 !important;
+
+        --pipeline-shadow:
+            0 7px 22px rgba(0, 0, 0, .28);
+    }
+
+    .pipeline-theme-system input,
+    .pipeline-theme-system select,
+    .pipeline-theme-system textarea {
+        background-color: #111b24 !important;
+        color: #edf4fa !important;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+
+    .pipeline-theme-system {
+        --pipeline-bg: #f3f7fc !important;
+        --pipeline-surface: #ffffff !important;
+        --pipeline-surface-2: #f8fafc !important;
+        --pipeline-text: #10213b !important;
+        --pipeline-muted: #7c8999 !important;
+        --pipeline-border: #e3eaf2 !important;
+    }
+}

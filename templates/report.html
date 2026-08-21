@@ -3,63 +3,663 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PipeLine - Report Card</title>
+
+    <title>PipeLine - Daily Report</title>
+
     <style>
-        body { font-family: sans-serif; background: #eef2f3; margin: 0; padding: 15px; }
-        .card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        h3 { text-align: center; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 8px; margin-top: 0; }
-        .section { margin-bottom: 12px; }
-        .label { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; }
-        .value { font-size: 16px; color: #111; margin-top: 2px; white-space: pre-wrap; }
-        .photo-link-box { background: #f0f4f8; border: 1px solid #bce8f1; padding: 10px; border-radius: 6px; text-align: center; margin-top: 15px; }
-        .photo-link-box a { color: #0056b3; text-decoration: none; font-weight: bold; font-size: 14px; display: block; }
-        .btn-group { display: flex; gap: 8px; margin-top: 20px; }
-        a.btn { flex: 1; text-align: center; background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; }
-        a.primary { background: #28a745; }
-        a.secondary { background: #17a2b8; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-height: 105px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        .success {
+            background: #eaf9f0;
+            border: 1px solid #c9ecd7;
+            color: #167443;
+            border-radius: 15px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-weight: 750;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 31px;
+        }
+
+        .subtitle {
+            color: #7c8999;
+            margin: 7px 0 25px;
+        }
+
+        .report {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .report-top {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 24px 21px;
+        }
+
+        .report-brand {
+            font-size: 12px;
+            letter-spacing: 3px;
+            font-weight: 800;
+            opacity: .8;
+        }
+
+        .report-heading {
+            font-size: 25px;
+            font-weight: 850;
+            margin-top: 8px;
+        }
+
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 13px;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail {
+            background: #f7faff;
+            border-radius: 12px;
+            padding: 13px;
+        }
+
+        .detail-label {
+            color: #8491a1;
+            font-size: 11px;
+            font-weight: 750;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            margin-top: 4px;
+            font-size: 15px;
+            font-weight: 750;
+            word-break: break-word;
+        }
+
+        .text {
+            color: #34465d;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .photos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .photo {
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #e7edf3;
+        }
+
+        .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .actions {
+            padding: 20px;
+        }
+
+        .send-button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 850;
+            border: 0;
+            cursor: pointer;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+        }
+
+        .email-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(3, 20, 38, .65);
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-modal.open {
+            display: flex;
+        }
+
+        .email-dialog {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-radius: 22px;
+            padding: 25px 21px 21px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        }
+
+        .email-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 12px;
+            border-radius: 17px;
+            background: #e7f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .email-dialog h2 {
+            text-align: center;
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .email-dialog p {
+            text-align: center;
+            color: #7c8999;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 8px 0 20px;
+        }
+
+        .email-dialog label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: #263a54;
+            margin-bottom: 7px;
+        }
+
+        .email-dialog input {
+            width: 100%;
+            min-height: 52px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .email-dialog input:focus {
+            border-color: #087bc4;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .attachment-info {
+            margin-top: 12px;
+            padding: 11px;
+            background: #f5f9fc;
+            border-radius: 10px;
+            color: #607187;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .email-error {
+            margin-top: 8px;
+            color: #b42318;
+            background: #fff1f0;
+            border-radius: 9px;
+            padding: 9px;
+            font-size: 12px;
+        }
+
+        .email-actions {
+            display: flex;
+            gap: 9px;
+            margin-top: 20px;
+        }
+
+        .email-actions button {
+            flex: 1;
+            min-height: 50px;
+            border: 0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background: #edf1f5;
+            color: #536477;
+        }
+
+        .confirm-send {
+            background: #087bc4;
+            color: white;
+        }
+
+        .confirm-send:disabled {
+            opacity: .65;
+        }
+
+        .secondary {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #647489;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .no-job {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+
+            .details {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
-    <div class="card">
-        <h3>🚰 PipeLine Daily Report</h3>
-        
-        <div class="section">
-            <div class="label">Date</div>
-            <div class="value">{{ job.date }}</div>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}"
+             alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">Daily Report</div>
+        <div class="header-subtitle">Review before sending</div>
+    </div>
+
+</header>
+
+
+<main class="content">
+
+{% if job %}
+
+    <div class="success">
+        ✓ Daily entry saved successfully
+    </div>
+
+    <h1>Ready to Send</h1>
+
+    <p class="subtitle">
+        Review the report below before sending it to the boss.
+    </p>
+
+
+    <div class="report">
+
+        <div class="report-top">
+
+            <div class="report-brand">
+                PIPELINE
+            </div>
+
+            <div class="report-heading">
+                Daily Work Report
+            </div>
+
         </div>
 
-        <div class="section">
-            <div class="label">Hours Logged</div>
-            <div class="value">{{ job.hours }}</div>
-        </div>
 
         <div class="section">
-            <div class="label">Job Address</div>
-            <div class="value">{{ job.destination }}</div>
+
+            <div class="section-title">
+                Job Details
+            </div>
+
+            <div class="details">
+
+                {% if job.client_name %}
+                <div class="detail" style="grid-column: 1 / -1;">
+                    <div class="detail-label">Client</div>
+                    <div class="detail-value">
+                        {{ job.client_name }}
+
+                        {% if job.client_contact %}
+                        <div style="
+                            margin-top:5px;
+                            color:#6f7e90;
+                            font-size:13px;
+                            font-weight:600;
+                        ">
+                            {{ job.client_contact }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="detail">
+                    <div class="detail-label">Date</div>
+                    <div class="detail-value">
+                        {{ job.date or '—' }}
+                    </div>
+                </div>
+
+                <div class="detail">
+                    <div class="detail-label">Hours</div>
+                    <div class="detail-value">
+                        {{ job.hours or '—' }}
+                    </div>
+                </div>
+
+                <div class="detail" style="grid-column: 1 / -1;">
+                    <div class="detail-label">Job / Destination</div>
+                    <div class="detail-value">
+                        {{ job.destination or '—' }}
+                    </div>
+                </div>
+
+            </div>
+
         </div>
+
 
         <div class="section">
-            <div class="label">Work Summary</div>
-            <div class="value">{{ job.notes }}</div>
+
+            <div class="section-title">
+                Work Performed
+            </div>
+
+            <div class="text">
+                {{ job.notes or 'No notes provided.' }}
+            </div>
+
         </div>
+
 
         <div class="section">
-            <div class="label">Materials Used</div>
-            <div class="value">{{ job.materials }}</div>
+
+            <div class="section-title">
+                Materials Used
+            </div>
+
+            <div class="text">
+                {{ job.materials or 'No materials listed.' }}
+            </div>
+
         </div>
 
-        {% if job.photos and job_index is not none %}
-        <div class="photo-link-box">
-            <a href="/job-photos/{{ job_index }}">📷 View Job Photos ({{ job.photos|length }} attached)</a>
+
+        {% if job.photos %}
+
+        <div class="section">
+
+            <div class="section-title">
+                Job Photos · {{ job.photos|length }}
+            </div>
+
+            <div class="photos">
+
+                {% for photo in job.photos %}
+
+                <div class="photo">
+                    <img src="{{ photo }}" alt="Job photo">
+                </div>
+
+                {% endfor %}
+
+            </div>
+
         </div>
+
         {% endif %}
 
-        <div class="btn-group">
-            <a href="/" class="btn">New</a>
-            <a href="/history" class="btn secondary">History</a>
-            <a href="/weekly" class="btn" style="background:#ffc107; color:#333;">Weekly</a>
-            <a href="#" class="btn primary" onclick="window.print();">Save</a>
+
+        <div class="actions">
+
+            <button
+                class="send-button"
+                type="button"
+                onclick="openEmailModal()"
+            >
+                📧 Send Report to Boss
+            </button>
+
+            <div
+                id="emailModal"
+                class="email-modal"
+                onclick="if(event.target === this) closeEmailModal()"
+            >
+
+                <div class="email-dialog">
+
+                    <div class="email-icon">📧</div>
+
+                    <h2>Send Daily Report</h2>
+
+                    <p>
+                        Enter the email address that should receive this report.
+                    </p>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('send_daily_report', job_id=job.id) }}"
+                        onsubmit="return prepareSend(this)"
+                    >
+
+                        <label for="recipient_email">
+                            Recipient Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="recipient_email"
+                            name="recipient_email"
+                            placeholder="boss@example.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                        {% if request.args.get('error') == 'recipient' %}
+                            <div class="email-error">
+                                Please enter a valid email address.
+                            </div>
+                        {% endif %}
+
+                        <div class="attachment-info">
+                            📎 {{ job.photos|length }} JPEG photo{% if job.photos|length != 1 %}s{% endif %} will be attached
+                        </div>
+
+                        <div class="email-actions">
+
+                            <button
+                                type="button"
+                                class="cancel-button"
+                                onclick="closeEmailModal()"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="confirm-send"
+                                id="confirmSend"
+                            >
+                                Send Report
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <a
+                href="{{ url_for('index') }}"
+                class="secondary"
+            >
+                + Start Another Daily Entry
+            </a>
+
+            <a
+                href="{{ url_for('home') }}"
+                class="secondary"
+            >
+                Back to Dashboard
+            </a>
+
         </div>
+
     </div>
+
+{% else %}
+
+    <div class="no-job">
+
+        <div style="font-size:48px;">📋</div>
+
+        <h2>No report available</h2>
+
+        <p>
+            Create a daily entry first.
+        </p>
+
+        <a
+            href="{{ url_for('index') }}"
+            class="send-button"
+        >
+            New Daily Entry
+        </a>
+
+    </div>
+
+{% endif %}
+
+</main>
+
+
+
+
+
+<script>
+function openEmailModal() {
+    const modal = document.getElementById("emailModal");
+    modal.classList.add("open");
+
+    setTimeout(function() {
+        document.getElementById("recipient_email").focus();
+    }, 100);
+}
+
+function closeEmailModal() {
+    document.getElementById("emailModal").classList.remove("open");
+}
+
+function prepareSend(form) {
+    const button = document.getElementById("confirmSend");
+
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+    return true;
+}
+</script>
+
 </body>
 </html>

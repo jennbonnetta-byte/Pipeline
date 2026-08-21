@@ -14,8 +14,10 @@
         button { background: #28a745; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; }
         .cancel-btn { display: block; text-align: center; background: #6c757d; color: white; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; font-size: 15px; }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
     <div class="container">
         <h2>✏️ Edit Job Log</h2>
         <form method="POST" enctype="multipart/form-data">

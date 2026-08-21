@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - App Preferences</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .intro {
+            color: #7c8999;
+            line-height: 1.5;
+            margin: 7px 0 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 17px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 800;
+            color: #34465d;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #f9fbfd;
+            color: #172b45;
+            font: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .toggle:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .toggle:first-child {
+            padding-top: 0;
+        }
+
+        .toggle-text {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .toggle-help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: #cbd5df;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: .2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,.18);
+        }
+
+        .switch input:checked + .slider {
+            background: #087bc4;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .save-button {
+            width: 100%;
+            min-height: 58px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('settings') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img
+            src="{{ url_for('static', filename='pipeline-icon.png') }}"
+            alt="PipeLine"
+        >
+    </a>
+
+    <div>
+        <div class="header-title">App Preferences</div>
+        <div class="header-subtitle">Customize how PipeLine behaves</div>
+    </div>
+
+</header>
+
+<main class="content">
+
+    <h1>📱 App Preferences</h1>
+
+    <p class="intro">
+        Customize PipeLine's defaults and everyday behavior.
+    </p>
+
+    <form method="POST">
+
+        <div class="card">
+
+            <div class="section-title">Personal &amp; Business</div>
+
+            <div class="field">
+                <label for="business_name">Business / Company Name</label>
+
+                <input
+                    type="text"
+                    id="business_name"
+                    name="business_name"
+                    value="{{ settings.business_name }}"
+                    placeholder="Your Plumbing Company"
+                >
+            </div>
+
+            <div class="field">
+                <label for="user_display_name">Your Name</label>
+
+                <input
+                    type="text"
+                    id="user_display_name"
+                    name="user_display_name"
+                    value="{{ settings.user_display_name }}"
+                    placeholder="Your Name"
+                >
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Startup &amp; Display</div>
+
+            <div class="field">
+                <label for="default_landing_page">
+                    Default Start Page
+                </label>
+
+                <select
+                    id="default_landing_page"
+                    name="default_landing_page"
+                >
+                    <option value="home"
+                        {% if settings.default_landing_page == 'home' %}selected{% endif %}>
+                        Dashboard
+                    </option>
+
+                    <option value="reports"
+                        {% if settings.default_landing_page == 'reports' %}selected{% endif %}>
+                        Reports
+                    </option>
+
+                    <option value="history"
+                        {% if settings.default_landing_page == 'history' %}selected{% endif %}>
+                        Job History
+                    </option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="date_format">Date Format</label>
+
+                <select id="date_format" name="date_format">
+
+                    <option value="YYYY-MM-DD"
+                        {% if settings.date_format == 'YYYY-MM-DD' %}selected{% endif %}>
+                        2026-08-20
+                    </option>
+
+                    <option value="MMM D, YYYY"
+                        {% if settings.date_format == 'MMM D, YYYY' %}selected{% endif %}>
+                        Aug 20, 2026
+                    </option>
+
+                    <option value="D MMM YYYY"
+                        {% if settings.date_format == 'D MMM YYYY' %}selected{% endif %}>
+                        20 Aug 2026
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="time_format">Time Format</label>
+
+                <select id="time_format" name="time_format">
+
+                    <option value="12"
+                        {% if settings.time_format == '12' %}selected{% endif %}>
+                        12-hour — 2:30 PM
+                    </option>
+
+                    <option value="24"
+                        {% if settings.time_format == '24' %}selected{% endif %}>
+                        24-hour — 14:30
+                    </option>
+
+                </select>
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Job Defaults</div>
+
+            <div class="field">
+                <label for="default_job_hours">
+                    Default Job Hours
+                </label>
+
+                <input
+                    type="number"
+                    id="default_job_hours"
+                    name="default_job_hours"
+                    min="0"
+                    step="0.25"
+                    inputmode="decimal"
+                    value="{{ settings.default_job_hours }}"
+                    placeholder="0"
+                >
+
+                <div class="help">
+                    Automatically pre-fill this number when starting a new job.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="default_job_status">
+                    Default Job Status
+                </label>
+
+                <select
+                    id="default_job_status"
+                    name="default_job_status"
+                >
+                    <option value="completed"
+                        {% if settings.default_job_status == 'completed' %}selected{% endif %}>
+                        Completed
+                    </option>
+
+                    <option value="in_progress"
+                        {% if settings.default_job_status == 'in_progress' %}selected{% endif %}>
+                        In Progress
+                    </option>
+
+                    <option value="draft"
+                        {% if settings.default_job_status == 'draft' %}selected{% endif %}>
+                        Draft
+                    </option>
+                </select>
+            </div>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <div class="section-title">Dashboard</div>
+
+            <div class="field">
+                <label for="dashboard_recent_jobs">
+                    Recent Jobs Shown
+                </label>
+
+                <select
+                    id="dashboard_recent_jobs"
+                    name="dashboard_recent_jobs"
+                >
+                    <option value="3"
+                        {% if settings.dashboard_recent_jobs == 3 %}selected{% endif %}>
+                        3 jobs
+                    </option>
+
+                    <option value="5"
+                        {% if settings.dashboard_recent_jobs == 5 %}selected{% endif %}>
+                        5 jobs
+                    </option>
+
+                    <option value="10"
+                        {% if settings.dashboard_recent_jobs == 10 %}selected{% endif %}>
+                        10 jobs
+                    </option>
+                </select>
+
+                <div class="help">
+                    Controls how many recent jobs appear on your dashboard.
+                </div>
+            </div>
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">
+                        Remember Last Job Values
+                    </div>
+
+                    <div class="toggle-help">
+                        Reuse your previous job-entry values when starting another entry.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="remember_last_job_values"
+                        {% if settings.remember_last_job_values %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">
+                        Auto-save Drafts
+                    </div>
+
+                    <div class="toggle-help">
+                        Save unfinished entries so you can come back to them later.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="autosave_drafts"
+                        {% if settings.autosave_drafts %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+<div class="card">
+
+            <div class="section-title">Confirmations</div>
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">
+                        Confirm Before Deleting Jobs
+                    </div>
+
+                    <div class="toggle-help">
+                        Ask before permanently deleting a job.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="confirm_delete_jobs"
+                        {% if settings.confirm_delete_jobs %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">
+                        Confirm Before Deleting Photos
+                    </div>
+
+                    <div class="toggle-help">
+                        Ask before permanently deleting job photos.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="confirm_delete_photos"
+                        {% if settings.confirm_delete_photos %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="save-button">
+            Save App Preferences
+        </button>
+
+    </form>
+
+</main>
+
+</body>
+</html>

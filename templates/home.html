@@ -2,74 +2,787 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PipeLine - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>PipeLine</title>
+
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 450px; margin: auto; padding-top: 10px; }
-        .header { text-align: center; margin-bottom: 25px; }
-        .header h1 { color: #0056b3; margin: 0; font-size: 26px; }
-        .header p { color: #666; font-size: 14px; margin-top: 5px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .menu-card { background: white; padding: 18px 20px; border-radius: 10px; text-decoration: none; color: #333; font-weight: bold; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s ease, background 0.1s ease; border-left: 5px solid #0056b3; }
-        .menu-card:active { transform: scale(0.98); }
-        .menu-card.secondary { border-left-color: #17a2b8; }
-        .menu-card.warning { border-left-color: #ffc107; }
-        .menu-card.dark { border-left-color: #6c757d; }
-        .menu-card.logout { border-left-color: #dc3545; background: #fff5f5; color: #dc3545; margin-top: 10px; }
-        .icon { font-size: 24px; margin-right: 15px; }
-        .text-group div:last-child { font-size: 12px; font-weight: normal; color: #666; margin-top: 2px; }
-        .menu-card.logout .text-group div:last-child { color: #c82333; }
-    </style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f3f7fc;
+            color: #10213b;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .topbar {
+            height: 122px;
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 28px;
+            color: white;
+            box-shadow: 0 5px 18px rgba(0, 30, 60, 0.20);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 68px;
+            height: 68px;
+            border-radius: 16px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 5px 14px rgba(0,0,0,.20);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            display: block;
+        }
+
+        .brand-name {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 6px;
+        }
+
+        .menu-button {
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 39px;
+            line-height: 1;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        /* =========================
+           SIDE MENU
+        ========================= */
+
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 20;
+            display: none;
+        }
+
+        .menu-overlay.open {
+            display: block;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -310px;
+            width: 290px;
+            height: 100%;
+            background: white;
+            z-index: 30;
+            box-shadow: -8px 0 30px rgba(0,0,0,.25);
+            transition: right .25s ease;
+            padding: 25px;
+        }
+
+        .side-menu.open {
+            right: 0;
+        }
+
+        .menu-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 25px;
+        }
+
+        .close-menu {
+            border: 0;
+            background: none;
+            font-size: 30px;
+            color: #777;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 17px 10px;
+            border-bottom: 1px solid #edf0f4;
+            font-weight: 650;
+            color: #162943;
+        }
+
+        .menu-icon {
+            width: 42px;
+            text-align: center;
+            font-size: 25px;
+        }
+
+        .menu-logout {
+            margin-top: 25px;
+            color: #d52f45;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 42px 30px 60px;
+        }
+
+        .welcome h1 {
+            margin: 0;
+            font-size: 42px;
+            line-height: 1.1;
+            letter-spacing: -1.2px;
+        }
+
+        .welcome p {
+            margin: 10px 0 30px;
+            font-size: 21px;
+            color: #77869a;
+        }
+
+        /* =========================
+           DASHBOARD GRID
+        ========================= */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 24px;
+            min-height: 220px;
+            padding: 28px 18px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid #e5ebf2;
+            box-shadow: 0 8px 24px rgba(22, 54, 86, .08);
+            transition: transform .15s ease, box-shadow .15s ease;
+            cursor: pointer;
+        }
+
+        .dashboard-card:active {
+            transform: scale(.97);
+            box-shadow: 0 4px 12px rgba(22, 54, 86, .10);
+        }
+
+        .card-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            background: #edf7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin-bottom: 18px;
+        }
+
+        .card-title {
+            font-size: 21px;
+            font-weight: 800;
+            margin-bottom: 7px;
+        }
+
+        .card-description {
+            color: #8995a5;
+            font-size: 16px;
+            line-height: 1.25;
+        }
+
+        .coming-soon {
+            opacity: .72;
+            cursor: default;
+        }
+
+        /* =========================
+           RECENT ACTIVITY
+        ========================= */
+
+        .activity-section {
+            margin-top: 45px;
+        }
+
+        .activity-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .activity-heading h2 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        .view-all {
+            color: #087bc4;
+            font-weight: 750;
+            font-size: 16px;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: 22px;
+            border: 1px solid #e5ebf2;
+            box-shadow: 0 7px 22px rgba(22, 54, 86, .07);
+            overflow: hidden;
+        }
+
+        .activity-row {
+            display: flex;
+            align-items: center;
+            padding: 18px 18px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .activity-row:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0787d1;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 6px #eaf6ff;
+        }
+
+        .activity-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-title {
+            font-weight: 750;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .activity-meta {
+            color: #8b98a8;
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        .activity-arrow {
+            color: #9aa6b4;
+            font-size: 26px;
+        }
+
+        .empty-state {
+            padding: 35px 20px;
+            text-align: center;
+            color: #8b98a8;
+        }
+
+        /* =========================
+           DESKTOP
+        ========================= */
+
+        @media (min-width: 700px) {
+            .topbar {
+                height: 105px;
+            }
+
+            .content {
+                padding-top: 55px;
+            }
+
+            .dashboard-card {
+                min-height: 240px;
+            }
+        }
+
+        /* =========================
+           SMALL PHONES
+        ========================= */
+
+        @media (max-width: 430px) {
+            .topbar {
+                height: 105px;
+                padding: 18px 20px;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .logo-p {
+                font-size: 42px;
+            }
+
+            .brand-name {
+                font-size: 22px;
+                letter-spacing: 5px;
+            }
+
+            .menu-button {
+                font-size: 35px;
+            }
+
+            .content {
+                padding: 35px 20px 50px;
+            }
+
+            .welcome h1 {
+                font-size: 35px;
+            }
+
+            .welcome p {
+                font-size: 19px;
+                margin-bottom: 25px;
+            }
+
+            .dashboard-grid {
+                gap: 15px;
+            }
+
+            .dashboard-card {
+                min-height: 190px;
+                padding: 22px 10px;
+                border-radius: 22px;
+            }
+
+            .card-icon {
+                width: 66px;
+                height: 66px;
+                font-size: 35px;
+                border-radius: 19px;
+                margin-bottom: 14px;
+            }
+
+            .card-title {
+                font-size: 18px;
+            }
+
+            .card-description {
+                font-size: 14px;
+            }
+        }
+
+        /* ===== ACTIVE APPEARANCE PREFERENCES ===== */
+
+        body {
+            background: var(--page-bg) !important;
+            color: var(--text) !important;
+            font-size: var(--app-font-size) !important;
+        }
+
+        .dashboard-card {
+            background: var(--surface) !important;
+            color: var(--text) !important;
+            border-color: var(--border) !important;
+            border-radius: var(--card-radius) !important;
+            padding: var(--card-padding) !important;
+        }
+
+        .dashboard-card .card-title {
+            color: var(--text) !important;
+        }
+
+        .dashboard-card .card-description {
+            color: var(--muted) !important;
+        }
+
+        .menu-item {
+            color: var(--text) !important;
+        }
+
+        /* Theme */
+        .theme-dark {
+            --page-bg: #101820 !important;
+            --surface: #18232e !important;
+            --text: #edf4fa !important;
+            --muted: #a9b7c5 !important;
+            --border: #2b3a47 !important;
+        }
+
+        .theme-light {
+            --page-bg: #f3f7fc !important;
+            --surface: #ffffff !important;
+            --text: #10213b !important;
+            --muted: #7c8999 !important;
+            --border: #e3eaf2 !important;
+        }
+
+        /* Accent colours */
+        .accent-blue {
+            --accent: #087bc4 !important;
+            --accent-dark: #075fa4 !important;
+        }
+
+        .accent-teal {
+            --accent: #008f8c !important;
+            --accent-dark: #006f6c !important;
+        }
+
+        .accent-green {
+            --accent: #2f9e44 !important;
+            --accent-dark: #237a35 !important;
+        }
+
+        .accent-purple {
+            --accent: #7950f2 !important;
+            --accent-dark: #5f3dc4 !important;
+        }
+
+        .accent-orange {
+            --accent: #e67700 !important;
+            --accent-dark: #c45f00 !important;
+        }
+
+        .accent-red {
+            --accent: #d6333f !important;
+            --accent-dark: #ad2731 !important;
+        }
+
+        /* Density */
+        .density-compact {
+            --card-padding: 13px;
+            --grid-gap: 10px;
+        }
+
+        .density-comfortable {
+            --card-padding: 20px;
+            --grid-gap: 16px;
+        }
+
+        .density-spacious {
+            --card-padding: 26px;
+            --grid-gap: 24px;
+        }
+
+        .dashboard-grid {
+            gap: var(--grid-gap) !important;
+        }
+
+        /* Card style */
+        .cards-standard {
+            --card-radius: 10px;
+        }
+
+        .cards-rounded {
+            --card-radius: 20px;
+        }
+
+        .cards-minimal {
+            --card-radius: 8px;
+        }
+
+        .cards-minimal .dashboard-card {
+            box-shadow: none !important;
+        }
+
+        /* Font size */
+        .font-small {
+            --app-font-size: 14px;
+        }
+
+        .font-default {
+            --app-font-size: 16px;
+        }
+
+        .font-large {
+            --app-font-size: 18px;
+        }
+
+        /* Dashboard layout */
+        .dashboard-compact .dashboard-card {
+            min-height: auto !important;
+        }
+
+        .dashboard-expanded .dashboard-card {
+            min-height: 150px !important;
+        }
+
+        /* Animation setting */
+        .no-animations *,
+        .no-animations *::before,
+        .no-animations *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        /* Make accent colour visible on dashboard cards */
+        .dashboard-card:hover {
+            border-color: var(--accent) !important;
+        }
+
+        .card-icon {
+            color: var(--accent) !important;
+        }
+
+</style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🚰 PipeLine</h1>
-            <p>Plumber Job & Hours Management</p>
-        </div>
 
-        <div class="menu-grid">
-            <a href="/entry" class="menu-card">
-                <span class="icon">➕</span>
-                <div class="text-group">
-                    <div>New Daily Entry</div>
-                    <div>Log hours, materials, and photos</div>
-                </div>
-            </a>
+<body
+ class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
 
-            <a href="/history" class="menu-card secondary">
-                <span class="icon">📁</span>
-                <div class="text-group">
-                    <div>Job History</div>
-                    <div>View, edit, or delete past logs</div>
-                </div>
-            </a>
-
-            <a href="/weekly" class="menu-card warning">
-                <span class="icon">📊</span>
-                <div class="text-group">
-                    <div>Weekly Summary</div>
-                    <div>Total hours overview</div>
-                </div>
-            </a>
-
-            <a href="/gallery" class="menu-card dark">
-                <span class="icon">📷</span>
-                <div class="text-group">
-                    <div>Work Photo Gallery</div>
-                    <div>Browse all attached job pictures</div>
-                </div>
-            </a>
-
-            <a href="/logout" class="menu-card logout">
-                <span class="icon">🚪</span>
-                <div class="text-group">
-                    <div>Log Out</div>
-                    <div>Sign out of your account</div>
-                </div>
-            </a>
-        </div>
+<header class="topbar">
+    <div class="brand">
+        <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}" alt="PipeLine">
+    </a>
+        <div class="brand-name">PIPELINE</div>
     </div>
+
+    <button class="menu-button" onclick="openMenu()" aria-label="Open menu">
+        ☰
+    </button>
+</header>
+
+
+<!-- MENU OVERLAY -->
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+<!-- SIDE MENU -->
+<nav class="side-menu" id="sideMenu">
+
+    <div class="menu-title">
+        <span>PipeLine</span>
+        <button class="close-menu" onclick="closeMenu()">×</button>
+    </div>
+
+    <a href="{{ url_for('home') }}" class="menu-item">
+        <span class="menu-icon">🏠</span>
+        Dashboard
+    </a>
+
+    <a href="{{ url_for('index') }}" class="menu-item">
+        <span class="menu-icon">➕</span>
+        New Daily Entry
+    </a>
+
+    <a href="{{ url_for('history') }}" class="menu-item">
+        <span class="menu-icon">📋</span>
+        Job History
+    </a>
+
+    <a href="{{ url_for('gallery') }}" class="menu-item">
+        <span class="menu-icon">📷</span>
+        Photos
+    </a>
+
+    <a href="{{ url_for('weekly') }}" class="menu-item">
+        <span class="menu-icon">📊</span>
+        Reports
+    </a>
+
+    <a href="{{ url_for('sent_reports') }}" class="menu-item">
+        <span class="menu-icon">📨</span>
+        Sent Reports
+    </a>
+
+    <a href="{{ url_for('clients') }}" class="menu-item">
+        <span class="menu-icon">👥</span>
+        Clients
+    </a>
+
+    <a href="{{ url_for('settings') }}" class="menu-item">
+        <span class="menu-icon">⚙️</span>
+        Settings
+    </a>
+
+    <a href="{{ url_for('logout') }}" class="menu-item menu-logout">
+        <span class="menu-icon">🚪</span>
+        Log Out
+    </a>
+
+</nav>
+
+
+<main class="content">
+
+    <section class="welcome">
+        <h1>Welcome Back!</h1>
+        <p>Keep your jobs flowing.</p>
+    </section>
+
+
+    <section class="dashboard-grid">
+
+        <a href="{{ url_for('index') }}" class="dashboard-card">
+            <div class="card-icon">＋</div>
+            <div class="card-title">New Daily Entry</div>
+            <div class="card-description">
+                Log hours, materials &amp; photos
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('history') }}" class="dashboard-card">
+            <div class="card-icon">📋</div>
+            <div class="card-title">Job History</div>
+            <div class="card-description">
+                View and manage past jobs
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('gallery') }}" class="dashboard-card">
+            <div class="card-icon">📷</div>
+            <div class="card-title">Photos</div>
+            <div class="card-description">
+                Browse job pictures
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('weekly') }}" class="dashboard-card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Reports</div>
+            <div class="card-description">
+                Hours &amp; job summaries
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('sent_reports') }}" class="dashboard-card">
+            <div class="card-icon">📨</div>
+            <div class="card-title">Sent Reports</div>
+            <div class="card-description">
+                View reports sent to others
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('clients') }}" class="dashboard-card">
+            <div class="card-icon">👥</div>
+            <div class="card-title">Clients</div>
+            <div class="card-description">
+                Manage contacts &amp; addresses
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('settings') }}" class="dashboard-card">
+            <div class="card-icon">⚙️</div>
+            <div class="card-title">Settings</div>
+            <div class="card-description">
+                Pay &amp; payroll settings
+            </div>
+        </a>
+
+    </section>
+
+
+    <section class="activity-section">
+
+        <div class="activity-heading">
+            <h2>Recent Activity</h2>
+
+            <a href="{{ url_for('history') }}" class="view-all">
+                View All
+            </a>
+        </div>
+
+
+        <div class="activity-card">
+
+            {% if recent_jobs is defined and recent_jobs %}
+
+                {% for job in recent_jobs %}
+
+                <a href="{{ url_for('edit_job', job_id=job.id) }}"
+                   class="activity-row">
+
+                    <div class="activity-dot"></div>
+
+                    <div class="activity-info">
+
+                        <div class="activity-title">
+                            Job #{{ job.id }}{% if job.destination %} · {{ job.destination }}{% endif %}
+                        </div>
+
+                        <div class="activity-meta">
+                            {{ job.date or 'No date' }}
+                            {% if job.hours %} · {{ job.hours }} hours{% endif %}
+                        </div>
+
+                    </div>
+
+                    <div class="activity-arrow">›</div>
+
+                </a>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+                    No recent jobs yet.<br>
+                    Create your first daily entry.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+    function openMenu() {
+        document.getElementById("sideMenu").classList.add("open");
+        document.getElementById("menuOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeMenu() {
+        document.getElementById("sideMenu").classList.remove("open");
+        document.getElementById("menuOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+    }
+</script>
+
 </body>
 </html>

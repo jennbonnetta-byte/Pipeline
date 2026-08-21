@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Clients</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 700px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 31px;
+        }
+
+        .subtitle {
+            color: #7c8999;
+            margin: 6px 0 0;
+        }
+
+        .add-button {
+            background: #087bc4;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .client-card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .client-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .client-name {
+            font-size: 21px;
+            font-weight: 850;
+        }
+
+        .contact {
+            color: #6f7e91;
+            margin-top: 4px;
+        }
+
+        .edit {
+            color: #087bc4;
+            font-weight: 750;
+            text-decoration: none;
+        }
+
+        .details {
+            margin-top: 16px;
+            display: grid;
+            gap: 9px;
+        }
+
+        .detail {
+            background: #f7faff;
+            border-radius: 11px;
+            padding: 10px 12px;
+            color: #34465d;
+            word-break: break-word;
+        }
+
+        .empty {
+            background: white;
+            border-radius: 20px;
+            padding: 45px 20px;
+            text-align: center;
+            color: #7c8999;
+            border: 1px solid #e3eaf2;
+        }
+
+        .empty-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .page-heading {
+                align-items: flex-start;
+            }
+
+            .add-button {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}" alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">Clients</div>
+        <div class="header-subtitle">Your customer address book</div>
+    </div>
+</header>
+
+<main class="content">
+
+    <div class="page-heading">
+        <div>
+            <h1>Clients</h1>
+            <p class="subtitle">Contacts, addresses &amp; job information</p>
+        </div>
+
+        <a href="{{ url_for('new_client') }}" class="add-button">
+            + Add Client
+        </a>
+    </div>
+
+    {% if clients %}
+
+        {% for client in clients %}
+
+        <div class="client-card">
+
+            <div class="client-top">
+                <div>
+                    <div class="client-name">{{ client.name }}</div>
+
+                    {% if client.contact_person %}
+                    <div class="contact">
+                        {{ client.contact_person }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('edit_client', client_id=client.id) }}"
+                   class="edit">
+                    Edit
+                </a>
+            </div>
+
+            <div class="details">
+
+                {% if client.phone %}
+                <div class="detail">
+                    📞 <a href="tel:{{ client.phone }}">{{ client.phone }}</a>
+                </div>
+                {% endif %}
+
+                {% if client.email %}
+                <div class="detail">
+                    ✉️ <a href="mailto:{{ client.email }}">{{ client.email }}</a>
+                </div>
+                {% endif %}
+
+                {% if client.address %}
+                <div class="detail">
+                    📍 {{ client.address }}
+                    {% if client.city %}, {{ client.city }}{% endif %}
+                    {% if client.province %}, {{ client.province }}{% endif %}
+                    {% if client.postal_code %} {{ client.postal_code }}{% endif %}
+                </div>
+                {% endif %}
+
+                {% if client.notes %}
+                <div class="detail">
+                    📝 {{ client.notes }}
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+            <div class="empty-icon">👥</div>
+            <h2>No clients yet</h2>
+            <p>Add your first client to start building your address book.</p>
+
+            <a href="{{ url_for('new_client') }}" class="add-button">
+                + Add First Client
+            </a>
+        </div>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>

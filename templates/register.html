@@ -15,8 +15,10 @@
         .error { color: #d9534f; background: #fdf7f7; border: 1px solid #f5c6cb; padding: 10px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 15px; }
         .login-link { display: block; text-align: center; margin-top: 20px; color: #0056b3; text-decoration: none; font-weight: bold; font-size: 14px; }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
     <div class="container">
         <h2>🚰 PipeLine</h2>
         <div class="subtitle">Create New Account</div>

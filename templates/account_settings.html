@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Security & Account</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .intro {
+            color: #7c8999;
+            line-height: 1.5;
+            margin: 7px 0 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 17px;
+        }
+
+        .account-row {
+            padding: 13px 0;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .account-row:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .account-label {
+            color: #7c8999;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .account-value {
+            font-size: 16px;
+            font-weight: 750;
+            word-break: break-word;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 800;
+            color: #34465d;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #f9fbfd;
+            color: #172b45;
+            font: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            min-height: 52px;
+            border: 0;
+            border-radius: 13px;
+            padding: 12px;
+            font: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+        }
+
+        .secondary {
+            background: #edf1f5;
+            color: #34465d;
+        }
+
+        .danger-card {
+            border-color: #f0caca;
+        }
+
+        .danger-title {
+            color: #b42318;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 10px;
+        }
+
+        .danger-text {
+            color: #7c5151;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .danger-button {
+            background: #fff1f0;
+            color: #b42318;
+            border: 1px solid #efc4c0;
+        }
+
+        .version {
+            text-align: center;
+            color: #9aa7b5;
+            font-size: 11px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('settings') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img
+            src="{{ url_for('static', filename='pipeline-icon.png') }}"
+            alt="PipeLine"
+        >
+    </a>
+
+    <div>
+        <div class="header-title">Security &amp; Account</div>
+        <div class="header-subtitle">Manage your account and data</div>
+    </div>
+
+</header>
+
+<main class="content">
+
+    <h1>🔐 Security &amp; Account</h1>
+
+    <p class="intro">
+        Manage your PipeLine account, password, and data.
+    </p>
+
+    {% if request.args.get('password_changed') == '1' %}
+        <div style="
+            background:#eaf9f0;
+            border:1px solid #c9ecd7;
+            color:#167443;
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:16px;
+            font-size:13px;
+            line-height:1.5;
+        ">
+            ✅ Your password was changed successfully.
+        </div>
+    {% elif request.args.get('password_error') == 'current' %}
+        <div style="
+            background:#fff1f0;
+            border:1px solid #efc4c0;
+            color:#b42318;
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:16px;
+            font-size:13px;
+        ">
+            ❌ Your current password is incorrect.
+        </div>
+    {% elif request.args.get('password_error') == 'match' %}
+        <div style="
+            background:#fff8e8;
+            border:1px solid #f0dfad;
+            color:#725a16;
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:16px;
+            font-size:13px;
+        ">
+            ⚠️ The new passwords do not match.
+        </div>
+    {% elif request.args.get('password_error') == 'length' %}
+        <div style="
+            background:#fff8e8;
+            border:1px solid #f0dfad;
+            color:#725a16;
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:16px;
+            font-size:13px;
+        ">
+            ⚠️ Your new password must be at least 8 characters.
+        </div>
+    {% elif request.args.get('password_error') == 'account' %}
+        <div style="
+            background:#fff1f0;
+            border:1px solid #efc4c0;
+            color:#b42318;
+            border-radius:13px;
+            padding:13px;
+            margin-bottom:16px;
+            font-size:13px;
+        ">
+            ❌ Unable to find your account.
+        </div>
+    {% endif %}
+
+
+    <div class="card">
+
+        <div class="section-title">Account Information</div>
+
+        <div class="account-row">
+            <div class="account-label">Username</div>
+            <div class="account-value">{{ username }}</div>
+        </div>
+
+        <div class="account-row">
+            <div class="account-label">Account ID</div>
+            <div class="account-value">{{ user_id }}</div>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="section-title">Change Password</div>
+
+        <form method="POST" action="{{ url_for('change_password') }}">
+
+            <div class="field">
+                <label for="current_password">
+                    Current Password
+                </label>
+
+                <input
+                    type="password"
+                    id="current_password"
+                    name="current_password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="new_password">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="new_password"
+                    name="new_password"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+
+                <div class="help">
+                    Use at least 8 characters.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="confirm_password">
+                    Confirm New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="button primary">
+                Change Password
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="section-title">Your Data</div>
+
+        <div class="help" style="margin-bottom: 14px;">
+            Export your PipeLine information for backup or safekeeping.
+        </div>
+
+        <a
+            href="{{ url_for('export_data') }}"
+            class="button secondary"
+        >
+            💾 Export My Data
+        </a>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="section-title">Session</div>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="button secondary"
+        >
+            🚪 Log Out
+        </a>
+
+    </div>
+
+
+    <div class="card danger-card">
+
+        <div class="danger-title">
+            ⚠️ Danger Zone
+        </div>
+
+        <div class="danger-text">
+            Account deletion is permanent. This option will not be
+            enabled until we add a deliberate confirmation process.
+        </div>
+
+        <button
+            type="button"
+            class="button danger-button"
+            disabled
+        >
+            Delete Account
+        </button>
+
+    </div>
+
+
+    <div class="version">
+        PipeLine • Account &amp; Security
+    </div>
+
+</main>
+
+</body>
+</html>

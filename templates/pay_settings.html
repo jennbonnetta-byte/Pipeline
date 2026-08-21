@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Pay Settings</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .intro {
+            color: #7c8999;
+            margin: 7px 0 24px;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 16px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: #34465d;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #f9fbfd;
+            color: #172b45;
+            font: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .deduction {
+            border-top: 1px solid #edf0f4;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+
+        .deduction:first-of-type {
+            border-top: 0;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .deduction-name {
+            font-weight: 800;
+            margin-bottom: 9px;
+        }
+
+        .deduction-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .save-button {
+            width: 100%;
+            min-height: 58px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+        }
+
+        .notice {
+            background: #fff8e8;
+            border: 1px solid #f0dfad;
+            color: #725a16;
+            border-radius: 13px;
+            padding: 13px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 500px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+
+            .card {
+                padding: 17px;
+            }
+
+            .deduction-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}" alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">Pay Settings</div>
+        <div class="header-subtitle">Configure your pay calculator</div>
+    </div>
+</header>
+
+<main class="content">
+
+    <h1>Pay &amp; Payroll</h1>
+
+    <p class="intro">
+        Set your normal pay rules and deductions. These settings are used
+        to estimate your pay for selected report periods.
+    </p>
+
+    <div class="notice">
+        <strong>Estimate only:</strong> PipeLine's pay calculator is for
+        personal tracking and planning. Actual Canadian payroll deductions
+        can vary based on your tax situation and annual limits.
+    </div>
+
+    <form method="POST">
+
+        <div class="card">
+
+            <div class="section-title">Earnings</div>
+
+            <div class="field">
+                <label for="regular_rate">Regular Hourly Rate</label>
+
+                <input
+                    type="number"
+                    id="regular_rate"
+                    name="regular_rate"
+                    min="0"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="{{ settings.regular_rate }}"
+                    placeholder="35.00"
+                >
+
+                <div class="help">
+                    Your normal hourly wage.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="overtime_threshold">
+                    Overtime Starts After
+                </label>
+
+                <input
+                    type="number"
+                    id="overtime_threshold"
+                    name="overtime_threshold"
+                    min="0"
+                    step="0.25"
+                    inputmode="decimal"
+                    value="{{ settings.overtime_threshold }}"
+                    placeholder="44"
+                >
+
+                <div class="help">
+                    Hours in the selected pay period before overtime begins.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="overtime_multiplier">
+                    Overtime Multiplier
+                </label>
+
+                <input
+                    type="number"
+                    id="overtime_multiplier"
+                    name="overtime_multiplier"
+                    min="1"
+                    step="0.05"
+                    inputmode="decimal"
+                    value="{{ settings.overtime_multiplier }}"
+                    placeholder="1.5"
+                >
+            </div>
+
+            <div class="field">
+                <label for="doubletime_threshold">
+                    Double-Time Starts After
+                </label>
+
+                <input
+                    type="number"
+                    id="doubletime_threshold"
+                    name="doubletime_threshold"
+                    min="0"
+                    step="0.25"
+                    inputmode="decimal"
+                    value="{{ settings.doubletime_threshold }}"
+                    placeholder="0"
+                >
+
+                <div class="help">
+                    Enter 0 to disable double-time.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="doubletime_multiplier">
+                    Double-Time Multiplier
+                </label>
+
+                <input
+                    type="number"
+                    id="doubletime_multiplier"
+                    name="doubletime_multiplier"
+                    min="1"
+                    step="0.05"
+                    inputmode="decimal"
+                    value="{{ settings.doubletime_multiplier }}"
+                    placeholder="2"
+                >
+            </div>
+
+            <div class="field">
+                <label for="biweekly_start_date">
+                    Biweekly Pay Period Starts
+                </label>
+
+                <input
+                    type="date"
+                    id="biweekly_start_date"
+                    name="biweekly_start_date"
+                    value="{{ settings.biweekly_start_date }}"
+                >
+
+                <div class="help">
+                    Choose the first day of a known biweekly pay period.
+                    PipeLine will use this date to determine your current
+                    14-day pay period.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="vacation_percent">
+                    Vacation Pay %
+                </label>
+
+                <input
+                    type="number"
+                    id="vacation_percent"
+                    name="vacation_percent"
+                    min="0"
+                    step="0.1"
+                    inputmode="decimal"
+                    value="{{ settings.vacation_percent }}"
+                    placeholder="4"
+                >
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Deductions</div>
+
+            <div class="help" style="margin-bottom:18px;">
+                Choose whether each deduction is a percentage of gross pay
+                or a fixed dollar amount per pay period.
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">Income Tax</div>
+
+                <div class="deduction-row">
+
+                    <select name="income_tax_type">
+                        <option value="percent"
+                            {% if settings.income_tax_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+
+                        <option value="fixed"
+                            {% if settings.income_tax_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="income_tax_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.income_tax_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">CPP</div>
+
+                <div class="deduction-row">
+
+                    <select name="cpp_type">
+                        <option value="percent"
+                            {% if settings.cpp_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+
+                        <option value="fixed"
+                            {% if settings.cpp_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="cpp_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.cpp_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">EI</div>
+
+                <div class="deduction-row">
+
+                    <select name="ei_type">
+                        <option value="percent"
+                            {% if settings.ei_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+
+                        <option value="fixed"
+                            {% if settings.ei_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="ei_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.ei_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">Benefits</div>
+
+                <div class="deduction-row">
+
+                    <select name="benefits_type">
+                        <option value="fixed"
+                            {% if settings.benefits_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+
+                        <option value="percent"
+                            {% if settings.benefits_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="benefits_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.benefits_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">Pension</div>
+
+                <div class="deduction-row">
+
+                    <select name="pension_type">
+                        <option value="percent"
+                            {% if settings.pension_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+
+                        <option value="fixed"
+                            {% if settings.pension_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="pension_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.pension_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="deduction">
+
+                <div class="deduction-name">Other Deductions</div>
+
+                <div class="deduction-row">
+
+                    <select name="other_deductions_type">
+                        <option value="fixed"
+                            {% if settings.other_deductions_type == 'fixed' %}selected{% endif %}>
+                            Fixed Amount
+                        </option>
+
+                        <option value="percent"
+                            {% if settings.other_deductions_type == 'percent' %}selected{% endif %}>
+                            Percentage
+                        </option>
+                    </select>
+
+                    <input
+                        type="number"
+                        name="other_deductions_value"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        value="{{ settings.other_deductions_value }}"
+                        placeholder="0"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="save-button">
+            Save Pay Settings
+        </button>
+
+    </form>
+
+</main>
+
+</body>
+</html>

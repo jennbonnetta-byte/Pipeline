@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - {{ 'Edit Client' if client else 'Add Client' }}</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .subtitle {
+            color: #7c8999;
+            margin: 7px 0 25px;
+        }
+
+        .field {
+            margin-bottom: 17px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #34465d;
+        }
+
+        .required {
+            color: #087bc4;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #d9e2ec;
+            background: #f9fbfd;
+            border-radius: 12px;
+            padding: 13px 14px;
+            font: inherit;
+            font-size: 16px;
+            color: #10213b;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(8,123,196,.10);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .address-heading {
+            margin: 25px 0 15px;
+            padding-top: 20px;
+            border-top: 1px solid #edf0f4;
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .button {
+            flex: 1;
+            border: 0;
+            border-radius: 13px;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 850;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .save {
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+        }
+
+        .cancel {
+            background: #edf1f5;
+            color: #536477;
+        }
+
+        .danger {
+            margin-top: 18px;
+            width: 100%;
+            background: #fff1f0;
+            color: #b42318;
+            border: 1px solid #f3c7c3;
+        }
+
+        @media (max-width: 500px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('clients') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}"
+             alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">
+            {{ 'Edit Client' if client else 'Add Client' }}
+        </div>
+
+        <div class="header-subtitle">
+            Client address book
+        </div>
+    </div>
+
+</header>
+
+<main class="content">
+
+    <div class="card">
+
+        <h1>
+            {{ 'Edit Client' if client else 'New Client' }}
+        </h1>
+
+        <p class="subtitle">
+            Save contact information for quick access when logging jobs.
+        </p>
+
+        <form method="POST">
+
+            <div class="field">
+                <label for="name">
+                    Client / Company Name <span class="required">*</span>
+                </label>
+
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    autocomplete="organization"
+                    value="{{ client.name if client else '' }}"
+                    placeholder="Example: ABC Plumbing"
+                >
+            </div>
+
+            <div class="field">
+                <label for="contact_person">
+                    Contact Person
+                </label>
+
+                <input
+                    id="contact_person"
+                    name="contact_person"
+                    type="text"
+                    autocomplete="name"
+                    value="{{ client.contact_person if client else '' }}"
+                    placeholder="Example: John Smith"
+                >
+            </div>
+
+            <div class="two-column">
+
+                <div class="field">
+                    <label for="phone">Phone</label>
+
+                    <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        value="{{ client.phone if client else '' }}"
+                        placeholder="705-555-1234"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+
+                    <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        value="{{ client.email if client else '' }}"
+                        placeholder="name@example.com"
+                    >
+                </div>
+
+            </div>
+
+            <div class="address-heading">
+                Address
+            </div>
+
+            <div class="field">
+                <label for="address">Street Address</label>
+
+                <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    autocomplete="street-address"
+                    value="{{ client.address if client else '' }}"
+                    placeholder="123 Main Street"
+                >
+            </div>
+
+            <div class="two-column">
+
+                <div class="field">
+                    <label for="city">City</label>
+
+                    <input
+                        id="city"
+                        name="city"
+                        type="text"
+                        autocomplete="address-level2"
+                        value="{{ client.city if client else '' }}"
+                        placeholder="Barrie"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="province">Province</label>
+
+                    <input
+                        id="province"
+                        name="province"
+                        type="text"
+                        autocomplete="address-level1"
+                        value="{{ client.province if client else '' }}"
+                        placeholder="ON"
+                    >
+                </div>
+
+            </div>
+
+            <div class="field">
+                <label for="postal_code">Postal Code</label>
+
+                <input
+                    id="postal_code"
+                    name="postal_code"
+                    type="text"
+                    autocomplete="postal-code"
+                    value="{{ client.postal_code if client else '' }}"
+                    placeholder="L4M 1A1"
+                >
+            </div>
+
+            <div class="field">
+                <label for="notes">Notes</label>
+
+                <textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Anything else you want to remember about this client..."
+                >{{ client.notes if client else '' }}</textarea>
+            </div>
+
+            <div class="buttons">
+
+                <a href="{{ url_for('clients') }}"
+                   class="button cancel">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="button save">
+                    {{ 'Save Changes' if client else 'Save Client' }}
+                </button>
+
+            </div>
+
+        </form>
+
+        {% if client %}
+
+        <form
+            method="POST"
+            action="{{ url_for('delete_client', client_id=client.id) }}"
+            onsubmit="return confirm('Delete this client? Jobs linked to this client will remain, but will no longer be linked to the client.');"
+        >
+            <button type="submit" class="button danger">
+                Delete Client
+            </button>
+        </form>
+
+        {% endif %}
+
+    </div>
+
+</main>
+
+</body>
+</html>

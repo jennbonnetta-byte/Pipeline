@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PipeLine - Weekly Summary</title>
+    <title>PipeLine - Reports</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -11,22 +11,267 @@
         .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
         .total-box { background: #e3f2fd; border: 2px solid #0056b3; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
         .total-number { font-size: 28px; font-weight: bold; color: #0056b3; margin-top: 5px; }
+
+        .period-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .period-tabs a {
+            text-align: center;
+            padding: 10px 5px;
+            border-radius: 8px;
+            background: #edf2f7;
+            color: #526274;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .period-tabs a.active {
+            background: #087bc4;
+            color: white;
+            box-shadow: 0 3px 8px rgba(8,123,196,.2);
+        }
+
         .report-btn { display: block; text-align: center; background: #28a745; color: white; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-bottom: 20px; font-size: 15px; }
+        .pay-btn {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 13px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
         .job-card { background: #f8f9fa; border-left: 4px solid #28a745; padding: 12px; margin-bottom: 10px; border-radius: 6px; font-size: 14px; }
         .back-btn { display: block; text-align: center; background: #6c757d; color: white; padding: 10px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
     </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
-<body>
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
     <div class="container">
-        <h2>📊 Weekly Summary</h2>
-        <div class="subtitle">Hours & Totals Overview</div>
+        <h2>📊 Reports</h2>
+        <div class="subtitle">{{ period_label }} Overview</div>
+
+        <div class="period-tabs">
+            <a href="{{ url_for('weekly', period='daily') }}"
+               class="{% if period == 'daily' %}active{% endif %}">
+                Today
+            </a>
+
+            <a href="{{ url_for('weekly', period='weekly') }}"
+               class="{% if period == 'weekly' %}active{% endif %}">
+                This Week
+            </a>
+
+            <a href="{{ url_for('weekly', period='biweekly') }}"
+               class="{% if period == 'biweekly' %}active{% endif %}">
+                Pay Period
+            </a>
+
+            <a href="{{ url_for('weekly', period='monthly') }}"
+               class="{% if period == 'monthly' %}active{% endif %}">
+                This Month
+            </a>
+        </div>
 
         <div class="total-box">
             <div style="font-size: 13px; color: #555; text-transform: uppercase; font-weight: bold;">Total Hours Logged</div>
             <div class="total-number">{{ total_hours }} Hours</div>
         </div>
 
-        <a href="/weekly-report" class="report-btn">📄 Generate Weekly Boss Report</a>
+        <div style="
+            background:linear-gradient(135deg,#061d35,#0b3154);
+            color:white;
+            border-radius:12px;
+            padding:18px;
+            margin-bottom:20px;
+        ">
+
+            <div style="
+                font-size:13px;
+                font-weight:bold;
+                text-transform:uppercase;
+                letter-spacing:.6px;
+                color:#b9cadb;
+                margin-bottom:12px;
+            ">
+                💰 Estimated Pay
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:7px;
+            ">
+                <span>Regular Pay</span>
+                <strong>${{ "%.2f"|format(pay_summary.regular_pay) }}</strong>
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:7px;
+            ">
+                <span>Overtime Pay</span>
+                <strong>${{ "%.2f"|format(pay_summary.overtime_pay) }}</strong>
+            </div>
+
+            {% if pay_summary.doubletime_pay > 0 %}
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:7px;
+            ">
+                <span>Double-Time Pay</span>
+                <strong>${{ "%.2f"|format(pay_summary.doubletime_pay) }}</strong>
+            </div>
+            {% endif %}
+
+            {% if pay_summary.vacation_pay > 0 %}
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:7px;
+            ">
+                <span>Vacation Pay</span>
+                <strong>${{ "%.2f"|format(pay_summary.vacation_pay) }}</strong>
+            </div>
+            {% endif %}
+
+            <div style="
+                border-top:1px solid rgba(255,255,255,.2);
+                margin-top:12px;
+                padding-top:12px;
+                display:flex;
+                justify-content:space-between;
+                font-size:18px;
+            ">
+                <strong>Gross Pay</strong>
+                <strong>${{ "%.2f"|format(pay_summary.gross_pay) }}</strong>
+            </div>
+
+            <div style="
+                margin-top:16px;
+                padding-top:12px;
+                border-top:1px solid rgba(255,255,255,.12);
+                font-size:13px;
+                color:#d7e3ef;
+            ">
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>Income Tax</span>
+                    <span>${{ "%.2f"|format(pay_summary.income_tax) }}</span>
+                </div>
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>CPP</span>
+                    <span>${{ "%.2f"|format(pay_summary.cpp) }}</span>
+                </div>
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>EI</span>
+                    <span>${{ "%.2f"|format(pay_summary.ei) }}</span>
+                </div>
+
+                {% if pay_summary.benefits > 0 %}
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>Benefits</span>
+                    <span>${{ "%.2f"|format(pay_summary.benefits) }}</span>
+                </div>
+                {% endif %}
+
+                {% if pay_summary.pension > 0 %}
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>Pension</span>
+                    <span>${{ "%.2f"|format(pay_summary.pension) }}</span>
+                </div>
+                {% endif %}
+
+                {% if pay_summary.other_deductions > 0 %}
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-bottom:6px;
+                ">
+                    <span>Other Deductions</span>
+                    <span>${{ "%.2f"|format(pay_summary.other_deductions) }}</span>
+                </div>
+                {% endif %}
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    margin-top:10px;
+                    padding-top:10px;
+                    border-top:1px solid rgba(255,255,255,.12);
+                ">
+                    <strong>Total Deductions</strong>
+                    <strong>${{ "%.2f"|format(pay_summary.total_deductions) }}</strong>
+                </div>
+            </div>
+
+            <div style="
+                background:white;
+                color:#061d35;
+                border-radius:9px;
+                padding:13px;
+                margin-top:16px;
+                text-align:center;
+            ">
+                <div style="
+                    font-size:11px;
+                    text-transform:uppercase;
+                    font-weight:bold;
+                    color:#718096;
+                ">
+                    Estimated Take-Home
+                </div>
+
+                <div style="
+                    font-size:27px;
+                    font-weight:850;
+                    margin-top:3px;
+                ">
+                    ${{ "%.2f"|format(pay_summary.take_home) }}
+                </div>
+            </div>
+
+        </div>
+
+        <a href="{{ url_for('weekly_report', period=period) }}" class="report-btn">
+            📄 Generate {{ period_label }} Boss Report
+        </a>
+
+        <a href="{{ url_for('pay_summary', period=period) }}" class="pay-btn">
+            💰 View Pay Summary
+        </a>
 
         <h3 style="font-size: 15px; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Logged Breakdown</h3>
         {% if history %}

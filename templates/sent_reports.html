@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PipeLine - Sent Reports</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            min-height: 105px;
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 31px;
+        }
+
+        .subtitle {
+            color: #7c8999;
+            margin: 7px 0 25px;
+        }
+
+        .report-card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 19px;
+            margin-bottom: 14px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .report-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .type {
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .date {
+            color: #7e8c9c;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .badge {
+            background: #e9f8ef;
+            color: #168046;
+            border-radius: 20px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 850;
+            white-space: nowrap;
+        }
+
+        .recipient {
+            margin-top: 17px;
+            padding: 13px;
+            background: #f7faff;
+            border-radius: 12px;
+            color: #43566d;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .recipient strong {
+            color: #087bc4;
+        }
+
+        .stats {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .stat {
+            flex: 1;
+            background: #f4f7fa;
+            border-radius: 10px;
+            padding: 11px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-weight: 850;
+            font-size: 16px;
+        }
+
+        .stat-label {
+            color: #8996a5;
+            font-size: 10px;
+            margin-top: 3px;
+            text-transform: uppercase;
+            font-weight: 750;
+        }
+
+        .empty {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e3eaf2;
+            padding: 50px 20px;
+            text-align: center;
+            color: #7c8999;
+        }
+
+        .empty-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+        }
+
+        .back-button {
+            display: block;
+            text-align: center;
+            margin-top: 22px;
+            color: #087bc4;
+            font-weight: 750;
+            font-size: 14px;
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img
+            src="{{ url_for('static', filename='pipeline-icon.png') }}"
+            alt="PipeLine"
+        >
+    </a>
+
+    <div>
+        <div class="header-title">Sent Reports</div>
+        <div class="header-subtitle">Your report history</div>
+    </div>
+
+</header>
+
+
+<main class="content">
+
+    <h1>Sent Reports</h1>
+
+    <p class="subtitle">
+        Reports you've sent from PipeLine.
+    </p>
+
+
+    {% if reports %}
+
+        {% for report in reports %}
+
+        <div class="report-card">
+
+            <div class="report-top">
+
+                <div>
+
+                    <div class="type">
+                        {% if report.report_type == 'daily' %}
+                            📋 Daily Report
+                        {% else %}
+                            📊 Weekly Report
+                        {% endif %}
+                    </div>
+
+                    <div class="date">
+                        {{ report.sent_at.strftime('%b %d, %Y · %I:%M %p') }}
+                    </div>
+
+                </div>
+
+                <div class="badge">
+                    ✓ {{ report.status|capitalize }}
+                </div>
+
+            </div>
+
+
+            <div class="recipient">
+                <strong>To:</strong>
+                {{ report.recipient_email }}
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat">
+                    <div class="stat-number">
+                        {{ report.total_hours }}
+                    </div>
+                    <div class="stat-label">
+                        Hours
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-number">
+                        {{ report.photo_count }}
+                    </div>
+                    <div class="stat-label">
+                        JPEG Photos
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-number">
+                        {{ report.job_ids|length }}
+                    </div>
+                    <div class="stat-label">
+                        Jobs
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                📨
+            </div>
+
+            <strong>
+                No reports sent yet
+            </strong>
+
+            <p>
+                Reports you send to supervisors or customers
+                will appear here.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+
+    <a
+        href="{{ url_for('home') }}"
+        class="back-button"
+    >
+        ← Back to Dashboard
+    </a>
+
+</main>
+
+</body>
+</html>

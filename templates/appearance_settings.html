@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Appearance & Layout</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .intro {
+            color: #7c8999;
+            line-height: 1.5;
+            margin: 7px 0 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 17px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 800;
+            color: #34465d;
+            margin-bottom: 7px;
+        }
+
+        select {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #f9fbfd;
+            color: #172b45;
+            font: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .preview {
+            border-radius: 16px;
+            padding: 16px;
+            background: #f3f7fc;
+            border: 1px solid #dce4ed;
+            margin-top: 10px;
+        }
+
+        .preview-title {
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .preview-text {
+            color: #7c8999;
+            font-size: 13px;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 0;
+        }
+
+        .toggle-text {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .toggle-help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: #cbd5df;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: .2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,.18);
+        }
+
+        .switch input:checked + .slider {
+            background: #087bc4;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .save-button {
+            width: 100%;
+            min-height: 58px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+        }
+
+
+        /* ===== LIVE APPEARANCE PREVIEW ===== */
+
+        .preview-live {
+            --preview-bg: #f3f7fc;
+            --preview-surface: #ffffff;
+            --preview-text: #10213b;
+            --preview-muted: #7c8999;
+            --preview-border: #e3eaf2;
+            --preview-accent: #087bc4;
+            --preview-radius: 20px;
+
+            background: var(--preview-bg);
+            color: var(--preview-text);
+            border: 1px solid var(--preview-border);
+            border-radius: var(--preview-radius);
+            padding: 16px;
+            transition: all .2s ease;
+        }
+
+        .preview-live.preview-dark {
+            --preview-bg: #101820;
+            --preview-surface: #18232e;
+            --preview-text: #edf4fa;
+            --preview-muted: #a9b7c5;
+            --preview-border: #2b3a47;
+        }
+
+        .preview-live.preview-blue {
+            --preview-accent: #087bc4;
+        }
+
+        .preview-live.preview-teal {
+            --preview-accent: #008f8c;
+        }
+
+        .preview-live.preview-green {
+            --preview-accent: #2f9e44;
+        }
+
+        .preview-live.preview-purple {
+            --preview-accent: #7950f2;
+        }
+
+        .preview-live.preview-orange {
+            --preview-accent: #e67700;
+        }
+
+        .preview-live.preview-red {
+            --preview-accent: #d6333f;
+        }
+
+        .preview-live.preview-compact {
+            --preview-radius: 10px;
+        }
+
+        .preview-live.preview-rounded {
+            --preview-radius: 20px;
+        }
+
+        .preview-live.preview-minimal {
+            --preview-radius: 8px;
+        }
+
+        .preview-live.preview-minimal .preview-card {
+            box-shadow: none;
+        }
+
+        .preview-live.preview-large {
+            font-size: 18px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 15px;
+        }
+
+        .preview-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--preview-accent);
+            color: white;
+            font-weight: 900;
+            font-size: 20px;
+        }
+
+        .preview-app-name {
+            font-weight: 850;
+            font-size: 17px;
+        }
+
+        .preview-subtitle {
+            color: var(--preview-muted);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .preview-card {
+            background: var(--preview-surface);
+            border: 1px solid var(--preview-border);
+            border-radius: var(--preview-radius);
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(22,54,86,.08);
+            transition: all .2s ease;
+        }
+
+        .preview-icon {
+            color: var(--preview-accent);
+            font-size: 22px;
+            margin-bottom: 7px;
+        }
+
+        .preview-title {
+            color: var(--preview-text);
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .preview-text {
+            color: var(--preview-muted);
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .preview-status {
+            margin-top: 12px;
+            color: var(--preview-muted);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .preview-live.preview-spacious {
+            padding: 24px;
+        }
+
+        .preview-live.preview-spacious .preview-grid {
+            gap: 18px;
+        }
+
+        .preview-live.preview-spacious .preview-card {
+            padding: 21px;
+        }
+
+        .preview-live.preview-compact {
+            padding: 11px;
+        }
+
+        .preview-live.preview-compact .preview-card {
+            padding: 10px;
+        }
+
+        .preview-live.preview-no-animation *,
+        .preview-live.preview-no-animation *::before,
+        .preview-live.preview-no-animation *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+
+    <a href="{{ url_for('settings') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img
+            src="{{ url_for('static', filename='pipeline-icon.png') }}"
+            alt="PipeLine"
+        >
+    </a>
+
+    <div>
+        <div class="header-title">Appearance &amp; Layout</div>
+        <div class="header-subtitle">Make PipeLine look and feel your way</div>
+    </div>
+
+</header>
+
+<main class="content">
+
+    <h1>🎨 Appearance &amp; Layout</h1>
+
+    <p class="intro">
+        Customize the look, spacing, and behavior of PipeLine.
+    </p>
+
+    <form method="POST">
+
+        <div class="card">
+
+            <div class="section-title">Theme</div>
+
+            <div class="field">
+
+                <label for="theme">Theme</label>
+
+                <select id="theme" name="theme">
+
+                    <option value="light"
+                        {% if settings.theme == 'light' %}selected{% endif %}>
+                        ☀️ Light
+                    </option>
+
+                    <option value="dark"
+                        {% if settings.theme == 'dark' %}selected{% endif %}>
+                        🌙 Dark
+                    </option>
+
+                    <option value="system"
+                        {% if settings.theme == 'system' %}selected{% endif %}>
+                        📱 Follow Device
+                    </option>
+
+                </select>
+
+                <div class="help">
+                    Choose how PipeLine should appear.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Colour</div>
+
+            <div class="field">
+
+                <label for="accent_color">Accent Colour</label>
+
+                <select id="accent_color" name="accent_color">
+
+                    <option value="blue"
+                        {% if settings.accent_color == 'blue' %}selected{% endif %}>
+                        🔵 PipeLine Blue
+                    </option>
+
+                    <option value="teal"
+                        {% if settings.accent_color == 'teal' %}selected{% endif %}>
+                        🟢 Teal
+                    </option>
+
+                    <option value="green"
+                        {% if settings.accent_color == 'green' %}selected{% endif %}>
+                        🟩 Green
+                    </option>
+
+                    <option value="purple"
+                        {% if settings.accent_color == 'purple' %}selected{% endif %}>
+                        🟣 Purple
+                    </option>
+
+                    <option value="orange"
+                        {% if settings.accent_color == 'orange' %}selected{% endif %}>
+                        🟠 Orange
+                    </option>
+
+                    <option value="red"
+                        {% if settings.accent_color == 'red' %}selected{% endif %}>
+                        🔴 Red
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Layout</div>
+
+            <div class="field">
+
+                <label for="layout_density">
+                    Layout Density
+                </label>
+
+                <select id="layout_density" name="layout_density">
+
+                    <option value="compact"
+                        {% if settings.layout_density == 'compact' %}selected{% endif %}>
+                        Compact
+                    </option>
+
+                    <option value="comfortable"
+                        {% if settings.layout_density == 'comfortable' %}selected{% endif %}>
+                        Comfortable
+                    </option>
+
+                    <option value="spacious"
+                        {% if settings.layout_density == 'spacious' %}selected{% endif %}>
+                        Spacious
+                    </option>
+
+                </select>
+
+                <div class="help">
+                    Controls the amount of space between app elements.
+                </div>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="card_style">Card Style</label>
+
+                <select id="card_style" name="card_style">
+
+                    <option value="standard"
+                        {% if settings.card_style == 'standard' %}selected{% endif %}>
+                        Standard
+                    </option>
+
+                    <option value="rounded"
+                        {% if settings.card_style == 'rounded' %}selected{% endif %}>
+                        Rounded
+                    </option>
+
+                    <option value="minimal"
+                        {% if settings.card_style == 'minimal' %}selected{% endif %}>
+                        Minimal
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="dashboard_layout">
+                    Dashboard Layout
+                </label>
+
+                <select id="dashboard_layout" name="dashboard_layout">
+
+                    <option value="standard"
+                        {% if settings.dashboard_layout == 'standard' %}selected{% endif %}>
+                        Standard Cards
+                    </option>
+
+                    <option value="compact"
+                        {% if settings.dashboard_layout == 'compact' %}selected{% endif %}>
+                        Compact Cards
+                    </option>
+
+                    <option value="expanded"
+                        {% if settings.dashboard_layout == 'expanded' %}selected{% endif %}>
+                        Expanded Cards
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Text &amp; Motion</div>
+
+            <div class="field">
+
+                <label for="font_size">Font Size</label>
+
+                <select id="font_size" name="font_size">
+
+                    <option value="small"
+                        {% if settings.font_size == 'small' %}selected{% endif %}>
+                        Small
+                    </option>
+
+                    <option value="default"
+                        {% if settings.font_size == 'default' %}selected{% endif %}>
+                        Default
+                    </option>
+
+                    <option value="large"
+                        {% if settings.font_size == 'large' %}selected{% endif %}>
+                        Large
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+
+                    <div class="toggle-title">
+                        Animations
+                    </div>
+
+                    <div class="toggle-help">
+                        Enable subtle transitions and interface animations.
+                    </div>
+
+                </div>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        name="animations"
+                        {% if settings.animations %}checked{% endif %}
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Live Preview</div>
+
+            <div id="appearancePreview"
+                 class="preview-live">
+
+                <div class="preview-header">
+                    <div class="preview-logo">P</div>
+
+                    <div>
+                        <div class="preview-app-name">
+                            PipeLine
+                        </div>
+
+                        <div class="preview-subtitle">
+                            Your work dashboard
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-grid">
+
+                    <div class="preview-card">
+                        <div class="preview-icon">＋</div>
+                        <div class="preview-title">
+                            New Daily Entry
+                        </div>
+                        <div class="preview-text">
+                            Record today's work
+                        </div>
+                    </div>
+
+                    <div class="preview-card">
+                        <div class="preview-icon">📈</div>
+                        <div class="preview-title">
+                            Reports
+                        </div>
+                        <div class="preview-text">
+                            View your hours
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="preview-status">
+                    ✓ This is how your PipeLine interface will look.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="save-button">
+            Save Appearance Settings
+        </button>
+
+        <button
+            type="button"
+            id="resetAppearance"
+            class="reset-button"
+        >
+            ↩️ Reset to Default
+        </button>
+
+    </form>
+
+</main>
+
+</body>
+</html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const preview = document.getElementById('appearancePreview');
+
+    const theme = document.getElementById('theme');
+    const accent = document.getElementById('accent_color');
+    const density = document.getElementById('layout_density');
+    const cards = document.getElementById('card_style');
+    const font = document.getElementById('font_size');
+    const animations = document.querySelector('input[name="animations"]');
+
+    function updatePreview() {
+        if (!preview) return;
+
+        /*
+         * Remove previous preview classes.
+         */
+        preview.className = 'preview-live';
+
+        /*
+         * Theme
+         */
+        if (theme) {
+            if (theme.value === 'dark') {
+                preview.classList.add('preview-dark');
+            } else if (theme.value === 'system') {
+                const systemDark =
+                    window.matchMedia &&
+                    window.matchMedia(
+                        '(prefers-color-scheme: dark)'
+                    ).matches;
+
+                if (systemDark) {
+                    preview.classList.add('preview-dark');
+                }
+            }
+        }
+
+        /*
+         * Accent colour
+         */
+        if (accent) {
+            preview.classList.add(
+                'preview-' + accent.value
+            );
+        }
+
+        /*
+         * Layout density
+         */
+        if (density) {
+            preview.classList.add(
+                'preview-' + density.value
+            );
+        }
+
+        /*
+         * Card style
+         */
+        if (cards) {
+            preview.classList.add(
+                'preview-' + cards.value
+            );
+        }
+
+        /*
+         * Font size
+         */
+        if (font && font.value === 'large') {
+            preview.classList.add('preview-large');
+        }
+
+        /*
+         * Animations
+         */
+        if (animations && !animations.checked) {
+            preview.classList.add(
+                'preview-no-animation'
+            );
+        }
+    }
+
+    [
+        theme,
+        accent,
+        density,
+        cards,
+        font
+    ].forEach(function (element) {
+
+        if (element) {
+            element.addEventListener(
+                'change',
+                updatePreview
+            );
+        }
+
+    });
+
+    if (animations) {
+        animations.addEventListener(
+            'change',
+            updatePreview
+        );
+    }
+
+    updatePreview();
+
+    if (window.matchMedia) {
+        const systemTheme =
+            window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            );
+
+        systemTheme.addEventListener(
+            'change',
+            function () {
+                if (
+                    theme &&
+                    theme.value === 'system'
+                ) {
+                    updatePreview();
+                }
+            }
+        );
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const resetButton =
+        document.getElementById('resetAppearance');
+
+    if (!resetButton) return;
+
+    resetButton.addEventListener('click', function () {
+
+        const theme =
+            document.getElementById('theme');
+
+        const accent =
+            document.getElementById('accent_color');
+
+        const density =
+            document.getElementById('layout_density');
+
+        const cards =
+            document.getElementById('card_style');
+
+        const font =
+            document.getElementById('font_size');
+
+        const animations =
+            document.querySelector(
+                'input[name="animations"]'
+            );
+
+        /*
+         * PipeLine original defaults.
+         */
+        if (theme) {
+            theme.value = 'light';
+        }
+
+        if (accent) {
+            accent.value = 'blue';
+        }
+
+        if (density) {
+            density.value = 'comfortable';
+        }
+
+        if (cards) {
+            cards.value = 'rounded';
+        }
+
+        if (font) {
+            font.value = 'default';
+        }
+
+        if (animations) {
+            animations.checked = true;
+        }
+
+        /*
+         * Refresh the live preview.
+         */
+        [
+            theme,
+            accent,
+            density,
+            cards,
+            font
+        ].forEach(function (element) {
+
+            if (element) {
+                element.dispatchEvent(
+                    new Event('change')
+                );
+            }
+
+        });
+
+        if (animations) {
+            animations.dispatchEvent(
+                new Event('change')
+            );
+        }
+
+        /*
+         * Make it obvious that Reset only changes
+         * the form until the user saves.
+         */
+        resetButton.textContent =
+            '✓ Defaults Restored — Save to Apply';
+
+        setTimeout(function () {
+            resetButton.textContent =
+                '↩️ Reset to Default';
+        }, 2500);
+
+    });
+
+});
+</script>

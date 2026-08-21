@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine - Report Settings</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            min-height: 105px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.2);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 38px;
+            line-height: 1;
+        }
+
+        .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            color: #b9cadb;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .content {
+            max-width: 650px;
+            margin: auto;
+            padding: 28px 18px 55px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .intro {
+            color: #7c8999;
+            line-height: 1.5;
+            margin: 7px 0 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e3eaf2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .section-title {
+            color: #087bc4;
+            font-size: 13px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            margin-bottom: 17px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 800;
+            color: #34465d;
+            margin-bottom: 7px;
+        }
+
+        select,
+        input {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid #dce4ed;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #f9fbfd;
+            color: #172b45;
+            font: inherit;
+            font-size: 16px;
+            outline: none;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: #087bc4;
+            background: white;
+            box-shadow: 0 0 0 3px #e6f5ff;
+        }
+
+        .help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .toggle:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .toggle:first-child {
+            padding-top: 0;
+        }
+
+        .toggle-text {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .toggle-help {
+            color: #7c8999;
+            font-size: 12px;
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: #cbd5df;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: .2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,.18);
+        }
+
+        .switch input:checked + .slider {
+            background: #087bc4;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .privacy-note {
+            background: #eaf9f0;
+            border: 1px solid #c9ecd7;
+            color: #167443;
+            border-radius: 13px;
+            padding: 13px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .save-button {
+            width: 100%;
+            min-height: 58px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #087bc4, #075fa4);
+            color: white;
+            font-size: 17px;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 7px 17px rgba(8,123,196,.25);
+        }
+
+        @media (max-width: 430px) {
+            .content {
+                padding: 24px 14px 45px;
+            }
+        }
+    </style>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+</head>
+
+<body class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<header class="header">
+    <a href="{{ url_for('settings') }}" class="back">‹</a>
+
+    <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
+        <img src="{{ url_for('static', filename='pipeline-icon.png') }}" alt="PipeLine">
+    </a>
+
+    <div>
+        <div class="header-title">Reports &amp; Preferences</div>
+        <div class="header-subtitle">Control what your reports contain</div>
+    </div>
+</header>
+
+<main class="content">
+
+    <h1>📊 Report Settings</h1>
+
+    <p class="intro">
+        Choose how PipeLine organizes and prepares your reports.
+    </p>
+
+    <div class="privacy-note">
+        <strong>🔒 Pay privacy:</strong>
+        Your personal pay calculations are never included in Boss Reports.
+    </div>
+
+    <form method="POST">
+
+        <div class="card">
+
+            <div class="section-title">Default Report</div>
+
+            <div class="field">
+
+                <label for="default_period">
+                    Default Report Period
+                </label>
+
+                <select id="default_period" name="default_period">
+
+                    <option value="daily"
+                        {% if settings.default_period == 'daily' %}selected{% endif %}>
+                        Daily
+                    </option>
+
+                    <option value="weekly"
+                        {% if settings.default_period == 'weekly' %}selected{% endif %}>
+                        Weekly
+                    </option>
+
+                    <option value="biweekly"
+                        {% if settings.default_period == 'biweekly' %}selected{% endif %}>
+                        Biweekly Pay Period
+                    </option>
+
+                    <option value="monthly"
+                        {% if settings.default_period == 'monthly' %}selected{% endif %}>
+                        Monthly
+                    </option>
+
+                </select>
+
+                <div class="help">
+                    The report period PipeLine opens by default.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Boss Report Contents</div>
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">Job Photos</div>
+                    <div class="toggle-help">
+                        Attach job photos to emailed Boss Reports.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="include_photos"
+                        {% if settings.include_photos %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">Materials</div>
+                    <div class="toggle-help">
+                        Include materials used on each job.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="include_materials"
+                        {% if settings.include_materials %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">Client Information</div>
+                    <div class="toggle-help">
+                        Include client contact information.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="include_client_info"
+                        {% if settings.include_client_info %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="toggle">
+
+                <div class="toggle-text">
+                    <div class="toggle-title">Job Address</div>
+                    <div class="toggle-help">
+                        Include the job/client address when available.
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        name="include_address"
+                        {% if settings.include_address %}checked{% endif %}
+                    >
+                    <span class="slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="section-title">Email</div>
+
+            <div class="field">
+
+                <label for="recipient_email">
+                    Default Boss Email
+                </label>
+
+                <input
+                    type="email"
+                    id="recipient_email"
+                    name="recipient_email"
+                    value="{{ settings.recipient_email }}"
+                    placeholder="boss@example.com"
+                    autocomplete="email"
+                >
+
+                <div class="help">
+                    PipeLine will pre-fill this address when sending a report.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="save-button">
+            Save Report Settings
+        </button>
+
+    </form>
+
+</main>
+
+</body>
+</html>
