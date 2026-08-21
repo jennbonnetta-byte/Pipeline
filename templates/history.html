@@ -37,9 +37,9 @@
                     <strong>Materials:</strong> {{ job.materials }}
                 </div>
                 <div class="action-group">
-                    <a href="/job-photos/{{ loop.index0 }}" class="btn-photos">📷 Photos {% if job.photos %}({{ job.photos|length }}){% endif %}</a>
-                    <a href="/edit/{{ loop.index0 }}" class="btn-edit">✏️ Edit</a>
-                    <form action="/delete/{{ loop.index0 }}" method="POST" style="flex:1; margin:0;" onsubmit="return confirm('Delete this job log?');">
+                    <a href="/job-photos/{{ job.id }}" class="btn-photos">📷 Photos {% if job.photos %}({{ job.photos|length }}){% endif %}</a>
+                    <a href="/edit/{{ job.id }}" class="btn-edit">✏️ Edit</a>
+                    <form action="/delete/{{ job.id }}" method="POST" style="flex:1; margin:0;" onsubmit="return confirm('Delete this job log?');">
                         <button type="submit" class="btn-delete" style="width:100%;">🗑️ Delete</button>
                     </form>
                 </div>
