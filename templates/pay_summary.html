@@ -286,8 +286,46 @@
     {% endif %}
 
     <div class="card">
+        <div class="card-title">Daily Hours</div>
 
-        <div class="card-title">Hours</div>
+        {% if daily_payroll and daily_payroll.days %}
+            {% for day in daily_payroll.days %}
+                <div class="row" style="padding:10px 0; border-bottom:1px solid #eee;">
+                    <span class="label">
+                        {{ day.date.strftime('%a, %b %-d') }}
+                    </span>
+                    <strong class="value">
+                        {{ "%.2f"|format(day.hours) }} hrs
+                    </strong>
+                </div>
+
+                {% if day.jobs %}
+                    <div style="padding:4px 0 8px 12px; font-size:.82rem; color:#7c8999;">
+                        {% for job in day.jobs %}
+                            <div>
+                                {% if job.start_time and job.end_time %}
+                                    {{ job.start_time.strftime('%-I:%M %p') }}
+                                    –
+                                    {{ job.end_time.strftime('%-I:%M %p') }}
+                                {% endif %}
+                                {% if job.destination %}
+                                    · {{ job.destination }}
+                                {% endif %}
+                                · {{ "%.2f"|format(job.hours) }} hrs
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="row">
+                <span class="label">No hours logged</span>
+                <span class="value">0.00 hrs</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card-title">Hours</div>
 
         <div class="row">
             <span class="label">Total Hours</span>

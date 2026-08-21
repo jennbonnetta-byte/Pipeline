@@ -1377,6 +1377,282 @@ def get_pay_settings(user_id):
         conn.close()
 
 
+
+def get_payroll_daily_totals(user_id):
+    """
+    Return the current bi-weekly pay period as daily totals.
+
+    Individual service calls remain separate jobs for Reports.
+    Payroll groups all jobs on the same calendar date together.
+    """
+    from datetime import date, timedelta
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        # Get the configured payday anchor.
+        cur.execute(
+            """SELECT payday_anchor_date
+               FROM pay_settings
+               WHERE user_id = %s""",
+            (user_id,)
+        )
+
+        row = cur.fetchone()
+
+        anchor = row[0] if row and row[0] else date(2026, 8, 27)
+
+        today = date.today()
+
+        # Find the next payday on or after today.
+        if today <= anchor:
+            next_payday = anchor
+        else:
+            days_since_anchor = (today - anchor).days
+            cycles = days_since_anchor // 14
+            next_payday = anchor + timedelta(days=(cycles + 1) * 14)
+
+        period_end = next_payday
+        period_start = period_end - timedelta(days=13)
+
+        # Get every service call in the pay period.
+        cur.execute(
+            """SELECT id, date, start_time, end_time, hours,
+                      client_id, destination
+               FROM jobs
+               WHERE user_id = %s
+                 AND date::date >= %s
+                 AND date::date <= %s
+               ORDER BY date::date ASC, start_time ASC NULLS LAST, id ASC""",
+            (user_id, period_start, period_end)
+        )
+
+        rows = cur.fetchall()
+        cur.close()
+
+        # Create every calendar day in the period, including zero-hour days.
+        daily = {}
+
+        current = period_start
+
+        while current <= period_end:
+            daily[current] = {
+                "date": current,
+                "hours": 0.0,
+                "jobs": []
+            }
+            current += timedelta(days=1)
+
+        # Add each individual service call to its calendar day.
+        for row in rows:
+            job_id = row[0]
+            job_date = row[1]
+
+            if hasattr(job_date, "date"):
+                job_date = job_date.date()
+
+            try:
+                hours = float(row[4] or 0)
+            except (TypeError, ValueError):
+                hours = 0.0
+
+            if job_date not in daily:
+                daily[job_date] = {
+                    "date": job_date,
+                    "hours": 0.0,
+                    "jobs": []
+                }
+
+            daily[job_date]["hours"] += hours
+
+            daily[job_date]["jobs"].append({
+                "id": job_id,
+                "start_time": row[2],
+                "end_time": row[3],
+                "hours": hours,
+                "client_id": row[5],
+                "destination": row[6]
+            })
+
+        # Round daily totals to two decimals.
+        daily_rows = []
+
+        for day in sorted(daily):
+            daily[day]["hours"] = round(daily[day]["hours"], 2)
+            daily_rows.append(daily[day])
+
+        total_hours = round(
+            sum(day["hours"] for day in daily_rows),
+            2
+        )
+
+        return {
+            "start": period_start,
+            "end": period_end,
+            "payday": next_payday,
+            "days": daily_rows,
+            "total_hours": total_hours
+        }
+
+    finally:
+        conn.close()
+
+
+
+def get_daily_payroll(user_id, period):
+    """Group individual service calls into daily payroll totals."""
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        if period == "daily":
+            condition = """
+                AND j.date::date = CURRENT_DATE
+            """
+            period_params = ()
+
+        elif period == "weekly":
+            condition = """
+                AND j.date::date >= DATE_TRUNC('week', CURRENT_DATE)::date
+                AND j.date::date < (
+                    DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '7 days'
+                )::date
+            """
+            period_params = ()
+
+        elif period == "monthly":
+            condition = """
+                AND j.date::date >= DATE_TRUNC('month', CURRENT_DATE)::date
+                AND j.date::date < (
+                    DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+                )::date
+            """
+            period_params = ()
+
+        elif period == "biweekly":
+            cur.execute(
+                """
+                SELECT payday_anchor_date
+                FROM pay_settings
+                WHERE user_id = %s
+                """,
+                (user_id,)
+            )
+
+            row = cur.fetchone()
+            anchor = row[0] if row and row[0] else "2026-08-27"
+
+            condition = """
+                AND j.date::date >= (
+                    %s::date -
+                    (
+                        FLOOR(
+                            (%s::date - CURRENT_DATE) / 14.0
+                        ) + 1
+                    )::integer * 14
+                )
+                AND j.date::date < (
+                    %s::date -
+                    FLOOR(
+                        (%s::date - CURRENT_DATE) / 14.0
+                    )::integer * 14
+                )
+            """
+
+            period_params = (
+                anchor,
+                anchor,
+                anchor,
+                anchor,
+            )
+
+        else:
+            condition = """
+                AND j.date::date >= DATE_TRUNC('week', CURRENT_DATE)::date
+                AND j.date::date < (
+                    DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '7 days'
+                )::date
+            """
+            period_params = ()
+
+        query = f"""
+            SELECT
+                j.date::date,
+                j.id,
+                j.start_time,
+                j.end_time,
+                COALESCE(
+                    NULLIF(j.hours, '')::numeric,
+                    CASE
+                        WHEN j.start_time IS NOT NULL
+                         AND j.end_time IS NOT NULL
+                        THEN EXTRACT(
+                            EPOCH FROM (
+                                j.end_time - j.start_time
+                            )
+                        ) / 3600
+                        ELSE 0
+                    END
+                ) AS calculated_hours,
+                j.destination,
+                c.name
+            FROM jobs j
+            LEFT JOIN clients c
+                ON j.client_id = c.id
+                AND c.user_id = %s
+            WHERE j.user_id = %s
+            {condition}
+            ORDER BY j.date ASC, j.start_time ASC, j.id ASC
+        """
+
+        params = (user_id, user_id) + period_params
+
+        cur.execute(query, params)
+
+        rows = cur.fetchall()
+        cur.close()
+
+        days = {}
+
+        for row in rows:
+            day_date = row[0]
+            job_hours = float(row[4] or 0)
+
+            if day_date not in days:
+                days[day_date] = {
+                    "date": day_date,
+                    "hours": 0,
+                    "jobs": []
+                }
+
+            days[day_date]["hours"] += job_hours
+
+            days[day_date]["jobs"].append({
+                "id": row[1],
+                "start_time": row[2],
+                "end_time": row[3],
+                "hours": job_hours,
+                "destination": row[5] or "",
+                "client_name": row[6] or ""
+            })
+
+        day_list = list(days.values())
+
+        total_hours = sum(day["hours"] for day in day_list)
+
+        return {
+            "days": day_list,
+            "total_hours": total_hours
+        }
+
+    finally:
+        conn.close()
+
+
 def calculate_pay(user_id, total_hours):
     settings = get_pay_settings(user_id)
 
@@ -1520,6 +1796,11 @@ def weekly():
         total_hours
     )
 
+    daily_payroll = get_daily_payroll(
+        session['user_id'],
+        period
+    )
+
     period_labels = {
         'daily': 'Daily',
         'weekly': 'Weekly',
@@ -1532,6 +1813,7 @@ def weekly():
         history=history_data,
         total_hours=total_hours,
         pay_summary=pay,
+        daily_payroll=daily_payroll,
         period=period,
         period_label=period_labels[period]
     )
@@ -1542,33 +1824,71 @@ def pay_summary():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    period = request.args.get('period', 'weekly').lower()
+    period = request.args.get('period', 'biweekly').lower()
 
     if period not in ('daily', 'weekly', 'biweekly', 'monthly'):
-        period = 'weekly'
+        period = 'biweekly'
 
-    history_data = get_report_period_jobs(
-        session['user_id'],
-        period
-    )
+    user_id = session['user_id']
 
-    total_hours = sum(
-        float(
-            re.findall(
-                r"[-+]?\d*\.\d+|\d+",
-                str(j.get('hours', 0))
-            )[0]
-        )
-        if re.findall(
-            r"[-+]?\d*\.\d+|\d+",
-            str(j.get('hours', 0))
-        )
-        else 0
-        for j in history_data
-    )
+    # Payroll uses daily totals rather than treating each
+    # service call as a separate payroll entry.
+    payroll_data = get_payroll_daily_totals(user_id)
+
+    if period == 'biweekly':
+        daily_data = payroll_data
+    else:
+        # Keep the existing period selection available while
+        # using daily aggregation for payroll.
+        report_jobs = get_report_period_jobs(user_id, period)
+
+        daily_map = {}
+
+        for job in report_jobs:
+            job_date = job.get('date')
+
+            if hasattr(job_date, 'date'):
+                job_date = job_date.date()
+
+            try:
+                hours = float(job.get('hours') or 0)
+            except (TypeError, ValueError):
+                hours = 0.0
+
+            if job_date not in daily_map:
+                daily_map[job_date] = {
+                    'date': job_date,
+                    'hours': 0.0,
+                    'jobs': []
+                }
+
+            daily_map[job_date]['hours'] += hours
+            daily_map[job_date]['jobs'].append(job)
+
+        daily_data = {
+            'start': min(daily_map.keys()) if daily_map else None,
+            'end': max(daily_map.keys()) if daily_map else None,
+            'payday': None,
+            'days': [
+                {
+                    **day,
+                    'hours': round(day['hours'], 2)
+                }
+                for day in sorted(
+                    daily_map.values(),
+                    key=lambda x: x['date']
+                )
+            ],
+            'total_hours': round(
+                sum(day['hours'] for day in daily_map.values()),
+                2
+            )
+        }
+
+    total_hours = daily_data['total_hours']
 
     pay = calculate_pay(
-        session['user_id'],
+        user_id,
         total_hours
     )
 
@@ -1580,13 +1900,14 @@ def pay_summary():
     }
 
     period_info = get_report_period_info(
-        session['user_id'],
+        user_id,
         period
     )
 
     return render_template(
         'pay_summary.html',
-        history=history_data,
+        history=daily_data['days'],
+        daily_payroll=daily_data,
         total_hours=total_hours,
         pay_summary=pay,
         period=period_labels[period],
