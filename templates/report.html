@@ -350,7 +350,63 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+
+        /* Keep the printable report readable in dark mode. */
+        body.pipeline-theme-dark .report,
+        body.theme-dark .report {
+            background: #ffffff !important;
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .section,
+        body.theme-dark .report .section {
+            background: #ffffff !important;
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .detail,
+        body.theme-dark .report .detail {
+            background: #f7faff !important;
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .detail-label,
+        body.theme-dark .report .detail-label {
+            color: #607187 !important;
+        }
+
+        body.pipeline-theme-dark .report .detail-value,
+        body.theme-dark .report .detail-value {
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .text,
+        body.theme-dark .report .text {
+            background: #f7faff !important;
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .section-title,
+        body.theme-dark .report .section-title {
+            color: #087bc4 !important;
+        }
+
+        body.pipeline-theme-dark .report .report-heading,
+        body.theme-dark .report .report-heading {
+            color: #263a54 !important;
+        }
+
+        body.pipeline-theme-dark .report .report-brand,
+        body.theme-dark .report .report-brand {
+            color: #ffffff !important;
+        }
+
+        body.pipeline-theme-dark .report .detail-value *,
+        body.theme-dark .report .detail-value * {
+            color: #6f7e90 !important;
+        }
+
+</style>
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>

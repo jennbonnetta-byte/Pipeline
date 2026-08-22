@@ -18,7 +18,20 @@
         .btn-edit { background: #ffc107; color: #333; }
         .btn-delete { background: #dc3545; color: white; }
         .back-btn { display: block; text-align: center; background: #0056b3; color: white; padding: 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 20px; }
-    </style>
+
+        .job-time {
+            color: #607187 !important;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 4px 0 8px;
+        }
+
+        body.theme-dark .job-time,
+        body.pipeline-theme-dark .job-time {
+            color: #d7e3ef !important;
+        }
+
+</style>
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/appearance.css') }}">
 </head>
@@ -31,6 +44,11 @@
             {% for job in history %}
             <div class="job-card">
                 <div class="job-date">{{ job.date }} — <span style="color: #28a745;">{{ job.hours }} hrs</span></div>
+                {% if job.start_time and job.end_time %}
+                <div class="job-time">
+                    🕐 {{ job.start_time.strftime('%-I:%M %p') }} – {{ job.end_time.strftime('%-I:%M %p') }}
+                </div>
+                {% endif %}
                 <div class="job-details">
                     <strong>Address:</strong> {{ job.destination }}<br>
                     <strong>Notes:</strong> {{ job.notes }}<br>

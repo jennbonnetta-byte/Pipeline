@@ -149,18 +149,36 @@ def get_user_jobs(user_id):
     try:
         cur = conn.cursor()
         cur.execute(
-            """SELECT j.id, j.date, j.hours, j.notes, j.destination,
-                      j.materials, j.photos, j.client_id,
-                      c.name, c.contact_person, c.phone, c.email,
-                      c.address, c.city, c.province, c.postal_code
-               FROM jobs j
-               LEFT JOIN clients c
-                 ON j.client_id = c.id
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.hours,
+                j.start_time,
+                j.end_time,
+                j.notes,
+                j.destination,
+                j.materials,
+                j.photos,
+                j.client_id,
+                c.name,
+                c.contact_person,
+                c.phone,
+                c.email,
+                c.address,
+                c.city,
+                c.province,
+                c.postal_code
+            FROM jobs j
+            LEFT JOIN clients c
+                ON j.client_id = c.id
                 AND c.user_id = %s
-               WHERE j.user_id = %s
-               ORDER BY j.id DESC""",
+            WHERE j.user_id = %s
+            ORDER BY j.id DESC
+            """,
             (user_id, user_id)
         )
+
         rows = cur.fetchall()
         cur.close()
 
@@ -169,24 +187,29 @@ def get_user_jobs(user_id):
                 "id": row[0],
                 "date": row[1],
                 "hours": row[2],
-                "notes": row[3],
-                "destination": row[4],
-                "materials": row[5],
-                "photos": row[6] or [],
-                "client_id": row[7],
-                "client_name": row[8],
-                "client_contact": row[9],
-                "client_phone": row[10],
-                "client_email": row[11],
-                "client_address": row[12],
-                "client_city": row[13],
-                "client_province": row[14],
-                "client_postal_code": row[15]
+                "start_time": row[3],
+                "end_time": row[4],
+                "notes": row[5],
+                "destination": row[6],
+                "materials": row[7],
+                "photos": row[8] or [],
+                "client_id": row[9],
+                "client_name": row[10],
+                "client_contact": row[11],
+                "client_phone": row[12],
+                "client_email": row[13],
+                "client_address": row[14],
+                "client_city": row[15],
+                "client_province": row[16],
+                "client_postal_code": row[17]
             }
             for row in rows
         ]
+
     finally:
         conn.close()
+
+
 
 def get_current_week_jobs(user_id):
     conn = get_db()
