@@ -405,6 +405,8 @@ def get_report_period_jobs(user_id, period):
                 j.id,
                 j.date,
                 j.hours,
+                j.start_time,
+                j.end_time,
                 j.notes,
                 j.destination,
                 j.materials,

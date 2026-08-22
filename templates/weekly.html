@@ -96,6 +96,11 @@
             {% for job in history %}
             <div class="job-card">
                 <strong>{{ job.date }}</strong> ({{ job.hours }} hrs)<br>
+                {% if job.start_time and job.end_time %}
+                    <span style="color: #555;">
+                        🕐 {{ job.start_time.strftime('%-I:%M %p') }} – {{ job.end_time.strftime('%-I:%M %p') }}
+                    </span><br>
+                {% endif %}
                 <span style="color: #555;">{{ job.destination }}</span>
             </div>
             {% endfor %}
