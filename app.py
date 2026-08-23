@@ -175,7 +175,7 @@ def get_user_by_username(username):
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, username, password_hash FROM users WHERE LOWER(username) = LOWER(%s)",
+            "SELECT id, username, password_hash, role FROM users WHERE LOWER(username) = LOWER(%s)",
             (username,)
         )
         row = cur.fetchone()
@@ -879,6 +879,7 @@ def login():
             if user and check_password_hash(user[2], password):
                 session['user_id'] = user[0]
                 session['user'] = user[1]
+                session['role'] = user[3] or 'employee'
                 return redirect(url_for('home'))
 
             error = 'Invalid username or password.'
@@ -927,6 +928,10 @@ def logout():
 def home():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
+    # Owners use the Owner Hub; employees keep the existing dashboard.
+    if session.get('role') == 'owner':
+        return redirect(url_for('owner_dashboard'))
 
     # Respect the user's Dashboard Recent Jobs preference.
     conn = get_db()
