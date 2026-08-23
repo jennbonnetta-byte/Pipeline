@@ -3393,7 +3393,7 @@ def owner_clients():
     )
 
 
-@app.route('/owner/schedule')
+@app.route('/owner/schedule', methods=['GET', 'POST'])
 @owner_required
 def owner_schedule():
     conn = get_db()
@@ -3401,43 +3401,194 @@ def owner_schedule():
     try:
         cur = conn.cursor()
 
-        cur.execute("""
+        if request.method == 'POST':
+            client_id = request.form.get('client_id') or None
+            employee_id = request.form.get('employee_id')
+            date = request.form.get('date')
+            start_time = request.form.get('start_time') or None
+            end_time = request.form.get('end_time') or None
+            destination = request.form.get('destination', '').strip()
+            notes = request.form.get('notes', '').strip()
+            materials = request.form.get('materials', '').strip()
+
+            if not employee_id or not date or not destination:
+                cur.close()
+                return redirect(url_for('owner_schedule'))
+
+            # Calculate job hours when both times are supplied.
+            calculated_hours = None
+
+            if start_time and end_time:
+                start_parts = [int(x) for x in start_time.split(':')]
+                end_parts = [int(x) for x in end_time.split(':')]
+
+                start_minutes = start_parts[0] * 60 + start_parts[1]
+                end_minutes = end_parts[0] * 60 + end_parts[1]
+
+                if end_minutes < start_minutes:
+                    end_minutes += 24 * 60
+
+                calculated_hours = f"{(end_minutes - start_minutes) / 60:.2f}"
+
+            # Create the job under the owner account.
+            cur.execute(
+                """
+                INSERT INTO jobs (
+                    user_id,
+                    date,
+                    hours,
+                    start_time,
+                    end_time,
+                    notes,
+                    destination,
+                    materials,
+                    photos,
+                    client_id
+                )
+                VALUES (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s
+                )
+                RETURNING id
+                """,
+                (
+                    session['user_id'],
+                    date,
+                    calculated_hours,
+                    start_time,
+                    end_time,
+                    notes,
+                    destination,
+                    materials,
+                    json.dumps([]),
+                    client_id
+                )
+            )
+
+            job_id = cur.fetchone()[0]
+
+            # Assign the job to the selected employee.
+            cur.execute(
+                """
+                INSERT INTO job_assignments (
+                    job_id,
+                    employee_id,
+                    assigned_by,
+                    assigned_at,
+                    status
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP,
+                    'assigned'
+                )
+                """,
+                (
+                    job_id,
+                    employee_id,
+                    session['user_id']
+                )
+            )
+
+            # Notify the employee.
+            cur.execute(
+                """
+                INSERT INTO notifications (
+                    user_id,
+                    job_id,
+                    type,
+                    title,
+                    message,
+                    is_read,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    'job_assigned',
+                    %s,
+                    %s,
+                    FALSE,
+                    CURRENT_TIMESTAMP
+                )
+                """,
+                (
+                    employee_id,
+                    job_id,
+                    'New job assigned',
+                    f'A new job has been assigned to you for {date} at {destination}.'
+                )
+            )
+
+            conn.commit()
+
+            cur.close()
+
+            return redirect(url_for('owner_schedule'))
+
+        # Existing clients.
+        cur.execute(
+            """
+            SELECT id, name
+            FROM clients
+            ORDER BY name
+            """
+        )
+        clients = cur.fetchall()
+
+        # Employees available for dispatch.
+        cur.execute(
+            """
+            SELECT id, username
+            FROM users
+            WHERE role = 'employee'
+            ORDER BY username
+            """
+        )
+        employees = cur.fetchall()
+
+        # Recently scheduled jobs.
+        cur.execute(
+            """
             SELECT
                 j.id,
                 j.date,
                 j.hours,
                 j.notes,
                 j.destination,
-                j.materials,
-                c.name AS client_name
+                c.name AS client_name,
+                u.username AS employee_name
             FROM jobs j
-            LEFT JOIN clients c ON c.id = j.client_id
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN users u
+                ON u.id = ja.employee_id
+            WHERE j.user_id = %s
             ORDER BY j.date DESC NULLS LAST, j.id DESC
             LIMIT 100
-        """)
+            """,
+            (session['user_id'],)
+        )
 
         jobs = cur.fetchall()
 
-        cur.execute("""
-            SELECT id, username
-            FROM users
-            WHERE role = 'employee'
-            ORDER BY username
-        """)
-
-        employees = cur.fetchall()
-
         cur.close()
+
+        return render_template(
+            'owner_schedule.html',
+            jobs=jobs,
+            clients=clients,
+            employees=employees,
+            username=session.get('user')
+        )
 
     finally:
         conn.close()
 
-    return render_template(
-        'owner_schedule.html',
-        jobs=jobs,
-        employees=employees,
-        username=session.get('user')
-    )
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

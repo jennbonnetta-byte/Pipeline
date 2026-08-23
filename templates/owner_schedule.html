@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine — Schedule & Dispatch</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, sans-serif;
+            background: #f4f7fa;
+            color: #17212b;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #dfe7ef;
+            color: #17324a;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .heading {
+            flex: 1;
+        }
+
+        .eyebrow {
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 850;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 3px 0 0;
+            font-size: 28px;
+        }
+
+        .dashboard-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 12px;
+            background: #0b2239;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #dfe7ef;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 5px 18px rgba(22,54,86,.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 850;
+            margin-bottom: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #475569;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #d5dee7;
+            border-radius: 10px;
+            padding: 11px 12px;
+            font: inherit;
+            background: white;
+            color: #17212b;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1685c5;
+            box-shadow: 0 0 0 3px rgba(22,133,197,.10);
+        }
+
+        .submit-row {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .primary-button {
+            border: 0;
+            border-radius: 11px;
+            padding: 12px 20px;
+            background: #0b2239;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .primary-button:hover {
+            background: #123b5d;
+        }
+
+        .job-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .job-card {
+            border: 1px solid #dfe7ef;
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .job-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .job-title {
+            font-weight: 850;
+            font-size: 16px;
+        }
+
+        .job-date {
+            color: #1685c5;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .job-meta {
+            color: #718096;
+            font-size: 13px;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #eef6fb;
+            color: #087bb8;
+            font-size: 11px;
+            font-weight: 850;
+        }
+
+        .empty {
+            color: #718096;
+            padding: 10px 0;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 12px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .dashboard-button {
+                padding: 0 11px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+        }
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .back,
+        body.pipeline-theme-dark .back,
+        body.theme-dark .section,
+        body.pipeline-theme-dark .section,
+        body.theme-dark .job-card,
+        body.pipeline-theme-dark .job-card {
+            background: #111c27;
+            border-color: #263847;
+            color: #edf4fa;
+        }
+
+        body.theme-dark input,
+        body.theme-dark select,
+        body.theme-dark textarea,
+        body.pipeline-theme-dark input,
+        body.pipeline-theme-dark select,
+        body.pipeline-theme-dark textarea {
+            background: #182532;
+            border-color: #34495a;
+            color: #edf4fa;
+        }
+
+        body.theme-dark label,
+        body.pipeline-theme-dark label,
+        body.theme-dark .job-meta,
+        body.pipeline-theme-dark .job-meta,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            color: #b9c6d3;
+        }
+
+        body.theme-dark .dashboard-button,
+        body.pipeline-theme-dark .dashboard-button {
+            background: #1d4f70;
+        }
+    </style>
+</head>
+
+<body class="theme-{{ appearance.theme }}
+             pipeline-theme-{{ appearance.theme }}
+             accent-{{ appearance.accent_color }}
+             pipeline-accent-{{ appearance.accent_color }}
+             density-{{ appearance.layout_density }}
+             pipeline-density-{{ appearance.layout_density }}
+             cards-{{ appearance.card_style }}
+             pipeline-cards-{{ appearance.card_style }}
+             font-{{ appearance.font_size }}
+             pipeline-font-{{ appearance.font_size }}">
+
+<div class="page">
+
+    <div class="topbar">
+
+        <a class="back"
+           href="{{ url_for('owner_dashboard') }}">
+            ‹
+        </a>
+
+        <div class="heading">
+            <div class="eyebrow">Owner Hub</div>
+            <h1>Schedule & Dispatch</h1>
+        </div>
+
+        <a class="dashboard-button"
+           href="{{ url_for('owner_dashboard') }}">
+            Dashboard
+        </a>
+
+    </div>
+
+    <section class="section">
+
+        <div class="section-title">
+            Schedule a Job
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('owner_schedule') }}">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label for="client_id">Client</label>
+
+                    <select id="client_id" name="client_id">
+                        <option value="">Select a client</option>
+
+                        {% for client in clients %}
+                            <option value="{{ client[0] }}">
+                                {{ client[1] }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="employee_id">Assign Employee</label>
+
+                    <select id="employee_id" name="employee_id" required>
+                        <option value="">Select employee</option>
+
+                        {% for employee in employees %}
+                            <option value="{{ employee[0] }}">
+                                {{ employee[1] }}
+                            </option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="date">Date</label>
+                    <input type="date"
+                           id="date"
+                           name="date"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label for="destination">Job Location</label>
+                    <input type="text"
+                           id="destination"
+                           name="destination"
+                           placeholder="Address or job location"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label for="start_time">Start Time</label>
+                    <input type="time"
+                           id="start_time"
+                           name="start_time">
+                </div>
+
+                <div class="field">
+                    <label for="end_time">End Time</label>
+                    <input type="time"
+                           id="end_time"
+                           name="end_time">
+                </div>
+
+                <div class="field full">
+                    <label for="notes">Job Notes</label>
+                    <textarea id="notes"
+                              name="notes"
+                              placeholder="Describe the work to be completed..."></textarea>
+                </div>
+
+                <div class="field full">
+                    <label for="materials">Materials</label>
+                    <textarea id="materials"
+                              name="materials"
+                              placeholder="Materials required for this job..."></textarea>
+                </div>
+
+            </div>
+
+            <div class="submit-row">
+                <button class="primary-button"
+                        type="submit">
+                    Schedule & Assign Job
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+    <section class="section">
+
+        <div class="section-title">
+            Scheduled Jobs
+        </div>
+
+        {% if jobs %}
+
+            <div class="job-list">
+
+                {% for job in jobs %}
+
+                    <div class="job-card">
+
+                        <div class="job-top">
+
+                            <div>
+                                <div class="job-title">
+                                    {{ job[6] or job[5] or 'Job #' ~ job[0] }}
+                                </div>
+
+                                <div class="job-meta">
+                                    {{ job[5] or 'No location entered' }}
+                                </div>
+                            </div>
+
+                            <div class="job-date">
+                                {{ job[1] or 'No date' }}
+                            </div>
+
+                        </div>
+
+                        {% if job[3] %}
+                            <div class="job-meta">
+                                {{ job[3] }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty">
+                No scheduled jobs yet.
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+</body>
+</html>

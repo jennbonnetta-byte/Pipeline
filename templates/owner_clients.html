@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>PipeLine — Employees</title>
+    <title>PipeLine — Shared Client Book</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/appearance.css') }}">
@@ -24,14 +24,14 @@
         }
 
         .page {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
         }
 
         .topbar {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             margin-bottom: 18px;
         }
 
@@ -50,31 +50,8 @@
             font-weight: 700;
         }
 
-        .back:hover {
-            background: #f0f7fc;
-        }
-
         .heading {
             flex: 1;
-        }
-
-        .dashboard-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 42px;
-            padding: 0 16px;
-            border-radius: 12px;
-            background: #0b2239;
-            color: white;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 800;
-            border: 1px solid #0b2239;
-        }
-
-        .dashboard-button:hover {
-            background: #123b5d;
         }
 
         .eyebrow {
@@ -90,17 +67,31 @@
             font-size: 28px;
         }
 
+        .dashboard-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 12px;
+            background: #0b2239;
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
         .intro {
             margin: 0 0 20px;
             color: #718096;
         }
 
-        .employee-list {
+        .client-list {
             display: grid;
             gap: 14px;
         }
 
-        .employee-card {
+        .client-card {
             background: white;
             border: 1px solid #dfe7ef;
             border-radius: 18px;
@@ -108,48 +99,40 @@
             box-shadow: 0 5px 18px rgba(22,54,86,.06);
         }
 
-        .employee-main {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .avatar {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #e8f4fb;
-            color: #087bb8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 21px;
-            font-weight: 850;
-            flex-shrink: 0;
-        }
-
-        .employee-name {
+        .client-name {
             font-size: 19px;
             font-weight: 850;
+            margin-bottom: 12px;
         }
 
-        .employee-role {
-            margin-top: 3px;
-            color: #718096;
-            font-size: 13px;
+        .client-contact {
+            color: #475569;
+            font-size: 14px;
             font-weight: 650;
+            margin-bottom: 5px;
         }
 
-        .employee-details {
-            margin-top: 16px;
-            padding-top: 15px;
+        .client-contact a {
+            color: #1685c5;
+            text-decoration: none;
+        }
+
+        .client-address {
+            margin-top: 13px;
+            padding-top: 13px;
             border-top: 1px solid #edf1f5;
             color: #718096;
             font-size: 13px;
+            line-height: 1.5;
         }
 
-        .employee-details strong {
-            color: #334155;
+        .client-notes {
+            margin-top: 12px;
+            padding: 11px 12px;
+            background: #f7faff;
+            border-radius: 10px;
+            color: #64748b;
+            font-size: 13px;
         }
 
         .empty {
@@ -168,16 +151,20 @@
             margin-bottom: 6px;
         }
 
-        @media (max-width: 500px) {
+        @media (max-width: 600px) {
             body {
                 padding: 12px;
             }
 
             h1 {
-                font-size: 24px;
+                font-size: 23px;
             }
 
-            .employee-card {
+            .dashboard-button {
+                padding: 0 11px;
+            }
+
+            .client-card {
                 padding: 16px;
             }
         }
@@ -190,8 +177,8 @@
 
         body.theme-dark .back,
         body.pipeline-theme-dark .back,
-        body.theme-dark .employee-card,
-        body.pipeline-theme-dark .employee-card,
+        body.theme-dark .client-card,
+        body.pipeline-theme-dark .client-card,
         body.theme-dark .empty,
         body.pipeline-theme-dark .empty {
             background: #111c27;
@@ -199,31 +186,39 @@
             color: #edf4fa;
         }
 
-        body.theme-dark .employee-details,
-        body.pipeline-theme-dark .employee-details {
-            border-color: #263847;
-        }
-
         body.theme-dark .dashboard-button,
         body.pipeline-theme-dark .dashboard-button {
             background: #1d4f70;
-            border-color: #315d78;
         }
 
-        body.theme-dark .employee-details strong,
-        body.pipeline-theme-dark .employee-details strong,
+        body.theme-dark .client-contact,
+        body.pipeline-theme-dark .client-contact {
+            color: #d5dee7;
+        }
+
+        body.theme-dark .client-address,
+        body.pipeline-theme-dark .client-address,
+        body.theme-dark .intro,
+        body.pipeline-theme-dark .intro,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            color: #b9c6d3;
+        }
+
+        body.theme-dark .client-address,
+        body.pipeline-theme-dark .client-address {
+            border-color: #263847;
+        }
+
+        body.theme-dark .client-notes,
+        body.pipeline-theme-dark .client-notes {
+            background: #182532;
+            color: #b9c6d3;
+        }
+
         body.theme-dark .empty-title,
         body.pipeline-theme-dark .empty-title {
             color: #edf4fa;
-        }
-
-        body.theme-dark .employee-role,
-        body.pipeline-theme-dark .employee-role,
-        body.theme-dark .employee-details,
-        body.pipeline-theme-dark .employee-details,
-        body.theme-dark .intro,
-        body.pipeline-theme-dark .intro {
-            color: #b9c6d3;
         }
     </style>
 </head>
@@ -251,7 +246,7 @@
 
         <div class="heading">
             <div class="eyebrow">Owner Hub</div>
-            <h1>Employees</h1>
+            <h1>Shared Client Book</h1>
         </div>
 
         <a class="dashboard-button"
@@ -262,43 +257,70 @@
     </div>
 
     <p class="intro">
-        View the employees connected to your PipeLine company account.
+        One shared company directory for clients, contacts and job locations.
     </p>
 
-    {% if employees %}
+    {% if clients %}
 
-        <div class="employee-list">
+        <div class="client-list">
 
-            {% for employee in employees %}
+            {% for client in clients %}
 
-                <div class="employee-card">
+                <div class="client-card">
 
-                    <div class="employee-main">
-
-                        <div class="avatar">
-                            {{ employee[1][0:2]|upper }}
-                        </div>
-
-                        <div>
-                            <div class="employee-name">
-                                {{ employee[1] }}
-                            </div>
-
-                            <div class="employee-role">
-                                Employee
-                            </div>
-                        </div>
-
+                    <div class="client-name">
+                        {{ client[1] }}
                     </div>
 
-                    <div class="employee-details">
-                        <strong>PipeLine account</strong>
-                        <br>
-                        Employee ID: {{ employee[0] }}
-                        <br>
-                        Account created:
-                        {{ employee[2].strftime('%B %d, %Y') if employee[2] else 'Unknown' }}
-                    </div>
+                    {% if client[2] %}
+                        <div class="client-contact">
+                            Contact: {{ client[2] }}
+                        </div>
+                    {% endif %}
+
+                    {% if client[3] %}
+                        <div class="client-contact">
+                            Phone:
+                            <a href="tel:{{ client[3] }}">
+                                {{ client[3] }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if client[4] %}
+                        <div class="client-contact">
+                            Email:
+                            <a href="mailto:{{ client[4] }}">
+                                {{ client[4] }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if client[5] or client[6] or client[7] or client[8] %}
+
+                        <div class="client-address">
+
+                            {% if client[5] %}
+                                {{ client[5] }}<br>
+                            {% endif %}
+
+                            {% if client[6] %}
+                                {{ client[6] }}{% if client[7] %}, {{ client[7] }}{% endif %}
+                            {% endif %}
+
+                            {% if client[8] %}
+                                {{ client[8] }}
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+                    {% if client[9] %}
+                        <div class="client-notes">
+                            {{ client[9] }}
+                        </div>
+                    {% endif %}
 
                 </div>
 
@@ -311,10 +333,10 @@
         <div class="empty">
 
             <div class="empty-title">
-                No employees yet
+                No clients yet
             </div>
 
-            There are currently no employee accounts in PipeLine.
+            Your shared company client book is currently empty.
 
         </div>
 
