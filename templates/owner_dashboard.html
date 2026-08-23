@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipeLine — Owner Hub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, sans-serif;
+            background: #f4f7fa;
+            color: #17212b;
+            padding: 24px;
+        }
+
+        .owner-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .owner-header {
+            background: linear-gradient(135deg, #0b2239, #123b5d);
+            color: white;
+            border-radius: 20px;
+            padding: 26px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(12, 39, 64, .18);
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: .75;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .welcome {
+            margin-top: 7px;
+            opacity: .82;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: white;
+            border: 1px solid #e1e8ef;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(22,54,86,.06);
+        }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: 850;
+            margin-top: 7px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #e1e8ef;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 850;
+            margin-bottom: 14px;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .quick-link {
+            display: block;
+            text-decoration: none;
+            color: #17324a;
+            background: #f7faff;
+            border: 1px solid #dfe8f1;
+            border-radius: 14px;
+            padding: 17px;
+            font-weight: 800;
+        }
+
+        .quick-link:hover {
+            border-color: #75b9e8;
+            transform: translateY(-1px);
+        }
+
+        .job {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf1f5;
+        }
+
+        .job:last-child {
+            border-bottom: 0;
+        }
+
+        .job-title {
+            font-weight: 800;
+        }
+
+        .job-meta {
+            color: #718096;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .empty {
+            color: #718096;
+            padding: 12px 0;
+        }
+
+        .logout {
+            display: inline-block;
+            margin-top: 4px;
+            color: #d64545;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        @media (max-width: 800px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-links {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 12px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 9px;
+            }
+
+            .stat {
+                padding: 15px;
+            }
+
+            .stat-number {
+                font-size: 25px;
+            }
+
+            .owner-header {
+                padding: 21px;
+            }
+        }
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .stat,
+        body.pipeline-theme-dark .stat,
+        body.theme-dark .section,
+        body.pipeline-theme-dark .section {
+            background: #111c27;
+            border-color: #263847;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .stat-label,
+        body.pipeline-theme-dark .stat-label,
+        body.theme-dark .job-meta,
+        body.pipeline-theme-dark .job-meta,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            color: #b9c6d3;
+        }
+
+        body.theme-dark .quick-link,
+        body.pipeline-theme-dark .quick-link {
+            background: #182532;
+            border-color: #2b3d4d;
+            color: #f1f5f9;
+        }
+
+        body.theme-dark .job,
+        body.pipeline-theme-dark .job {
+            border-color: #263847;
+        }
+    </style>
+</head>
+
+<body class="theme-{{ appearance.theme }}
+             pipeline-theme-{{ appearance.theme }}
+             accent-{{ appearance.accent_color }}
+             pipeline-accent-{{ appearance.accent_color }}
+             density-{{ appearance.layout_density }}
+             pipeline-density-{{ appearance.layout_density }}
+             cards-{{ appearance.card_style }}
+             pipeline-cards-{{ appearance.card_style }}
+             font-{{ appearance.font_size }}
+             pipeline-font-{{ appearance.font_size }}
+             pipeline-dashboard-{{ appearance.dashboard_layout }}
+             {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+
+<div class="owner-shell">
+
+    <header class="owner-header">
+        <div class="eyebrow">PipeLine Owner Hub</div>
+        <h1>👑 Owner Dashboard</h1>
+        <div class="welcome">
+            Welcome, {{ username }}. Here's what's happening with your team.
+        </div>
+    </header>
+
+    <section class="stats">
+        <div class="stat">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number">{{ employee_count }}</div>
+            <div class="stat-label">Employees</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon">📋</div>
+            <div class="stat-number">{{ client_count }}</div>
+            <div class="stat-label">Clients</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon">🔧</div>
+            <div class="stat-number">{{ open_jobs }}</div>
+            <div class="stat-label">Open Jobs</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon">🔔</div>
+            <div class="stat-number">{{ unread_notifications }}</div>
+            <div class="stat-label">Notifications</div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">Owner Tools</div>
+
+        <div class="quick-links">
+            <a class="quick-link" href="#">👥 Employees</a>
+            <a class="quick-link" href="#">📋 Shared Client Book</a>
+            <a class="quick-link" href="#">📅 Schedule & Dispatch</a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-title">Today's Jobs</div>
+
+        {% if todays_jobs %}
+            {% for job in todays_jobs %}
+            <div class="job">
+                <div>
+                    <div class="job-title">
+                        {{ job.destination or 'Job #' ~ job.id }}
+                    </div>
+                    <div class="job-meta">
+                        {% if job.employee_name %}
+                            👷 {{ job.employee_name }}
+                        {% else %}
+                            ⚠️ Unassigned
+                        {% endif %}
+                        {% if job.notes %}
+                            · {{ job.notes }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="job-meta">
+                    {{ job.date }}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">
+                No jobs scheduled for today.
+            </div>
+        {% endif %}
+    </section>
+
+    <a class="logout" href="{{ url_for('logout') }}">Log out</a>
+
+</div>
+
+</body>
+</html>

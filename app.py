@@ -3199,6 +3199,127 @@ def pay_settings():
     finally:
         conn.close()
 
+
+# --- OWNER HUB ---
+from functools import wraps
+
+def owner_required(view):
+    """Require an authenticated user with the owner role."""
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+
+        conn = get_db()
+
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT role FROM users WHERE id = %s",
+                (session['user_id'],)
+            )
+            row = cur.fetchone()
+            cur.close()
+        finally:
+            conn.close()
+
+        if not row or row[0] != 'owner':
+            return "Owner access required.", 403
+
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+@app.route('/owner')
+@owner_required
+def owner_dashboard():
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT username FROM users WHERE id = %s",
+            (session['user_id'],)
+        )
+        user_row = cur.fetchone()
+        username = user_row[0] if user_row else 'Owner'
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = 'employee'
+        """)
+        employee_count = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM clients
+        """)
+        client_count = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM jobs
+            WHERE COALESCE(hours, '') = ''
+               OR COALESCE(hours, '0')::numeric = 0
+        """)
+        open_jobs = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM notifications
+            WHERE user_id = %s
+              AND is_read = FALSE
+        """, (session['user_id'],))
+        unread_notifications = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT
+                j.id,
+                j.destination,
+                j.date,
+                j.notes,
+                u.username AS employee_name
+            FROM jobs j
+            LEFT JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN users u
+                ON u.id = ja.employee_id
+            WHERE j.date = CURRENT_DATE::text
+            ORDER BY j.id DESC
+        """)
+        rows = cur.fetchall()
+
+        todays_jobs = []
+
+        for row in rows:
+            todays_jobs.append({
+                'id': row[0],
+                'destination': row[1],
+                'date': row[2],
+                'notes': row[3],
+                'employee_name': row[4]
+            })
+
+        cur.close()
+
+        return render_template(
+            'owner_dashboard.html',
+            username=username,
+            employee_count=employee_count,
+            client_count=client_count,
+            open_jobs=open_jobs,
+            unread_notifications=unread_notifications,
+            todays_jobs=todays_jobs
+        )
+
+    finally:
+        conn.close()
+
+# --- END OWNER HUB ---
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
