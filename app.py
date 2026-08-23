@@ -28,6 +28,63 @@ cloudinary.config(
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# --- PIPELINE_DEV_BANNER ---
+@app.after_request
+def add_dev_environment_banner(response):
+    """Show a clear warning when running the development environment."""
+    if os.environ.get("PIPELINE_ENV") != "development":
+        return response
+
+    if "text/html" not in response.headers.get("Content-Type", ""):
+        return response
+
+    try:
+        html = response.get_data(as_text=True)
+
+        banner = """
+<style id="pipeline-dev-banner-style">
+    #pipeline-dev-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2147483647;
+        background: #b45309;
+        color: #ffffff;
+        text-align: center;
+        padding: 8px 12px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+
+    body {
+        padding-top: 36px !important;
+    }
+</style>
+
+<div id="pipeline-dev-banner">
+    🛠️ DEVELOPMENT ENVIRONMENT — PIPELINE DEV HUB — PRODUCTION IS NOT AFFECTED
+</div>
+"""
+
+        closing_body = html.lower().rfind("</body>")
+
+        if closing_body == -1:
+            return response
+
+        html = html[:closing_body] + banner + html[closing_body:]
+        response.set_data(html)
+
+    except Exception:
+        return response
+
+    return response
+# --- END PIPELINE_DEV_BANNER ---
+
+
 
 @app.context_processor
 def inject_appearance():
