@@ -3325,6 +3325,120 @@ def owner_dashboard():
 
 # --- END OWNER HUB ---
 
+
+# --- OWNER HUB TOOLS ---
+
+@app.route('/owner/employees')
+@owner_required
+def owner_employees():
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, username, created_at
+            FROM users
+            WHERE role = 'employee'
+            ORDER BY username
+        """)
+
+        employees = cur.fetchall()
+        cur.close()
+
+    finally:
+        conn.close()
+
+    return render_template(
+        'owner_employees.html',
+        employees=employees,
+        username=session.get('user')
+    )
+
+
+@app.route('/owner/clients')
+@owner_required
+def owner_clients():
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                id,
+                name,
+                contact_person,
+                phone,
+                email,
+                address,
+                city,
+                province,
+                postal_code,
+                notes
+            FROM clients
+            ORDER BY name
+        """)
+
+        clients = cur.fetchall()
+        cur.close()
+
+    finally:
+        conn.close()
+
+    return render_template(
+        'owner_clients.html',
+        clients=clients,
+        username=session.get('user')
+    )
+
+
+@app.route('/owner/schedule')
+@owner_required
+def owner_schedule():
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                j.id,
+                j.date,
+                j.hours,
+                j.notes,
+                j.destination,
+                j.materials,
+                c.name AS client_name
+            FROM jobs j
+            LEFT JOIN clients c ON c.id = j.client_id
+            ORDER BY j.date DESC NULLS LAST, j.id DESC
+            LIMIT 100
+        """)
+
+        jobs = cur.fetchall()
+
+        cur.execute("""
+            SELECT id, username
+            FROM users
+            WHERE role = 'employee'
+            ORDER BY username
+        """)
+
+        employees = cur.fetchall()
+
+        cur.close()
+
+    finally:
+        conn.close()
+
+    return render_template(
+        'owner_schedule.html',
+        jobs=jobs,
+        employees=employees,
+        username=session.get('user')
+    )
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

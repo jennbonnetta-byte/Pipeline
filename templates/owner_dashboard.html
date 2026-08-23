@@ -15,11 +15,11 @@
 
         body {
             margin: 0;
+            padding: 24px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
                          Roboto, sans-serif;
             background: #f4f7fa;
             color: #17212b;
-            padding: 24px;
         }
 
         .owner-shell {
@@ -31,7 +31,7 @@
             background: linear-gradient(135deg, #0b2239, #123b5d);
             color: white;
             border-radius: 20px;
-            padding: 26px;
+            padding: 28px;
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(12, 39, 64, .18);
         }
@@ -39,20 +39,22 @@
         .eyebrow {
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             opacity: .75;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         h1 {
             margin: 0;
             font-size: 30px;
+            letter-spacing: -.5px;
         }
 
         .welcome {
-            margin-top: 7px;
+            margin-top: 8px;
             opacity: .82;
+            font-size: 15px;
         }
 
         .stats {
@@ -71,7 +73,8 @@
         }
 
         .stat-icon {
-            font-size: 24px;
+            font-size: 22px;
+            opacity: .8;
         }
 
         .stat-number {
@@ -108,7 +111,10 @@
         }
 
         .quick-link {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-height: 74px;
             text-decoration: none;
             color: #17324a;
             background: #f7faff;
@@ -116,11 +122,51 @@
             border-radius: 14px;
             padding: 17px;
             font-weight: 800;
+            transition: transform .15s ease, box-shadow .15s ease,
+                        border-color .15s ease, background .15s ease;
         }
 
         .quick-link:hover {
             border-color: #75b9e8;
-            transform: translateY(-1px);
+            background: #f0f8ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(20,70,110,.08);
+        }
+
+        .quick-link:active {
+            transform: translateY(0);
+        }
+
+        .quick-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: #eaf5fc;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .quick-text {
+            flex: 1;
+        }
+
+        .quick-title {
+            font-size: 15px;
+        }
+
+        .quick-description {
+            color: #718096;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .arrow {
+            color: #1685c5;
+            font-size: 20px;
         }
 
         .job {
@@ -187,7 +233,11 @@
             }
 
             .owner-header {
-                padding: 21px;
+                padding: 22px;
+            }
+
+            h1 {
+                font-size: 26px;
             }
         }
 
@@ -211,7 +261,9 @@
         body.theme-dark .job-meta,
         body.pipeline-theme-dark .job-meta,
         body.theme-dark .empty,
-        body.pipeline-theme-dark .empty {
+        body.pipeline-theme-dark .empty,
+        body.theme-dark .quick-description,
+        body.pipeline-theme-dark .quick-description {
             color: #b9c6d3;
         }
 
@@ -220,6 +272,16 @@
             background: #182532;
             border-color: #2b3d4d;
             color: #f1f5f9;
+        }
+
+        body.theme-dark .quick-link:hover,
+        body.pipeline-theme-dark .quick-link:hover {
+            background: #203241;
+        }
+
+        body.theme-dark .quick-icon,
+        body.pipeline-theme-dark .quick-icon {
+            background: #203747;
         }
 
         body.theme-dark .job,
@@ -246,13 +308,14 @@
 
     <header class="owner-header">
         <div class="eyebrow">PipeLine Owner Hub</div>
-        <h1>👑 Owner Dashboard</h1>
+        <h1>Owner Dashboard</h1>
         <div class="welcome">
             Welcome, {{ username }}. Here's what's happening with your team.
         </div>
     </header>
 
     <section class="stats">
+
         <div class="stat">
             <div class="stat-icon">👥</div>
             <div class="stat-number">{{ employee_count }}</div>
@@ -276,49 +339,113 @@
             <div class="stat-number">{{ unread_notifications }}</div>
             <div class="stat-label">Notifications</div>
         </div>
+
     </section>
 
     <section class="section">
+
         <div class="section-title">Owner Tools</div>
 
         <div class="quick-links">
-            <a class="quick-link" href="#">👥 Employees</a>
-            <a class="quick-link" href="#">📋 Shared Client Book</a>
-            <a class="quick-link" href="#">📅 Schedule & Dispatch</a>
+
+            <a class="quick-link"
+               href="{{ url_for('owner_employees') }}">
+
+                <div class="quick-icon">👥</div>
+
+                <div class="quick-text">
+                    <div class="quick-title">Employees</div>
+                    <div class="quick-description">
+                        View employee profiles and activity
+                    </div>
+                </div>
+
+                <div class="arrow">›</div>
+
+            </a>
+
+            <a class="quick-link"
+               href="{{ url_for('owner_clients') }}">
+
+                <div class="quick-icon">📋</div>
+
+                <div class="quick-text">
+                    <div class="quick-title">Shared Client Book</div>
+                    <div class="quick-description">
+                        Manage company clients and contacts
+                    </div>
+                </div>
+
+                <div class="arrow">›</div>
+
+            </a>
+
+            <a class="quick-link"
+               href="{{ url_for('owner_schedule') }}">
+
+                <div class="quick-icon">📅</div>
+
+                <div class="quick-text">
+                    <div class="quick-title">Schedule & Dispatch</div>
+                    <div class="quick-description">
+                        Schedule jobs and assign employees
+                    </div>
+                </div>
+
+                <div class="arrow">›</div>
+
+            </a>
+
         </div>
+
     </section>
 
     <section class="section">
+
         <div class="section-title">Today's Jobs</div>
 
         {% if todays_jobs %}
+
             {% for job in todays_jobs %}
+
             <div class="job">
+
                 <div>
                     <div class="job-title">
                         {{ job.destination or 'Job #' ~ job.id }}
                     </div>
+
                     <div class="job-meta">
+
                         {% if job.employee_name %}
                             👷 {{ job.employee_name }}
                         {% else %}
                             ⚠️ Unassigned
                         {% endif %}
+
                         {% if job.notes %}
                             · {{ job.notes }}
                         {% endif %}
+
                     </div>
                 </div>
+
                 <div class="job-meta">
                     {{ job.date }}
                 </div>
+
             </div>
+
             {% endfor %}
+
         {% else %}
+
             <div class="empty">
                 No jobs scheduled for today.
             </div>
+
         {% endif %}
+
     </section>
 
     <a class="logout" href="{{ url_for('logout') }}">Log out</a>

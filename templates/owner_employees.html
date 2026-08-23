@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PipeLine — Employees</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, sans-serif;
+            background: #f4f7fa;
+            color: #17212b;
+        }
+
+        .page {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #dfe7ef;
+            color: #17324a;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .back:hover {
+            background: #f0f7fc;
+        }
+
+        .heading {
+            flex: 1;
+        }
+
+        .eyebrow {
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 850;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 3px 0 0;
+            font-size: 28px;
+        }
+
+        .intro {
+            margin: 0 0 20px;
+            color: #718096;
+        }
+
+        .employee-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .employee-card {
+            background: white;
+            border: 1px solid #dfe7ef;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 5px 18px rgba(22,54,86,.06);
+        }
+
+        .employee-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #e8f4fb;
+            color: #087bb8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            font-weight: 850;
+            flex-shrink: 0;
+        }
+
+        .employee-name {
+            font-size: 19px;
+            font-weight: 850;
+        }
+
+        .employee-role {
+            margin-top: 3px;
+            color: #718096;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .employee-details {
+            margin-top: 16px;
+            padding-top: 15px;
+            border-top: 1px solid #edf1f5;
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .employee-details strong {
+            color: #334155;
+        }
+
+        .empty {
+            background: white;
+            border: 1px solid #dfe7ef;
+            border-radius: 18px;
+            padding: 35px 20px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .empty-title {
+            color: #334155;
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .employee-card {
+                padding: 16px;
+            }
+        }
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .back,
+        body.pipeline-theme-dark .back,
+        body.theme-dark .employee-card,
+        body.pipeline-theme-dark .employee-card,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            background: #111c27;
+            border-color: #263847;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .employee-details,
+        body.pipeline-theme-dark .employee-details {
+            border-color: #263847;
+        }
+
+        body.theme-dark .employee-details strong,
+        body.pipeline-theme-dark .employee-details strong,
+        body.theme-dark .empty-title,
+        body.pipeline-theme-dark .empty-title {
+            color: #edf4fa;
+        }
+
+        body.theme-dark .employee-role,
+        body.pipeline-theme-dark .employee-role,
+        body.theme-dark .employee-details,
+        body.pipeline-theme-dark .employee-details,
+        body.theme-dark .intro,
+        body.pipeline-theme-dark .intro {
+            color: #b9c6d3;
+        }
+    </style>
+</head>
+
+<body class="theme-{{ appearance.theme }}
+             pipeline-theme-{{ appearance.theme }}
+             accent-{{ appearance.accent_color }}
+             pipeline-accent-{{ appearance.accent_color }}
+             density-{{ appearance.layout_density }}
+             pipeline-density-{{ appearance.layout_density }}
+             cards-{{ appearance.card_style }}
+             pipeline-cards-{{ appearance.card_style }}
+             font-{{ appearance.font_size }}
+             pipeline-font-{{ appearance.font_size }}">
+
+<div class="page">
+
+    <div class="topbar">
+
+        <a class="back"
+           href="{{ url_for('owner_dashboard') }}"
+           aria-label="Back to Owner Dashboard">
+            ‹
+        </a>
+
+        <div class="heading">
+            <div class="eyebrow">Owner Hub</div>
+            <h1>Employees</h1>
+        </div>
+
+    </div>
+
+    <p class="intro">
+        View the employees connected to your PipeLine company account.
+    </p>
+
+    {% if employees %}
+
+        <div class="employee-list">
+
+            {% for employee in employees %}
+
+                <div class="employee-card">
+
+                    <div class="employee-main">
+
+                        <div class="avatar">
+                            {{ employee[1][0:2]|upper }}
+                        </div>
+
+                        <div>
+                            <div class="employee-name">
+                                {{ employee[1] }}
+                            </div>
+
+                            <div class="employee-role">
+                                Employee
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="employee-details">
+                        <strong>PipeLine account</strong>
+                        <br>
+                        Employee ID: {{ employee[0] }}
+                        <br>
+                        Account created:
+                        {{ employee[2].strftime('%B %d, %Y') if employee[2] else 'Unknown' }}
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+
+            <div class="empty-title">
+                No employees yet
+            </div>
+
+            There are currently no employee accounts in PipeLine.
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>
