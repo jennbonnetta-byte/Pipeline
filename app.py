@@ -175,7 +175,7 @@ def get_user_by_username(username):
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, username, password_hash FROM users WHERE username = %s",
+            "SELECT id, username, password_hash FROM users WHERE LOWER(username) = LOWER(%s)",
             (username,)
         )
         row = cur.fetchone()
