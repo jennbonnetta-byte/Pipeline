@@ -355,9 +355,20 @@ def create_user(username, password_hash, email=None):
 
 
 def get_user_jobs(user_id):
+    """
+    Return jobs available to an employee.
+
+    An employee can see:
+    1. Jobs they created themselves.
+    2. Jobs assigned to them through job_assignments.
+
+    The Owner Hub continues to use its own company-wide queries.
+    """
     conn = get_db()
+
     try:
         cur = conn.cursor()
+
         cur.execute(
             """
             SELECT
@@ -382,8 +393,13 @@ def get_user_jobs(user_id):
             FROM jobs j
             LEFT JOIN clients c
                 ON j.client_id = c.id
-                AND c.user_id = %s
             WHERE j.user_id = %s
+               OR EXISTS (
+                    SELECT 1
+                    FROM job_assignments ja
+                    WHERE ja.job_id = j.id
+                      AND ja.employee_id = %s
+               )
             ORDER BY j.id DESC
             """,
             (user_id, user_id)
@@ -412,6 +428,70 @@ def get_user_jobs(user_id):
                 "client_city": row[15],
                 "client_province": row[16],
                 "client_postal_code": row[17]
+            }
+            for row in rows
+        ]
+
+    finally:
+        conn.close()
+
+
+
+def get_employee_upcoming_jobs(user_id, limit=20):
+    """Return upcoming jobs assigned to an employee."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                j.client_id,
+                c.name AS client_name,
+                ja.status,
+                ja.assigned_at
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            WHERE ja.employee_id = %s
+              AND COALESCE(ja.status, 'assigned')
+                    NOT IN ('completed', 'cancelled')
+              AND j.date::date >= CURRENT_DATE
+            ORDER BY
+                j.date::date ASC,
+                j.start_time NULLS LAST,
+                j.id ASC
+            LIMIT %s
+            """,
+            (user_id, limit)
+        )
+
+        rows = cur.fetchall()
+        cur.close()
+
+        return [
+            {
+                "id": row[0],
+                "date": str(row[1]) if row[1] else "",
+                "start_time": str(row[2])[:5] if row[2] else "",
+                "end_time": str(row[3])[:5] if row[3] else "",
+                "destination": row[4] or "",
+                "notes": row[5] or "",
+                "hours": row[6] or "",
+                "client_id": row[7],
+                "client_name": row[8] or "",
+                "status": row[9] or "assigned",
+                "assigned_at": row[10]
             }
             for row in rows
         ]
@@ -1321,11 +1401,13 @@ def home():
     recent_job_count = max(1, min(int(recent_job_count), 10))
 
     recent_jobs = get_user_jobs(session['user_id'])[:recent_job_count]
+    upcoming_jobs = get_employee_upcoming_jobs(session['user_id'])
     appearance = get_appearance_settings(session['user_id'])
 
     return render_template(
         'home.html',
         recent_jobs=recent_jobs,
+        upcoming_jobs=upcoming_jobs,
         appearance=appearance
     )
 

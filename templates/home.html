@@ -235,6 +235,111 @@
         }
 
         /* =========================
+           UPCOMING JOBS
+        ========================= */
+
+        .upcoming-section {
+            margin-top: 45px;
+        }
+
+        .upcoming-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .upcoming-heading h2 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        .upcoming-card {
+            background: white;
+            border-radius: 22px;
+            border: 1px solid #e5ebf2;
+            box-shadow: 0 7px 22px rgba(22, 54, 86, .07);
+            overflow: hidden;
+        }
+
+        .upcoming-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .upcoming-row:last-child {
+            border-bottom: none;
+        }
+
+        .upcoming-date {
+            width: 58px;
+            min-width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            background: #edf7ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upcoming-day {
+            font-size: 20px;
+            font-weight: 850;
+            line-height: 1;
+            color: #087bc4;
+        }
+
+        .upcoming-month {
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #6f8296;
+        }
+
+        .upcoming-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .upcoming-title {
+            font-weight: 800;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .upcoming-meta {
+            color: #8b98a8;
+            margin-top: 5px;
+            font-size: 14px;
+            line-height: 1.35;
+        }
+
+        .upcoming-status {
+            display: inline-block;
+            margin-top: 7px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #eef7ef;
+            color: #3d7a45;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .upcoming-arrow {
+            color: #9aa6b4;
+            font-size: 26px;
+        }
+
+        /* =========================
            RECENT ACTIVITY
         ========================= */
 
@@ -722,6 +827,83 @@
 
     </section>
 
+
+    <section class="upcoming-section">
+
+        <div class="upcoming-heading">
+            <h2>Upcoming Jobs</h2>
+
+            <a href="{{ url_for('history') }}" class="view-all">
+                View All
+            </a>
+        </div>
+
+        <div class="upcoming-card">
+
+            {% if upcoming_jobs is defined and upcoming_jobs %}
+
+                {% for job in upcoming_jobs[:5] %}
+
+                <a href="{{ url_for('edit_job', job_id=job.id) }}"
+                   class="upcoming-row">
+
+                    <div class="upcoming-date">
+                        <div class="upcoming-day">
+                            {{ job.date.split('-')[2] if job.date and '-' in job.date else '—' }}
+                        </div>
+
+                        <div class="upcoming-month">
+                            {{ job.date.split('-')[1] if job.date and '-' in job.date else '' }}
+                        </div>
+                    </div>
+
+                    <div class="upcoming-info">
+
+                        <div class="upcoming-title">
+                            {% if job.client_name %}
+                                {{ job.client_name }}
+                            {% else %}
+                                Job #{{ job.id }}
+                            {% endif %}
+                        </div>
+
+                        <div class="upcoming-meta">
+                            {% if job.start_time %}
+                                {{ job.start_time }}
+                                {% if job.end_time %}–{{ job.end_time }}{% endif %}
+                            {% else %}
+                                Time not set
+                            {% endif %}
+
+                            {% if job.destination %}
+                                · {{ job.destination }}
+                            {% endif %}
+                        </div>
+
+                        <div class="upcoming-status">
+                            {{ job.status|replace('_', ' ') }}
+                        </div>
+
+                    </div>
+
+                    <div class="upcoming-arrow">›</div>
+
+                </a>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+                    No upcoming jobs assigned.<br>
+                    Your schedule is clear.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
 
     <section class="activity-section">
 
