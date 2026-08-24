@@ -1090,26 +1090,26 @@ def forgot_password():
                     request.url_root.rstrip("/")
                 )
 
-                reset_url = (
-                    f"{base_url}/reset-password/{token}"
-                )
+                reset_url = f"{base_url}/reset-password/{token}"
 
                 try:
-                    settings = get_email_settings()
+                    resend_api_key = os.environ.get("RESEND_API_KEY")
+                    resend_from = os.environ.get(
+                        "RESEND_FROM_EMAIL",
+                        "onboarding@resend.dev"
+                    )
 
-                    if not settings["username"] or not settings["password"]:
+                    if not resend_api_key:
                         print(
                             "Password reset email not sent: "
-                            "SMTP credentials are not configured."
+                            "RESEND_API_KEY is not configured."
                         )
                     else:
-                        msg = EmailMessage()
-                        msg["From"] = settings["username"]
-                        msg["To"] = email
-                        msg["Subject"] = "PipeLine Password Reset"
-
-                        msg.set_content(
-                            f"""Hello {user[1]},
+                        email_payload = {
+                            "from": resend_from,
+                            "to": [email],
+                            "subject": "PipeLine Password Reset",
+                            "text": f"""Hello {user[1]},
 
 We received a request to reset your PipeLine password.
 
@@ -1123,21 +1123,28 @@ If you did not request a password reset, you can safely ignore this email.
 
 — PipeLine
 """
+                        }
+
+                        resend_request = urllib.request.Request(
+                            "https://api.resend.com/emails",
+                            data=json.dumps(email_payload).encode("utf-8"),
+                            headers={
+                                "Authorization": f"Bearer {resend_api_key}",
+                                "Content-Type": "application/json",
+                                "User-Agent": "PipeLine/1.0"
+                            },
+                            method="POST"
                         )
 
-                        context = ssl.create_default_context()
-
-                        with smtplib.SMTP(
-                            settings["host"],
-                            settings["port"],
+                        with urllib.request.urlopen(
+                            resend_request,
                             timeout=30
-                        ) as server:
-                            server.starttls(context=context)
-                            server.login(
-                                settings["username"],
-                                settings["password"]
+                        ) as response:
+                            response_body = response.read().decode("utf-8")
+                            print(
+                                "Password reset email sent via Resend:",
+                                response_body
                             )
-                            server.send_message(msg)
 
                 except Exception as e:
                     print(
