@@ -3244,6 +3244,7 @@ def owner_dashboard():
     try:
         cur = conn.cursor()
 
+        # Owner name.
         cur.execute(
             "SELECT username FROM users WHERE id = %s",
             (session['user_id'],)
@@ -3251,6 +3252,7 @@ def owner_dashboard():
         user_row = cur.fetchone()
         username = user_row[0] if user_row else 'Owner'
 
+        # Dashboard counts.
         cur.execute("""
             SELECT COUNT(*)
             FROM users
@@ -3280,21 +3282,28 @@ def owner_dashboard():
         """, (session['user_id'],))
         unread_notifications = cur.fetchone()[0]
 
+        # Today's company jobs.
         cur.execute("""
             SELECT
                 j.id,
                 j.destination,
                 j.date,
+                j.start_time,
+                j.end_time,
                 j.notes,
+                c.name AS client_name,
                 u.username AS employee_name
             FROM jobs j
+            LEFT JOIN clients c
+                ON c.id = j.client_id
             LEFT JOIN job_assignments ja
                 ON ja.job_id = j.id
             LEFT JOIN users u
                 ON u.id = ja.employee_id
             WHERE j.date = CURRENT_DATE::text
-            ORDER BY j.id DESC
+            ORDER BY j.start_time NULLS LAST, j.id DESC
         """)
+
         rows = cur.fetchall()
 
         todays_jobs = []
@@ -3304,9 +3313,59 @@ def owner_dashboard():
                 'id': row[0],
                 'destination': row[1],
                 'date': row[2],
-                'notes': row[3],
-                'employee_name': row[4]
+                'start_time': str(row[3])[:5] if row[3] else '',
+                'end_time': str(row[4])[:5] if row[4] else '',
+                'notes': row[5] or '',
+                'client_name': row[6] or '',
+                'employee_name': row[7] or ''
             })
+
+        # Today's owner calendar events.
+        #
+        # owner_calendar_events is created by the existing
+        # /owner/schedule route. If the table hasn't been created
+        # yet, the dashboard simply shows no personal events.
+        todays_personal_events = []
+
+        try:
+            cur.execute("""
+                SELECT
+                    id,
+                    event_type,
+                    event_date,
+                    title,
+                    start_time,
+                    end_time,
+                    notes
+                FROM owner_calendar_events
+                WHERE owner_id = %s
+                  AND event_date = CURRENT_DATE
+                ORDER BY start_time NULLS LAST, id
+            """, (session['user_id'],))
+
+            event_rows = cur.fetchall()
+
+            for row in event_rows:
+                todays_personal_events.append({
+                    'id': row[0],
+                    'type': row[1],
+                    'date': str(row[2]),
+                    'title': row[3],
+                    'start_time': str(row[4])[:5] if row[4] else '',
+                    'end_time': str(row[5])[:5] if row[5] else '',
+                    'notes': row[6] or ''
+                })
+
+        except Exception:
+            # The existing calendar table is created when the
+            # owner opens Schedule & Dispatch. Don't let a
+            # missing table break the dashboard.
+            conn.rollback()
+            todays_personal_events = []
+
+        # Friendly date shown in the Quick View.
+        cur.execute("SELECT TO_CHAR(CURRENT_DATE, 'FMMonth DD, YYYY')")
+        today_display = cur.fetchone()[0]
 
         cur.close()
 
@@ -3317,7 +3376,9 @@ def owner_dashboard():
             client_count=client_count,
             open_jobs=open_jobs,
             unread_notifications=unread_notifications,
-            todays_jobs=todays_jobs
+            todays_jobs=todays_jobs,
+            todays_personal_events=todays_personal_events,
+            today_display=today_display
         )
 
     finally:

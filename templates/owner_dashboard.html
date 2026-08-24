@@ -115,6 +115,153 @@
             font-weight: 800;
         }
 
+        .quick-view {
+            padding: 20px;
+        }
+
+        .quick-view-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 16px;
+        }
+
+        .quick-view-header .section-title {
+            margin-bottom: 3px;
+        }
+
+        .quick-view-date {
+            color: #718096;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .view-calendar {
+            color: #1685c5;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .today-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .today-panel {
+            border: 1px solid #e1e8ef;
+            border-radius: 14px;
+            background: #f8fbfd;
+            padding: 15px;
+        }
+
+        .today-panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 850;
+            margin-bottom: 8px;
+        }
+
+        .today-count {
+            min-width: 24px;
+            height: 24px;
+            padding: 0 7px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: #e8f4fb;
+            color: #087bb8;
+            font-size: 11px;
+        }
+
+        .today-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            padding: 11px 0;
+            border-top: 1px solid #e8edf2;
+        }
+
+        .today-item:first-of-type {
+            border-top: 0;
+        }
+
+        .today-item-time {
+            min-width: 78px;
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 850;
+        }
+
+        .today-item-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .today-item-title {
+            color: #243447;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .today-item-meta,
+        .today-item-notes {
+            color: #718096;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .today-item-notes {
+            font-style: italic;
+        }
+
+        .today-event-icon {
+            min-width: 42px;
+            height: 27px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .appointment-icon {
+            background: #f1ecff;
+            color: #633ea1;
+        }
+
+        .dayoff-icon {
+            background: #feeceb;
+            color: #a33b3b;
+        }
+
+        .today-empty {
+            padding: 13px 0 3px;
+            color: #718096;
+            font-size: 12px;
+        }
+
+        .featured-stat {
+            border-color: #b9dcef;
+            background: linear-gradient(145deg, #f7fcff, #eef8fd);
+        }
+
+        .stat-description {
+            color: #718096;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+            line-height: 1.35;
+        }
+
         .section {
             background: white;
             border: 1px solid #e1e8ef;
@@ -226,6 +373,11 @@
         }
 
         @media (max-width: 800px) {
+            .today-grid {
+                grid-template-columns: 1fr;
+            }
+
+
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -267,6 +419,35 @@
         body.pipeline-theme-dark {
             background: #09131d;
             color: #edf4fa;
+        }
+
+        body.theme-dark .today-panel,
+        body.pipeline-theme-dark .today-panel {
+            background: #182532;
+            border-color: #2b3d4d;
+        }
+
+        body.theme-dark .today-item,
+        body.pipeline-theme-dark .today-item {
+            border-color: #263847;
+        }
+
+        body.theme-dark .today-item-title,
+        body.pipeline-theme-dark .today-item-title {
+            color: #edf4fa;
+        }
+
+        body.theme-dark .quick-view-date,
+        body.pipeline-theme-dark .quick-view-date,
+        body.theme-dark .today-item-meta,
+        body.pipeline-theme-dark .today-item-meta,
+        body.theme-dark .today-item-notes,
+        body.pipeline-theme-dark .today-item-notes,
+        body.theme-dark .today-empty,
+        body.pipeline-theme-dark .today-empty,
+        body.theme-dark .stat-description,
+        body.pipeline-theme-dark .stat-description {
+            color: #b9c6d3;
         }
 
         body.theme-dark .stat,
@@ -326,7 +507,139 @@
         </div>
     </header>
 
+    <!-- TODAY'S QUICK VIEW -->
+    <section class="section quick-view">
+
+        <div class="quick-view-header">
+            <div>
+                <div class="section-title">Today's Quick View</div>
+                <div class="quick-view-date">{{ today_display }}</div>
+            </div>
+            <a class="view-calendar"
+               href="{{ url_for('owner_schedule') }}">
+                Open Calendar →
+            </a>
+        </div>
+
+        <div class="today-grid">
+
+            <div class="today-panel">
+                <div class="today-panel-title">
+                    <span>Jobs</span>
+                    <span class="today-count">{{ todays_jobs|length }}</span>
+                </div>
+
+                {% if todays_jobs %}
+                    {% for job in todays_jobs %}
+                    <div class="today-item">
+                        <div class="today-item-time">
+                            {% if job.start_time %}
+                                {{ job.start_time }}
+                                {% if job.end_time %}–{{ job.end_time }}{% endif %}
+                            {% else %}
+                                Today
+                            {% endif %}
+                        </div>
+
+                        <div class="today-item-main">
+                            <div class="today-item-title">
+                                {{ job.destination or 'Job #' ~ job.id }}
+                            </div>
+
+                            <div class="today-item-meta">
+                                {% if job.employee_name %}
+                                    {{ job.employee_name }}
+                                {% else %}
+                                    Unassigned
+                                {% endif %}
+
+                                {% if job.client_name %}
+                                    · {{ job.client_name }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="today-empty">
+                        No jobs scheduled today.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="today-panel">
+                <div class="today-panel-title">
+                    <span>Appointments & Time Off</span>
+                    <span class="today-count">
+                        {{ todays_personal_events|length }}
+                    </span>
+                </div>
+
+                {% if todays_personal_events %}
+                    {% for event in todays_personal_events %}
+                    <div class="today-item">
+
+                        <div class="today-event-icon
+                            {% if event.type == 'day_off' %}
+                                dayoff-icon
+                            {% else %}
+                                appointment-icon
+                            {% endif %}">
+                            {% if event.type == 'day_off' %}
+                                OFF
+                            {% else %}
+                                APPT
+                            {% endif %}
+                        </div>
+
+                        <div class="today-item-main">
+                            <div class="today-item-title">
+                                {{ event.title }}
+                            </div>
+
+                            <div class="today-item-meta">
+                                {% if event.start_time %}
+                                    {{ event.start_time }}
+                                    {% if event.end_time %}
+                                        –{{ event.end_time }}
+                                    {% endif %}
+                                {% else %}
+                                    All day
+                                {% endif %}
+                            </div>
+
+                            {% if event.notes %}
+                                <div class="today-item-notes">
+                                    {{ event.notes }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="today-empty">
+                        No appointments or time off today.
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- OWNER DASHBOARD TILES -->
     <section class="stats">
+
+        <a class="stat-link"
+           href="{{ url_for('owner_schedule') }}">
+            <div class="stat featured-stat">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Schedule & Dispatch</div>
+                <div class="stat-description">
+                    View jobs, appointments and time off
+                </div>
+                <div class="stat-action">Open calendar →</div>
+            </div>
+        </a>
 
         <a class="stat-link"
            href="{{ url_for('owner_employees') }}">
@@ -334,7 +647,7 @@
                 <div class="stat-icon">👥</div>
                 <div class="stat-number">{{ employee_count }}</div>
                 <div class="stat-label">Employees</div>
-                <div class="stat-action">View employees →</div>
+                <div class="stat-action">View employee profiles →</div>
             </div>
         </a>
 
@@ -354,7 +667,7 @@
                 <div class="stat-icon">🔧</div>
                 <div class="stat-number">{{ open_jobs }}</div>
                 <div class="stat-label">Open Jobs</div>
-                <div class="stat-action">View schedule →</div>
+                <div class="stat-action">View open jobs →</div>
             </div>
         </a>
 
@@ -368,119 +681,21 @@
             </div>
         </a>
 
-    </section>
-
-    <section class="section">
-
-        <div class="section-title">
-            Company Overview
-        </div>
-
-        <div class="quick-links">
-
-            <a class="quick-link"
-               href="{{ url_for('owner_employees') }}">
-
-                <div class="quick-icon">👥</div>
-
-                <div class="quick-text">
-                    <div class="quick-title">Employees</div>
-                    <div class="quick-description">
-                        View employee profiles and activity
-                    </div>
+        <a class="stat-link"
+           href="{{ url_for('owner_schedule') }}">
+            <div class="stat">
+                <div class="stat-icon">🗓️</div>
+                <div class="stat-label">Appointments & Time Off</div>
+                <div class="stat-description">
+                    Add personal appointments or days off
                 </div>
-
-                <div class="arrow">›</div>
-
-            </a>
-
-            <a class="quick-link"
-               href="{{ url_for('owner_clients') }}">
-
-                <div class="quick-icon">📋</div>
-
-                <div class="quick-text">
-                    <div class="quick-title">Shared Client Book</div>
-                    <div class="quick-description">
-                        Manage company clients and contacts
-                    </div>
-                </div>
-
-                <div class="arrow">›</div>
-
-            </a>
-
-            <a class="quick-link"
-               href="{{ url_for('owner_schedule') }}">
-
-                <div class="quick-icon">📅</div>
-
-                <div class="quick-text">
-                    <div class="quick-title">Schedule & Dispatch</div>
-                    <div class="quick-description">
-                        Schedule jobs and assign employees
-                    </div>
-                </div>
-
-                <div class="arrow">›</div>
-
-            </a>
-
-        </div>
-
-    </section>
-
-    <section class="section">
-
-        <div class="section-title">
-            Today's Jobs
-        </div>
-
-        {% if todays_jobs %}
-
-            {% for job in todays_jobs %}
-
-            <div class="job">
-
-                <div>
-                    <div class="job-title">
-                        {{ job.destination or 'Job #' ~ job.id }}
-                    </div>
-
-                    <div class="job-meta">
-
-                        {% if job.employee_name %}
-                            👷 {{ job.employee_name }}
-                        {% else %}
-                            ⚠️ Unassigned
-                        {% endif %}
-
-                        {% if job.notes %}
-                            · {{ job.notes }}
-                        {% endif %}
-
-                    </div>
-                </div>
-
-                <div class="job-meta">
-                    {{ job.date }}
-                </div>
-
+                <div class="stat-action">Manage calendar →</div>
             </div>
-
-            {% endfor %}
-
-        {% else %}
-
-            <div class="empty">
-                No jobs scheduled for today.
-            </div>
-
-        {% endif %}
+        </a>
 
     </section>
 
-    <a class="logout"
+        <a class="logout"
        href="{{ url_for('logout') }}">
         Log out
     </a>
