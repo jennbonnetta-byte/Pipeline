@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>PipeLine — Owner Hub</title>
 
     <link rel="stylesheet"
@@ -15,11 +16,11 @@
 
         body {
             margin: 0;
-            padding: 24px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
                          Roboto, sans-serif;
             background: #f4f7fa;
             color: #17212b;
+            padding: 24px;
         }
 
         .owner-shell {
@@ -31,30 +32,32 @@
             background: linear-gradient(135deg, #0b2239, #123b5d);
             color: white;
             border-radius: 20px;
-            padding: 28px;
+            padding: 26px;
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(12, 39, 64, .18);
         }
 
-        .eyebrow {
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            opacity: .75;
-            margin-bottom: 8px;
-        }
-
-        h1 {
+        .owner-header h1 {
+            color: #ffffff !important;
             margin: 0;
             font-size: 30px;
-            letter-spacing: -.5px;
+            font-weight: 850;
+        }
+
+        .eyebrow {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: .8;
+            margin-bottom: 6px;
         }
 
         .welcome {
-            margin-top: 8px;
-            opacity: .82;
-            font-size: 15px;
+            margin-top: 7px;
+            color: #ffffff;
+            opacity: .88;
         }
 
         .stats {
@@ -64,17 +67,32 @@
             margin-bottom: 20px;
         }
 
+        .stat-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
         .stat {
             background: white;
             border: 1px solid #e1e8ef;
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 5px 18px rgba(22,54,86,.06);
+            transition: transform .15s ease,
+                        box-shadow .15s ease,
+                        border-color .15s ease;
+            min-height: 145px;
+        }
+
+        .stat-link:hover .stat {
+            transform: translateY(-2px);
+            border-color: #75b9e8;
+            box-shadow: 0 9px 24px rgba(22,54,86,.12);
         }
 
         .stat-icon {
-            font-size: 22px;
-            opacity: .8;
+            font-size: 24px;
         }
 
         .stat-number {
@@ -88,6 +106,13 @@
             font-size: 13px;
             font-weight: 700;
             margin-top: 3px;
+        }
+
+        .stat-action {
+            margin-top: 8px;
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 800;
         }
 
         .section {
@@ -114,7 +139,6 @@
             display: flex;
             align-items: center;
             gap: 13px;
-            min-height: 74px;
             text-decoration: none;
             color: #17324a;
             background: #f7faff;
@@ -122,31 +146,19 @@
             border-radius: 14px;
             padding: 17px;
             font-weight: 800;
-            transition: transform .15s ease, box-shadow .15s ease,
-                        border-color .15s ease, background .15s ease;
+            transition: transform .15s ease,
+                        border-color .15s ease,
+                        box-shadow .15s ease;
         }
 
         .quick-link:hover {
             border-color: #75b9e8;
-            background: #f0f8ff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(20,70,110,.08);
-        }
-
-        .quick-link:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(22,54,86,.08);
         }
 
         .quick-icon {
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 11px;
-            background: #eaf5fc;
-            font-size: 22px;
-            flex-shrink: 0;
+            font-size: 24px;
         }
 
         .quick-text {
@@ -166,7 +178,7 @@
 
         .arrow {
             color: #1685c5;
-            font-size: 20px;
+            font-size: 22px;
         }
 
         .job {
@@ -226,6 +238,7 @@
 
             .stat {
                 padding: 15px;
+                min-height: 135px;
             }
 
             .stat-number {
@@ -233,11 +246,11 @@
             }
 
             .owner-header {
-                padding: 22px;
+                padding: 21px;
             }
 
-            h1 {
-                font-size: 26px;
+            .owner-header h1 {
+                font-size: 27px;
             }
         }
 
@@ -261,9 +274,7 @@
         body.theme-dark .job-meta,
         body.pipeline-theme-dark .job-meta,
         body.theme-dark .empty,
-        body.pipeline-theme-dark .empty,
-        body.theme-dark .quick-description,
-        body.pipeline-theme-dark .quick-description {
+        body.pipeline-theme-dark .empty {
             color: #b9c6d3;
         }
 
@@ -272,16 +283,6 @@
             background: #182532;
             border-color: #2b3d4d;
             color: #f1f5f9;
-        }
-
-        body.theme-dark .quick-link:hover,
-        body.pipeline-theme-dark .quick-link:hover {
-            background: #203241;
-        }
-
-        body.theme-dark .quick-icon,
-        body.pipeline-theme-dark .quick-icon {
-            background: #203747;
         }
 
         body.theme-dark .job,
@@ -308,7 +309,9 @@
 
     <header class="owner-header">
         <div class="eyebrow">PipeLine Owner Hub</div>
+
         <h1>Owner Dashboard</h1>
+
         <div class="welcome">
             Welcome, {{ username }}. Here's what's happening with your team.
         </div>
@@ -316,35 +319,53 @@
 
     <section class="stats">
 
-        <div class="stat">
-            <div class="stat-icon">👥</div>
-            <div class="stat-number">{{ employee_count }}</div>
-            <div class="stat-label">Employees</div>
-        </div>
+        <a class="stat-link"
+           href="{{ url_for('owner_employees') }}">
+            <div class="stat">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number">{{ employee_count }}</div>
+                <div class="stat-label">Employees</div>
+                <div class="stat-action">View employees →</div>
+            </div>
+        </a>
 
-        <div class="stat">
-            <div class="stat-icon">📋</div>
-            <div class="stat-number">{{ client_count }}</div>
-            <div class="stat-label">Clients</div>
-        </div>
+        <a class="stat-link"
+           href="{{ url_for('owner_clients') }}">
+            <div class="stat">
+                <div class="stat-icon">📋</div>
+                <div class="stat-number">{{ client_count }}</div>
+                <div class="stat-label">Clients</div>
+                <div class="stat-action">Open client book →</div>
+            </div>
+        </a>
 
-        <div class="stat">
-            <div class="stat-icon">🔧</div>
-            <div class="stat-number">{{ open_jobs }}</div>
-            <div class="stat-label">Open Jobs</div>
-        </div>
+        <a class="stat-link"
+           href="{{ url_for('owner_schedule') }}">
+            <div class="stat">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-number">{{ open_jobs }}</div>
+                <div class="stat-label">Open Jobs</div>
+                <div class="stat-action">View schedule →</div>
+            </div>
+        </a>
 
-        <div class="stat">
-            <div class="stat-icon">🔔</div>
-            <div class="stat-number">{{ unread_notifications }}</div>
-            <div class="stat-label">Notifications</div>
-        </div>
+        <a class="stat-link"
+           href="{{ url_for('owner_notifications') }}">
+            <div class="stat">
+                <div class="stat-icon">🔔</div>
+                <div class="stat-number">{{ unread_notifications }}</div>
+                <div class="stat-label">Notifications</div>
+                <div class="stat-action">View notifications →</div>
+            </div>
+        </a>
 
     </section>
 
     <section class="section">
 
-        <div class="section-title">Owner Tools</div>
+        <div class="section-title">
+            Owner Tools
+        </div>
 
         <div class="quick-links">
 
@@ -402,7 +423,9 @@
 
     <section class="section">
 
-        <div class="section-title">Today's Jobs</div>
+        <div class="section-title">
+            Today's Jobs
+        </div>
 
         {% if todays_jobs %}
 
@@ -448,7 +471,10 @@
 
     </section>
 
-    <a class="logout" href="{{ url_for('logout') }}">Log out</a>
+    <a class="logout"
+       href="{{ url_for('logout') }}">
+        Log out
+    </a>
 
 </div>
 

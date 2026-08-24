@@ -3393,6 +3393,55 @@ def owner_clients():
     )
 
 
+@app.route('/owner/notifications')
+@owner_required
+def owner_notifications():
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                id,
+                title,
+                message,
+                is_read,
+                created_at
+            FROM notifications
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 100
+            """,
+            (session['user_id'],)
+        )
+
+        notifications = cur.fetchall()
+
+        cur.execute(
+            """
+            UPDATE notifications
+            SET is_read = TRUE
+            WHERE user_id = %s
+              AND is_read = FALSE
+            """,
+            (session['user_id'],)
+        )
+
+        conn.commit()
+        cur.close()
+
+        return render_template(
+            'owner_notifications.html',
+            notifications=notifications,
+            username=session.get('user')
+        )
+
+    finally:
+        conn.close()
+
+
 @app.route('/owner/schedule', methods=['GET', 'POST'])
 @owner_required
 def owner_schedule():
@@ -3401,7 +3450,66 @@ def owner_schedule():
     try:
         cur = conn.cursor()
 
+        # Owner's private calendar.
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS owner_calendar_events (
+                id SERIAL PRIMARY KEY,
+                owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                event_type VARCHAR(30) NOT NULL,
+                event_date DATE NOT NULL,
+                title VARCHAR(200) NOT NULL,
+                start_time TIME,
+                end_time TIME,
+                notes TEXT,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         if request.method == 'POST':
+
+            action = request.form.get('action', 'job')
+
+            if action == 'personal':
+
+                event_type = request.form.get('event_type', 'appointment')
+                event_date = request.form.get('event_date')
+                title = request.form.get('title', '').strip()
+                start_time = request.form.get('start_time') or None
+                end_time = request.form.get('end_time') or None
+                notes = request.form.get('event_notes', '').strip()
+
+                if event_date and title:
+                    cur.execute(
+                        """
+                        INSERT INTO owner_calendar_events (
+                            owner_id,
+                            event_type,
+                            event_date,
+                            title,
+                            start_time,
+                            end_time,
+                            notes
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            session['user_id'],
+                            event_type,
+                            event_date,
+                            title,
+                            start_time,
+                            end_time,
+                            notes
+                        )
+                    )
+
+                    conn.commit()
+
+                cur.close()
+
+                return redirect(url_for('owner_schedule'))
+
+            # Normal company job scheduling.
             client_id = request.form.get('client_id') or None
             employee_id = request.form.get('employee_id')
             date = request.form.get('date')
@@ -3415,7 +3523,6 @@ def owner_schedule():
                 cur.close()
                 return redirect(url_for('owner_schedule'))
 
-            # Calculate job hours when both times are supplied.
             calculated_hours = None
 
             if start_time and end_time:
@@ -3430,7 +3537,6 @@ def owner_schedule():
 
                 calculated_hours = f"{(end_minutes - start_minutes) / 60:.2f}"
 
-            # Create the job under the owner account.
             cur.execute(
                 """
                 INSERT INTO jobs (
@@ -3467,7 +3573,6 @@ def owner_schedule():
 
             job_id = cur.fetchone()[0]
 
-            # Assign the job to the selected employee.
             cur.execute(
                 """
                 INSERT INTO job_assignments (
@@ -3478,11 +3583,7 @@ def owner_schedule():
                     status
                 )
                 VALUES (
-                    %s,
-                    %s,
-                    %s,
-                    CURRENT_TIMESTAMP,
-                    'assigned'
+                    %s, %s, %s, CURRENT_TIMESTAMP, 'assigned'
                 )
                 """,
                 (
@@ -3492,7 +3593,6 @@ def owner_schedule():
                 )
             )
 
-            # Notify the employee.
             cur.execute(
                 """
                 INSERT INTO notifications (
@@ -3528,7 +3628,7 @@ def owner_schedule():
 
             return redirect(url_for('owner_schedule'))
 
-        # Existing clients.
+        # Clients.
         cur.execute(
             """
             SELECT id, name
@@ -3538,7 +3638,7 @@ def owner_schedule():
         )
         clients = cur.fetchall()
 
-        # Employees available for dispatch.
+        # Employees.
         cur.execute(
             """
             SELECT id, username
@@ -3549,17 +3649,19 @@ def owner_schedule():
         )
         employees = cur.fetchall()
 
-        # Recently scheduled jobs.
+        # ALL company jobs.
         cur.execute(
             """
             SELECT
                 j.id,
                 j.date,
-                j.hours,
-                j.notes,
+                j.start_time,
+                j.end_time,
                 j.destination,
+                j.notes,
                 c.name AS client_name,
-                u.username AS employee_name
+                u.username AS employee_name,
+                ja.status
             FROM jobs j
             LEFT JOIN clients c
                 ON c.id = j.client_id
@@ -3567,20 +3669,67 @@ def owner_schedule():
                 ON ja.job_id = j.id
             LEFT JOIN users u
                 ON u.id = ja.employee_id
-            WHERE j.user_id = %s
-            ORDER BY j.date DESC NULLS LAST, j.id DESC
-            LIMIT 100
+            ORDER BY j.id DESC
+            LIMIT 500
+            """
+        )
+
+        job_rows = cur.fetchall()
+
+        # Owner's personal calendar.
+        cur.execute(
+            """
+            SELECT
+                id,
+                event_type,
+                event_date,
+                title,
+                start_time,
+                end_time,
+                notes
+            FROM owner_calendar_events
+            WHERE owner_id = %s
+            ORDER BY event_date, start_time NULLS LAST, id
             """,
             (session['user_id'],)
         )
 
-        jobs = cur.fetchall()
+        personal_rows = cur.fetchall()
 
         cur.close()
+
+        jobs = []
+
+        for row in job_rows:
+            jobs.append({
+                'id': row[0],
+                'date': str(row[1]) if row[1] else '',
+                'start_time': str(row[2])[:5] if row[2] else '',
+                'end_time': str(row[3])[:5] if row[3] else '',
+                'destination': row[4] or '',
+                'notes': row[5] or '',
+                'client': row[6] or '',
+                'employee': row[7] or 'Unassigned',
+                'status': row[8] or 'scheduled'
+            })
+
+        personal_events = []
+
+        for row in personal_rows:
+            personal_events.append({
+                'id': row[0],
+                'type': row[1],
+                'date': str(row[2]),
+                'title': row[3],
+                'start_time': str(row[4])[:5] if row[4] else '',
+                'end_time': str(row[5])[:5] if row[5] else '',
+                'notes': row[6] or ''
+            })
 
         return render_template(
             'owner_schedule.html',
             jobs=jobs,
+            personal_events=personal_events,
             clients=clients,
             employees=employees,
             username=session.get('user')
