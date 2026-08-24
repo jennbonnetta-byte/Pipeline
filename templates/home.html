@@ -897,8 +897,9 @@
     </section>
 
     <section class="quick-actions">
+
         <a href="{{ url_for('employee_schedule') }}" class="schedule-card">
-            <div class="schedule-card-icon">📅</div>
+            <div class="schedule-card-icon">🗓️</div>
             <div class="schedule-card-info">
                 <div class="schedule-card-title">My Schedule</div>
                 <div class="schedule-card-description">
@@ -907,6 +908,18 @@
             </div>
             <div class="schedule-card-arrow">›</div>
         </a>
+
+        <a href="{{ url_for('company_calendar') }}" class="schedule-card">
+            <div class="schedule-card-icon">📅</div>
+            <div class="schedule-card-info">
+                <div class="schedule-card-title">Company Calendar</div>
+                <div class="schedule-card-description">
+                    View the shared company calendar
+                </div>
+            </div>
+            <div class="schedule-card-arrow">›</div>
+        </a>
+
     </section>
 
     <section class="dashboard-grid">

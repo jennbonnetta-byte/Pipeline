@@ -3736,6 +3736,292 @@ def pay_settings():
         conn.close()
 
 
+
+# --- SHARED COMPANY CALENDAR ---
+
+def ensure_company_calendar_table():
+    """Create the shared company calendar table if it does not exist."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS company_calendar_events (
+                id SERIAL PRIMARY KEY,
+
+                event_type VARCHAR(30) NOT NULL,
+
+                title VARCHAR(200) NOT NULL,
+                description TEXT,
+
+                event_date DATE NOT NULL,
+                start_time TIME,
+                end_time TIME,
+
+                created_by INTEGER NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+
+                employee_id INTEGER
+                    REFERENCES users(id) ON DELETE CASCADE,
+
+                job_id INTEGER
+                    REFERENCES jobs(id) ON DELETE CASCADE,
+
+                status VARCHAR(30) NOT NULL DEFAULT 'approved',
+
+                visibility VARCHAR(30) NOT NULL DEFAULT 'company',
+
+                created_at TIMESTAMPTZ
+                    DEFAULT CURRENT_TIMESTAMP,
+
+                updated_at TIMESTAMPTZ
+                    DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_company_calendar_date
+            ON company_calendar_events(event_date)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_company_calendar_employee
+            ON company_calendar_events(employee_id)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_company_calendar_job
+            ON company_calendar_events(job_id)
+        """)
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+
+def get_shared_calendar_events(start_date, end_date, user_id):
+    """
+    Return shared calendar events for the requested date range.
+
+    Jobs come from jobs + job_assignments.
+    Calendar events come from company_calendar_events.
+    """
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        # Explicit calendar events.
+        cur.execute(
+            """
+            SELECT
+                e.id,
+                e.event_type,
+                e.title,
+                e.description,
+                e.event_date,
+                e.start_time,
+                e.end_time,
+                e.created_by,
+                e.employee_id,
+                e.job_id,
+                e.status,
+                u.username AS employee_name
+            FROM company_calendar_events e
+            LEFT JOIN users u
+                ON u.id = e.employee_id
+            WHERE e.event_date BETWEEN %s AND %s
+              AND (
+                    e.visibility = 'company'
+                    OR e.created_by = %s
+                    OR e.employee_id = %s
+                  )
+              AND COALESCE(e.status, 'approved')
+                    NOT IN ('cancelled', 'denied')
+            ORDER BY
+                e.event_date,
+                e.start_time NULLS LAST,
+                e.id
+            """,
+            (start_date, end_date, user_id, user_id)
+        )
+
+        event_rows = cur.fetchall()
+
+        events = []
+
+        for row in event_rows:
+            events.append({
+                "source": "calendar",
+                "id": row[0],
+                "event_type": row[1],
+                "title": row[2],
+                "description": row[3] or "",
+                "date": str(row[4]),
+                "start_time": str(row[5])[:5] if row[5] else "",
+                "end_time": str(row[6])[:5] if row[6] else "",
+                "created_by": row[7],
+                "employee_id": row[8],
+                "job_id": row[9],
+                "status": row[10] or "approved",
+                "employee_name": row[11] or ""
+            })
+
+        # Assigned jobs.
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                c.name AS client_name,
+                ja.employee_id,
+                u.username AS employee_name,
+                ja.status
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN users u
+                ON u.id = ja.employee_id
+            WHERE j.date::date BETWEEN %s AND %s
+              AND COALESCE(ja.status, 'assigned')
+                    NOT IN ('cancelled')
+            ORDER BY
+                j.date::date,
+                j.start_time NULLS LAST,
+                j.id
+            """,
+            (start_date, end_date)
+        )
+
+        job_rows = cur.fetchall()
+
+        for row in job_rows:
+            events.append({
+                "source": "job",
+                "id": row[0],
+                "event_type": "job",
+                "title": row[4] or f"Job #{row[0]}",
+                "description": row[5] or "",
+                "date": str(row[1]),
+                "start_time": str(row[2])[:5] if row[2] else "",
+                "end_time": str(row[3])[:5] if row[3] else "",
+                "created_by": None,
+                "employee_id": row[7],
+                "job_id": row[0],
+                "status": row[9] or "assigned",
+                "employee_name": row[8] or ""
+            })
+
+        cur.close()
+
+        return events
+
+    finally:
+        conn.close()
+
+
+@app.route('/calendar')
+def company_calendar():
+    """Shared monthly company calendar."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    from datetime import date
+
+    today = date.today()
+
+    try:
+        year = int(request.args.get('year', today.year))
+        month = int(request.args.get('month', today.month))
+    except (TypeError, ValueError):
+        year = today.year
+        month = today.month
+
+    if month < 1:
+        month = 12
+        year -= 1
+    elif month > 12:
+        month = 1
+        year += 1
+
+    import calendar
+
+    month_start = date(year, month, 1)
+
+    last_day = calendar.monthrange(year, month)[1]
+    month_end = date(year, month, last_day)
+
+    events = get_shared_calendar_events(
+        month_start,
+        month_end,
+        session['user_id']
+    )
+
+    events_by_date = {}
+
+    for event in events:
+        events_by_date.setdefault(
+            event['date'], []
+        ).append(event)
+
+    calendar_weeks = calendar.monthcalendar(year, month)
+
+    month_name = month_start.strftime('%B')
+
+    if month == 1:
+        prev_year, prev_month = year - 1, 12
+    else:
+        prev_year, prev_month = year, month - 1
+
+    if month == 12:
+        next_year, next_month = year + 1, 1
+    else:
+        next_year, next_month = year, month + 1
+
+    selected_date = request.args.get(
+        'date',
+        today.isoformat()
+        if year == today.year and month == today.month
+        else month_start.isoformat()
+    )
+
+    return render_template(
+        'calendar.html',
+        events=events,
+        events_by_date=events_by_date,
+        calendar_weeks=calendar_weeks,
+        calendar_year=year,
+        calendar_month=month,
+        month_name=month_name,
+        month_start=month_start,
+        month_end=month_end,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month,
+        selected_date=selected_date,
+        today=today.isoformat(),
+        username=session.get('user'),
+        role=session.get('role', 'employee')
+    )
+
+
+# --- END SHARED COMPANY CALENDAR ---
+
+
 # --- OWNER HUB ---
 from functools import wraps
 
@@ -4517,6 +4803,12 @@ def owner_schedule():
     finally:
         conn.close()
 
+
+# Ensure shared company calendar storage exists when PipeLine starts.
+try:
+    ensure_company_calendar_table()
+except Exception as e:
+    print(f"Shared calendar table initialization warning: {e}")
 
 # Ensure password reset storage exists when PipeLine starts.
 try:
