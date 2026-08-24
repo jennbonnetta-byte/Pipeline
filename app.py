@@ -3356,6 +3356,193 @@ def owner_employees():
     )
 
 
+@app.route('/owner/employees/<int:employee_id>')
+@owner_required
+def owner_employee_profile(employee_id):
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        # Employee account.
+        cur.execute(
+            """
+            SELECT id, username, created_at, role
+            FROM users
+            WHERE id = %s
+              AND role = 'employee'
+            """,
+            (employee_id,)
+        )
+
+        employee = cur.fetchone()
+
+        if not employee:
+            cur.close()
+            return "Employee not found.", 404
+
+        # Assigned jobs.
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                ja.status,
+                c.name AS client_name
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            WHERE ja.employee_id = %s
+            ORDER BY j.date DESC, j.id DESC
+            LIMIT 100
+            """,
+            (employee_id,)
+        )
+
+        job_rows = cur.fetchall()
+
+        jobs = []
+
+        for row in job_rows:
+            jobs.append({
+                'id': row[0],
+                'date': str(row[1]) if row[1] else '',
+                'start_time': str(row[2])[:5] if row[2] else '',
+                'end_time': str(row[3])[:5] if row[3] else '',
+                'destination': row[4] or '',
+                'notes': row[5] or '',
+                'status': row[6] or 'assigned',
+                'client': row[7] or ''
+            })
+
+        # Hours this week.
+        cur.execute(
+            """
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN hours IS NULL OR hours = '' THEN 0
+                    ELSE hours::numeric
+                END
+            ), 0)
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            WHERE ja.employee_id = %s
+              AND j.date::date >= date_trunc('week', CURRENT_DATE)::date
+              AND j.date::date < (date_trunc('week', CURRENT_DATE) + INTERVAL '7 days')::date
+            """,
+            (employee_id,)
+        )
+
+        week_hours = float(cur.fetchone()[0] or 0)
+
+        # Hours this pay period.
+        cur.execute(
+            """
+            SELECT COALESCE(SUM(
+                CASE
+                    WHEN hours IS NULL OR hours = '' THEN 0
+                    ELSE hours::numeric
+                END
+            ), 0)
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            WHERE ja.employee_id = %s
+              AND j.date::date >= CURRENT_DATE - INTERVAL '13 days'
+              AND j.date::date <= CURRENT_DATE
+            """,
+            (employee_id,)
+        )
+
+        pay_period_hours = float(cur.fetchone()[0] or 0)
+
+        # Current/upcoming assignment.
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.destination,
+                j.start_time,
+                j.end_time,
+                ja.status
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            WHERE ja.employee_id = %s
+              AND j.date::date >= CURRENT_DATE
+              AND COALESCE(ja.status, 'assigned') NOT IN ('completed', 'cancelled')
+            ORDER BY j.date::date, j.start_time NULLS LAST, j.id
+            LIMIT 1
+            """,
+            (employee_id,)
+        )
+
+        current_job_row = cur.fetchone()
+
+        current_job = None
+
+        if current_job_row:
+            current_job = {
+                'id': current_job_row[0],
+                'date': str(current_job_row[1]),
+                'destination': current_job_row[2] or '',
+                'start_time': str(current_job_row[3])[:5] if current_job_row[3] else '',
+                'end_time': str(current_job_row[4])[:5] if current_job_row[4] else '',
+                'status': current_job_row[5] or 'assigned'
+            }
+
+        # Recent notifications for this employee.
+        cur.execute(
+            """
+            SELECT
+                title,
+                message,
+                created_at,
+                is_read
+            FROM notifications
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 10
+            """,
+            (employee_id,)
+        )
+
+        notification_rows = cur.fetchall()
+
+        notifications = []
+
+        for row in notification_rows:
+            notifications.append({
+                'title': row[0],
+                'message': row[1],
+                'created_at': row[2],
+                'is_read': row[3]
+            })
+
+        cur.close()
+
+        return render_template(
+            'owner_employee_profile.html',
+            employee=employee,
+            jobs=jobs,
+            week_hours=week_hours,
+            pay_period_hours=pay_period_hours,
+            current_job=current_job,
+            notifications=notifications
+        )
+
+    finally:
+        conn.close()
+
+
 @app.route('/owner/clients')
 @owner_required
 def owner_clients():

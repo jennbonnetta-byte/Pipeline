@@ -108,6 +108,31 @@
             box-shadow: 0 5px 18px rgba(22,54,86,.06);
         }
 
+        .employee-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            transition: transform .15s ease,
+                        border-color .15s ease,
+                        box-shadow .15s ease;
+        }
+
+        .employee-card:hover {
+            transform: translateY(-2px);
+            border-color: #75b9e8;
+            box-shadow: 0 9px 24px rgba(22,54,86,.12);
+        }
+
+        .employee-heading {
+            flex: 1;
+        }
+
+        .employee-arrow {
+            font-size: 28px;
+            color: #1685c5;
+            font-weight: 700;
+        }
+
         .employee-main {
             display: flex;
             align-items: center;
@@ -271,7 +296,8 @@
 
             {% for employee in employees %}
 
-                <div class="employee-card">
+                <a class="employee-card"
+                   href="{{ url_for('owner_employee_profile', employee_id=employee[0]) }}">
 
                     <div class="employee-main">
 
@@ -279,7 +305,8 @@
                             {{ employee[1][0:2]|upper }}
                         </div>
 
-                        <div>
+                        <div class="employee-heading">
+
                             <div class="employee-name">
                                 {{ employee[1] }}
                             </div>
@@ -287,20 +314,31 @@
                             <div class="employee-role">
                                 Employee
                             </div>
+
+                        </div>
+
+                        <div class="employee-arrow">
+                            ›
                         </div>
 
                     </div>
 
                     <div class="employee-details">
+
                         <strong>PipeLine account</strong>
+
                         <br>
+
                         Employee ID: {{ employee[0] }}
+
                         <br>
+
                         Account created:
                         {{ employee[2].strftime('%B %d, %Y') if employee[2] else 'Unknown' }}
+
                     </div>
 
-                </div>
+                </a>
 
             {% endfor %}
 
