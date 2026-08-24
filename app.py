@@ -1411,6 +1411,84 @@ def home():
         appearance=appearance
     )
 
+
+@app.route('/employee/schedule')
+def employee_schedule():
+    """Employee-specific schedule showing assigned jobs."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Owners continue using the Owner Hub schedule.
+    if session.get('role') == 'owner':
+        return redirect(url_for('owner_schedule'))
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                j.client_id,
+                c.name AS client_name,
+                ja.status
+            FROM jobs j
+            INNER JOIN job_assignments ja
+                ON ja.job_id = j.id
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            WHERE ja.employee_id = %s
+              AND COALESCE(ja.status, 'assigned')
+                    NOT IN ('cancelled')
+            ORDER BY
+                j.date::date ASC,
+                j.start_time NULLS LAST,
+                j.id ASC
+            """,
+            (session['user_id'],)
+        )
+
+        rows = cur.fetchall()
+
+        jobs = [
+            {
+                "id": row[0],
+                "date": str(row[1]) if row[1] else "",
+                "start_time": str(row[2])[:5] if row[2] else "",
+                "end_time": str(row[3])[:5] if row[3] else "",
+                "destination": row[4] or "",
+                "notes": row[5] or "",
+                "hours": row[6] or "",
+                "client_id": row[7],
+                "client_name": row[8] or "",
+                "status": row[9] or "assigned"
+            }
+            for row in rows
+        ]
+
+        cur.close()
+
+    finally:
+        conn.close()
+
+    from datetime import date
+
+    return render_template(
+        'employee_schedule.html',
+        jobs=jobs,
+        username=session.get('user'),
+        today=date.today().isoformat()
+    )
+
+
 @app.route('/entry', methods=['GET', 'POST'])
 def index():
     if 'user' not in session:

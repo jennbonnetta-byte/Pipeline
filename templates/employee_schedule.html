@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule · PipeLine</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+            background: #f3f7fc;
+            color: #10213b;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 5px 18px rgba(0, 30, 60, .18);
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+
+        .back {
+            color: white;
+            font-size: 25px;
+            text-decoration: none;
+            padding: 4px 8px;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            margin: 0;
+            font-size: 34px;
+            letter-spacing: -1px;
+        }
+
+        .page-heading p {
+            margin: 7px 0 0;
+            color: #7b8999;
+            font-size: 16px;
+        }
+
+        .day {
+            margin-bottom: 28px;
+        }
+
+        .day-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .day-title {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .today-badge {
+            background: #0787d1;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .job {
+            display: block;
+            background: white;
+            border: 1px solid #e2e9f1;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 18px rgba(22, 54, 86, .07);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .job:active {
+            transform: scale(.99);
+        }
+
+        .job-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .job-time {
+            font-size: 18px;
+            font-weight: 800;
+            color: #087bc4;
+            white-space: nowrap;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .job-client {
+            color: #66778a;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .job-location {
+            margin-top: 13px;
+            color: #35475d;
+            font-size: 15px;
+        }
+
+        .job-notes {
+            margin-top: 9px;
+            color: #7b8999;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 13px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #edf7ff;
+            color: #087bc4;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .empty {
+            background: white;
+            border: 1px solid #e2e9f1;
+            border-radius: 20px;
+            padding: 40px 22px;
+            text-align: center;
+            color: #7b8999;
+            box-shadow: 0 6px 18px rgba(22, 54, 86, .06);
+        }
+
+        .empty-icon {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        .empty-title {
+            color: #263a52;
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+    <div class="brand">PIPELINE</div>
+    <div style="width:40px;"></div>
+</header>
+
+<main class="content">
+
+    <div class="page-heading">
+        <h1>My Schedule</h1>
+        <p>Assigned jobs and upcoming work</p>
+    </div>
+
+    {% if jobs %}
+
+        {% set ns = namespace(current_day='') %}
+
+        {% for job in jobs %}
+
+            {% if job.date != ns.current_day %}
+
+                {% if ns.current_day != '' %}
+                    </div>
+                {% endif %}
+
+                {% set ns.current_day = job.date %}
+
+                <section class="day">
+
+                    <div class="day-heading">
+                        <div class="day-title">
+                            {{ job.date }}
+                        </div>
+
+                        {% if job.date == today %}
+                            <span class="today-badge">TODAY</span>
+                        {% endif %}
+                    </div>
+
+            {% endif %}
+
+            <a href="{{ url_for('edit_job', job_id=job.id) }}"
+               class="job">
+
+                <div class="job-top">
+
+                    <div>
+                        <div class="job-title">
+                            Job #{{ job.id }}
+                        </div>
+
+                        {% if job.client_name %}
+                            <div class="job-client">
+                                {{ job.client_name }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="job-time">
+                        {% if job.start_time %}
+                            {{ job.start_time }}
+                            {% if job.end_time %}
+                                – {{ job.end_time }}
+                            {% endif %}
+                        {% else %}
+                            Time TBD
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                {% if job.destination %}
+                    <div class="job-location">
+                        📍 {{ job.destination }}
+                    </div>
+                {% endif %}
+
+                {% if job.notes %}
+                    <div class="job-notes">
+                        {{ job.notes }}
+                    </div>
+                {% endif %}
+
+                <span class="status">
+                    {{ job.status }}
+                </span>
+
+            </a>
+
+        {% endfor %}
+
+        </section>
+
+    {% else %}
+
+        <div class="empty">
+            <div class="empty-icon">📅</div>
+
+            <div class="empty-title">
+                Your schedule is clear
+            </div>
+
+            <div>
+                You don't have any assigned jobs yet.
+            </div>
+        </div>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>
