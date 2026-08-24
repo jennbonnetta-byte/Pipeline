@@ -452,139 +452,12 @@ body.pipeline-theme-dark textarea {
 
     </section>
 
-    <!-- ADD ITEMS -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Add to My Calendar
-        </div>
-
-        <div class="two-forms">
-
-            <div class="subcard">
-
-                <h3>Personal Appointment</h3>
-
-                <form method="POST">
-
-                    <input type="hidden"
-                           name="action"
-                           value="personal">
-
-                    <input type="hidden"
-                           name="event_type"
-                           value="appointment">
-
-                    <div class="field">
-                        <label>Date</label>
-                        <input type="date"
-                               name="event_date"
-                               required>
-                    </div>
-
-                    <br>
-
-                    <div class="field">
-                        <label>Appointment</label>
-                        <input type="text"
-                               name="title"
-                               placeholder="Doctor, school, meeting..."
-                               required>
-                    </div>
-
-                    <br>
-
-                    <div class="form-grid">
-
-                        <div class="field">
-                            <label>Start</label>
-                            <input type="time"
-                                   name="start_time">
-                        </div>
-
-                        <div class="field">
-                            <label>End</label>
-                            <input type="time"
-                                   name="end_time">
-                        </div>
-
-                    </div>
-
-                    <br>
-
-                    <div class="field">
-                        <label>Notes</label>
-                        <textarea name="event_notes"></textarea>
-                    </div>
-
-                    <button class="primary"
-                            type="submit">
-                        Add Appointment
-                    </button>
-
-                </form>
-
-            </div>
-
-            <div class="subcard">
-
-                <h3>Day Off</h3>
-
-                <form method="POST">
-
-                    <input type="hidden"
-                           name="action"
-                           value="personal">
-
-                    <input type="hidden"
-                           name="event_type"
-                           value="day_off">
-
-                    <div class="field">
-                        <label>Date</label>
-                        <input type="date"
-                               name="event_date"
-                               required>
-                    </div>
-
-                    <br>
-
-                    <div class="field">
-                        <label>Label</label>
-                        <input type="text"
-                               name="title"
-                               value="Day Off"
-                               required>
-                    </div>
-
-                    <br>
-
-                    <div class="field">
-                        <label>Notes</label>
-                        <textarea name="event_notes"
-                                  placeholder="Vacation, personal day, etc."></textarea>
-                    </div>
-
-                    <button class="primary"
-                            type="submit">
-                        Add Day Off
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </section>
-
     <!-- JOB CREATION -->
 
     <section class="section">
 
         <div class="section-title">
-            Schedule & Assign Company Job
+            Add & Assign Company Job
         </div>
 
         <form method="POST">
@@ -680,7 +553,165 @@ body.pipeline-theme-dark textarea {
 
     </section>
 
+    <!-- PERSONAL CALENDAR ITEMS -->
+
+    <section class="section">
+
+        <div class="section-title">
+            Add Appointment or Time Off
+        </div>
+
+        <form method="POST">
+
+            <input type="hidden"
+                   name="action"
+                   value="personal">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Type</label>
+
+                    <select name="event_type"
+                            id="personalEventType"
+                            onchange="updatePersonalForm()">
+
+                        <option value="appointment">
+                            Personal Appointment
+                        </option>
+
+                        <option value="day_off">
+                            Day Off
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Date</label>
+
+                    <input type="date"
+                           name="event_date"
+                           required>
+                </div>
+
+                <div class="field full">
+                    <label id="personalTitleLabel">
+                        Appointment
+                    </label>
+
+                    <input type="text"
+                           name="title"
+                           id="personalTitle"
+                           placeholder="Doctor, school, meeting..."
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Start Time</label>
+
+                    <input type="time"
+                           name="start_time"
+                           id="personalStart">
+                </div>
+
+                <div class="field">
+                    <label>End Time</label>
+
+                    <input type="time"
+                           name="end_time"
+                           id="personalEnd">
+                </div>
+
+                <div class="field full">
+                    <label>Notes</label>
+
+                    <textarea name="event_notes"
+                              id="personalNotes"
+                              placeholder="Add any notes..."></textarea>
+                </div>
+
+            </div>
+
+            <button class="primary"
+                    type="submit"
+                    id="personalSubmit">
+                Add Appointment
+            </button>
+
+        </form>
+
+    </section>
+
+
+
 </div>
+
+<script>
+
+function updatePersonalForm() {
+
+    const type =
+        document.getElementById('personalEventType').value;
+
+    const titleLabel =
+        document.getElementById('personalTitleLabel');
+
+    const title =
+        document.getElementById('personalTitle');
+
+    const start =
+        document.getElementById('personalStart');
+
+    const end =
+        document.getElementById('personalEnd');
+
+    const notes =
+        document.getElementById('personalNotes');
+
+    const submit =
+        document.getElementById('personalSubmit');
+
+    if (type === 'day_off') {
+
+        titleLabel.textContent = 'Label';
+
+        title.value = 'Day Off';
+        title.placeholder = 'Vacation, personal day...';
+
+        start.value = '';
+        end.value = '';
+
+        start.disabled = true;
+        end.disabled = true;
+
+        notes.placeholder =
+            'Vacation, personal day, etc.';
+
+        submit.textContent = 'Add Day Off';
+
+    } else {
+
+        titleLabel.textContent = 'Appointment';
+
+        title.value = '';
+        title.placeholder =
+            'Doctor, school, meeting...';
+
+        start.disabled = false;
+        end.disabled = false;
+
+        notes.placeholder =
+            'Add any notes...';
+
+        submit.textContent =
+            'Add Appointment';
+    }
+}
+
+updatePersonalForm();
+
+</script>
 
 <script>
 
