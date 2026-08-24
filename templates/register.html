@@ -28,8 +28,18 @@
         {% endif %}
 
         <form method="POST">
+            <label>Email Address:</label>
+            <input type="email"
+                   name="email"
+                   required
+                   autocomplete="email"
+                   placeholder="you@example.com">
+
             <label>Choose Username:</label>
-            <input type="text" name="username" required autocomplete="off">
+            <input type="text"
+                   name="username"
+                   required
+                   autocomplete="username">
 
             <label>Choose Password:</label>
             <input type="password" name="password" required>

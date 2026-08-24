@@ -7,12 +7,19 @@ import psycopg2
 import smtplib
 import ssl
 import urllib.request
+import secrets
+import hashlib
+from datetime import timedelta
 from email.message import EmailMessage
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary
 import cloudinary.uploader
 
 app = Flask(__name__)
+
+# Persistent login duration for "Stay logged in".
+app.permanent_session_lifetime = timedelta(days=30)
+
 app.secret_key = os.environ.get('PIPELINE_SECRET_KEY')
 
 UPLOAD_FOLDER = 'static/uploads'
@@ -27,6 +34,148 @@ cloudinary.config(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
+def create_password_reset_token(user_id):
+    """Create a secure, one-time password reset token."""
+    raw_token = secrets.token_urlsafe(48)
+    token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        # Invalidate existing unused tokens for this user.
+        cur.execute(
+            """
+            UPDATE password_reset_tokens
+            SET used_at = CURRENT_TIMESTAMP
+            WHERE user_id = %s
+              AND used_at IS NULL
+            """,
+            (user_id,)
+        )
+
+        cur.execute(
+            """
+            INSERT INTO password_reset_tokens (
+                user_id,
+                token_hash,
+                expires_at
+            )
+            VALUES (
+                %s,
+                %s,
+                CURRENT_TIMESTAMP + INTERVAL '30 minutes'
+            )
+            """,
+            (user_id, token_hash)
+        )
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+    return raw_token
+
+
+def get_password_reset_user(raw_token):
+    """Return the user ID for a valid reset token, or None."""
+    if not raw_token:
+        return None
+
+    token_hash = hashlib.sha256(
+        raw_token.encode("utf-8")
+    ).hexdigest()
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT user_id
+            FROM password_reset_tokens
+            WHERE token_hash = %s
+              AND used_at IS NULL
+              AND expires_at > CURRENT_TIMESTAMP
+            LIMIT 1
+            """,
+            (token_hash,)
+        )
+
+        row = cur.fetchone()
+
+        cur.close()
+
+        return row[0] if row else None
+
+    finally:
+        conn.close()
+
+
+def consume_password_reset_token(raw_token):
+    """Mark a password reset token as used."""
+    token_hash = hashlib.sha256(
+        raw_token.encode("utf-8")
+    ).hexdigest()
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            UPDATE password_reset_tokens
+            SET used_at = CURRENT_TIMESTAMP
+            WHERE token_hash = %s
+              AND used_at IS NULL
+            """,
+            (token_hash,)
+        )
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+
+def ensure_password_reset_table():
+    """Create the password reset token table if it does not exist."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+                token_hash VARCHAR(128) NOT NULL UNIQUE,
+                expires_at TIMESTAMPTZ NOT NULL,
+                used_at TIMESTAMPTZ,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_password_reset_tokens_user
+            ON password_reset_tokens(user_id)
+        """)
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
 
 # --- PIPELINE_DEV_BANNER ---
 @app.after_request
@@ -185,13 +334,17 @@ def get_user_by_username(username):
         conn.close()
 
 
-def create_user(username, password_hash):
+def create_user(username, password_hash, email=None):
     conn = get_db()
     try:
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
-            (username, password_hash)
+            """
+            INSERT INTO users (username, password_hash, email)
+            VALUES (%s, %s, %s)
+            RETURNING id
+            """,
+            (username, password_hash, email)
         )
         user_id = cur.fetchone()[0]
         conn.commit()
@@ -880,11 +1033,193 @@ def login():
                 session['user_id'] = user[0]
                 session['user'] = user[1]
                 session['role'] = user[3] or 'employee'
+
+                # Keep the user signed in for 30 days when requested.
+                session.permanent = request.form.get('remember_me') == '1'
+
                 return redirect(url_for('home'))
 
             error = 'Invalid username or password.'
 
     return render_template('login.html', error=error)
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    message = None
+    error = None
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+
+        # Always return the same message so the form cannot
+        # be used to discover whether an account exists.
+        message = (
+            "If an account exists for that email address, "
+            "a password reset link has been sent."
+        )
+
+        if email:
+            conn = get_db()
+
+            try:
+                cur = conn.cursor()
+
+                cur.execute(
+                    """
+                    SELECT id, username
+                    FROM users
+                    WHERE LOWER(email) = LOWER(%s)
+                    LIMIT 1
+                    """,
+                    (email,)
+                )
+
+                user = cur.fetchone()
+
+                cur.close()
+
+            finally:
+                conn.close()
+
+            if user:
+                token = create_password_reset_token(user[0])
+
+                base_url = os.environ.get(
+                    "PIPELINE_BASE_URL",
+                    request.url_root.rstrip("/")
+                )
+
+                reset_url = (
+                    f"{base_url}/reset-password/{token}"
+                )
+
+                try:
+                    settings = get_email_settings()
+
+                    if not settings["username"] or not settings["password"]:
+                        print(
+                            "Password reset email not sent: "
+                            "SMTP credentials are not configured."
+                        )
+                    else:
+                        msg = EmailMessage()
+                        msg["From"] = settings["username"]
+                        msg["To"] = email
+                        msg["Subject"] = "PipeLine Password Reset"
+
+                        msg.set_content(
+                            f"""Hello {user[1]},
+
+We received a request to reset your PipeLine password.
+
+Use the link below to choose a new password:
+
+{reset_url}
+
+This link expires in 30 minutes and can only be used once.
+
+If you did not request a password reset, you can safely ignore this email.
+
+— PipeLine
+"""
+                        )
+
+                        context = ssl.create_default_context()
+
+                        with smtplib.SMTP(
+                            settings["host"],
+                            settings["port"],
+                            timeout=30
+                        ) as server:
+                            server.starttls(context=context)
+                            server.login(
+                                settings["username"],
+                                settings["password"]
+                            )
+                            server.send_message(msg)
+
+                except Exception as e:
+                    print(
+                        f"Password reset email error: {e}"
+                    )
+
+        return render_template(
+            'forgot_password.html',
+            message=message,
+            error=error
+        )
+
+    return render_template(
+        'forgot_password.html',
+        message=message,
+        error=error
+    )
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user_id = get_password_reset_user(token)
+
+    if not user_id:
+        return render_template(
+            'reset_password.html',
+            error=(
+                "This password reset link is invalid or "
+                "has expired."
+            ),
+            success=False
+        )
+
+    error = None
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get(
+            'confirm_password',
+            ''
+        )
+
+        if len(password) < 8:
+            error = "Password must be at least 8 characters."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        else:
+            password_hash = generate_password_hash(password)
+
+            conn = get_db()
+
+            try:
+                cur = conn.cursor()
+
+                cur.execute(
+                    """
+                    UPDATE users
+                    SET password_hash = %s
+                    WHERE id = %s
+                    """,
+                    (password_hash, user_id)
+                )
+
+                conn.commit()
+                cur.close()
+
+            finally:
+                conn.close()
+
+            consume_password_reset_token(token)
+
+            return render_template(
+                'reset_password.html',
+                success=True,
+                error=None
+            )
+
+    return render_template(
+        'reset_password.html',
+        error=error,
+        success=False
+    )
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -893,13 +1228,16 @@ def register():
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip().lower()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
 
-        if not username or not password or not confirm_password:
+        if not username or not email or not password or not confirm_password:
             error = 'Please fill out all fields.'
         elif len(username) < 3:
             error = 'Username must be at least 3 characters.'
+        elif '@' not in email or '.' not in email.split('@')[-1]:
+            error = 'Please enter a valid email address.'
         elif len(password) < 8:
             error = 'Password must be at least 8 characters.'
         elif password != confirm_password:
@@ -907,13 +1245,39 @@ def register():
         elif get_user_by_username(username):
             error = 'Username already exists.'
         else:
-            password_hash = generate_password_hash(password)
-            user_id = create_user(username, password_hash)
+            conn = get_db()
 
-            session['user_id'] = user_id
-            session['user'] = username
+            try:
+                cur = conn.cursor()
 
-            return redirect(url_for('home'))
+                cur.execute(
+                    "SELECT id FROM users WHERE LOWER(email) = LOWER(%s)",
+                    (email,)
+                )
+
+                email_exists = cur.fetchone()
+
+                cur.close()
+
+            finally:
+                conn.close()
+
+            if email_exists:
+                error = 'That email address is already registered.'
+            else:
+                password_hash = generate_password_hash(password)
+
+                user_id = create_user(
+                    username,
+                    password_hash,
+                    email
+                )
+
+                session['user_id'] = user_id
+                session['user'] = username
+                session['role'] = 'employee'
+
+                return redirect(url_for('home'))
 
     return render_template('register.html', error=error)
 
@@ -3986,6 +4350,12 @@ def owner_schedule():
     finally:
         conn.close()
 
+
+# Ensure password reset storage exists when PipeLine starts.
+try:
+    ensure_password_reset_table()
+except Exception as e:
+    print(f"Password reset table initialization warning: {e}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
