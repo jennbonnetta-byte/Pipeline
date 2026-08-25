@@ -1375,6 +1375,60 @@ def logout():
     return redirect(url_for('login'))
 
 # --- APP ROUTES (Protected) ---
+
+def get_employee_dashboard_data(user_id):
+    """Build the lightweight data used by the employee home dashboard."""
+    from datetime import date, timedelta
+
+    today = date.today()
+    end_date = today + timedelta(days=14)
+
+    # Calendar overview: shared events + assigned jobs.
+    try:
+        calendar_events = get_shared_calendar_events(
+            today,
+            end_date,
+            user_id
+        )
+    except Exception:
+        calendar_events = []
+
+    # Keep the nearest calendar items first so the dashboard
+    # always prioritizes today and the next upcoming events.
+    calendar_events.sort(
+        key=lambda event: (
+            event.get('date') or '',
+            event.get('start_time') or '99:99'
+        )
+    )
+
+    # Existing pay engine — do not duplicate payroll calculations.
+    try:
+        report_jobs = get_report_period_jobs(user_id, 'biweekly')
+
+        total_hours = 0.0
+        for job in report_jobs:
+            try:
+                total_hours += float(job.get('hours') or 0)
+            except (TypeError, ValueError):
+                pass
+
+        pay = calculate_pay(user_id, total_hours)
+    except Exception:
+        total_hours = 0.0
+        pay = {
+            'gross_pay': 0,
+            'take_home': 0
+        }
+
+    return {
+        'calendar_events': calendar_events,
+        'pay_summary': pay,
+        'pay_hours': round(total_hours, 2),
+        'today_display': f"{today.strftime('%A')}, {today.strftime('%B')} {today.day}",
+    }
+
+
 @app.route('/')
 def home():
     if 'user_id' not in session:
@@ -1403,12 +1457,17 @@ def home():
     recent_jobs = get_user_jobs(session['user_id'])[:recent_job_count]
     upcoming_jobs = get_employee_upcoming_jobs(session['user_id'])
     appearance = get_appearance_settings(session['user_id'])
+    dashboard_data = get_employee_dashboard_data(session['user_id'])
 
     return render_template(
         'home.html',
         recent_jobs=recent_jobs,
         upcoming_jobs=upcoming_jobs,
-        appearance=appearance
+        appearance=appearance,
+        calendar_events=dashboard_data['calendar_events'],
+        pay_summary=dashboard_data['pay_summary'],
+        pay_hours=dashboard_data['pay_hours'],
+        today_display=dashboard_data['today_display']
     )
 
 
@@ -4056,12 +4115,16 @@ def owner_required(view):
 @app.route('/owner')
 @owner_required
 def owner_dashboard():
+    """Owner overview dashboard."""
+
     conn = get_db()
 
     try:
         cur = conn.cursor()
 
-        # Owner name.
+        # ---------------------------------------------------------
+        # OWNER
+        # ---------------------------------------------------------
         cur.execute(
             "SELECT username FROM users WHERE id = %s",
             (session['user_id'],)
@@ -4069,7 +4132,9 @@ def owner_dashboard():
         user_row = cur.fetchone()
         username = user_row[0] if user_row else 'Owner'
 
-        # Dashboard counts.
+        # ---------------------------------------------------------
+        # COMPANY COUNTS
+        # ---------------------------------------------------------
         cur.execute("""
             SELECT COUNT(*)
             FROM users
@@ -4099,7 +4164,9 @@ def owner_dashboard():
         """, (session['user_id'],))
         unread_notifications = cur.fetchone()[0]
 
-        # Today's company jobs.
+        # ---------------------------------------------------------
+        # TODAY'S JOBS
+        # ---------------------------------------------------------
         cur.execute("""
             SELECT
                 j.id,
@@ -4109,7 +4176,9 @@ def owner_dashboard():
                 j.end_time,
                 j.notes,
                 c.name AS client_name,
-                u.username AS employee_name
+                u.username AS employee_name,
+                ja.employee_id,
+                ja.status
             FROM jobs j
             LEFT JOIN clients c
                 ON c.id = j.client_id
@@ -4117,31 +4186,30 @@ def owner_dashboard():
                 ON ja.job_id = j.id
             LEFT JOIN users u
                 ON u.id = ja.employee_id
-            WHERE j.date = CURRENT_DATE::text
+            WHERE j.date::date = CURRENT_DATE
+              AND COALESCE(ja.status, 'assigned') NOT IN ('cancelled')
             ORDER BY j.start_time NULLS LAST, j.id DESC
         """)
 
-        rows = cur.fetchall()
-
         todays_jobs = []
 
-        for row in rows:
+        for row in cur.fetchall():
             todays_jobs.append({
                 'id': row[0],
-                'destination': row[1],
-                'date': row[2],
+                'destination': row[1] or '',
+                'date': str(row[2]) if row[2] else '',
                 'start_time': str(row[3])[:5] if row[3] else '',
                 'end_time': str(row[4])[:5] if row[4] else '',
                 'notes': row[5] or '',
                 'client_name': row[6] or '',
-                'employee_name': row[7] or ''
+                'employee_name': row[7] or '',
+                'employee_id': row[8],
+                'status': row[9] or 'assigned'
             })
 
-        # Today's owner calendar events.
-        #
-        # owner_calendar_events is created by the existing
-        # /owner/schedule route. If the table hasn't been created
-        # yet, the dashboard simply shows no personal events.
+        # ---------------------------------------------------------
+        # OWNER PERSONAL EVENTS
+        # ---------------------------------------------------------
         todays_personal_events = []
 
         try:
@@ -4160,9 +4228,7 @@ def owner_dashboard():
                 ORDER BY start_time NULLS LAST, id
             """, (session['user_id'],))
 
-            event_rows = cur.fetchall()
-
-            for row in event_rows:
+            for row in cur.fetchall():
                 todays_personal_events.append({
                     'id': row[0],
                     'type': row[1],
@@ -4174,14 +4240,98 @@ def owner_dashboard():
                 })
 
         except Exception:
-            # The existing calendar table is created when the
-            # owner opens Schedule & Dispatch. Don't let a
-            # missing table break the dashboard.
             conn.rollback()
             todays_personal_events = []
 
-        # Friendly date shown in the Quick View.
-        cur.execute("SELECT TO_CHAR(CURRENT_DATE, 'FMMonth DD, YYYY')")
+        # ---------------------------------------------------------
+        # EMPLOYEE OVERVIEW
+        # ---------------------------------------------------------
+        cur.execute("""
+            SELECT
+                u.id,
+                u.username,
+
+                COUNT(
+                    DISTINCT CASE
+                        WHEN j.date::date = CURRENT_DATE
+                         AND COALESCE(ja.status, 'assigned') NOT IN ('cancelled')
+                        THEN j.id
+                    END
+                ) AS today_jobs,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN j.date::date >= date_trunc('week', CURRENT_DATE)::date
+                         AND j.date::date < (
+                             date_trunc('week', CURRENT_DATE)
+                             + INTERVAL '7 days'
+                         )::date
+                        THEN
+                            CASE
+                                WHEN COALESCE(j.hours, '') ~ '^[0-9]+(\\.[0-9]+)?$'
+                                THEN j.hours::numeric
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ), 0) AS week_hours,
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN j.date::date >= CURRENT_DATE - INTERVAL '13 days'
+                         AND j.date::date <= CURRENT_DATE
+                        THEN
+                            CASE
+                                WHEN COALESCE(j.hours, '') ~ '^[0-9]+(\\.[0-9]+)?$'
+                                THEN j.hours::numeric
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ), 0) AS pay_period_hours,
+
+                COUNT(
+                    DISTINCT CASE
+                        WHEN j.date::date >= CURRENT_DATE
+                         AND COALESCE(ja.status, 'assigned')
+                             NOT IN ('completed', 'cancelled')
+                        THEN j.id
+                    END
+                ) AS open_jobs
+
+            FROM users u
+
+            LEFT JOIN job_assignments ja
+                ON ja.employee_id = u.id
+
+            LEFT JOIN jobs j
+                ON j.id = ja.job_id
+
+            WHERE u.role = 'employee'
+
+            GROUP BY u.id, u.username
+
+            ORDER BY u.username
+        """)
+
+        employee_overview = []
+
+        for row in cur.fetchall():
+            employee_overview.append({
+                'id': row[0],
+                'username': row[1],
+                'today_jobs': row[2] or 0,
+                'week_hours': float(row[3] or 0),
+                'pay_period_hours': float(row[4] or 0),
+                'open_jobs': row[5] or 0
+            })
+
+        # ---------------------------------------------------------
+        # DATE
+        # ---------------------------------------------------------
+        cur.execute(
+            "SELECT TO_CHAR(CURRENT_DATE, 'FMDay, FMMonth DD, YYYY')"
+        )
         today_display = cur.fetchone()[0]
 
         cur.close()
@@ -4195,7 +4345,8 @@ def owner_dashboard():
             unread_notifications=unread_notifications,
             todays_jobs=todays_jobs,
             todays_personal_events=todays_personal_events,
-            today_display=today_display
+            employee_overview=employee_overview,
+            today_display=today_display,
         )
 
     finally:
@@ -4420,6 +4571,81 @@ def owner_employee_profile(employee_id):
     finally:
         conn.close()
 
+
+
+@app.route('/owner/pay')
+@owner_required
+def owner_pay():
+    """Owner view of employee timesheets and estimated pay."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                u.id,
+                u.username,
+                COALESCE(SUM(
+                    CASE
+                        WHEN j.hours IS NULL OR j.hours = '' THEN 0
+                        ELSE j.hours::numeric
+                    END
+                ), 0) AS total_hours
+            FROM users u
+            LEFT JOIN job_assignments ja
+                ON ja.employee_id = u.id
+            LEFT JOIN jobs j
+                ON j.id = ja.job_id
+                AND j.date::date >= CURRENT_DATE - INTERVAL '13 days'
+                AND j.date::date <= CURRENT_DATE
+            WHERE u.role = 'employee'
+            GROUP BY u.id, u.username
+            ORDER BY u.username
+        """)
+
+        rows = cur.fetchall()
+
+        employees = []
+
+        for row in rows:
+            employee_id = row[0]
+            employee_name = row[1]
+            hours = float(row[2] or 0)
+
+            try:
+                pay = calculate_pay(employee_id, hours)
+            except Exception:
+                pay = {
+                    "gross_pay": 0,
+                    "regular_pay": 0,
+                    "overtime_pay": 0,
+                    "doubletime_pay": 0,
+                    "take_home": 0
+                }
+
+            employees.append({
+                "id": employee_id,
+                "username": employee_name,
+                "hours": round(hours, 2),
+                "gross_pay": float(pay.get("gross_pay", 0) or 0),
+                "take_home": float(pay.get("take_home", 0) or 0)
+            })
+
+        total_hours = round(sum(e["hours"] for e in employees), 2)
+        total_gross = round(sum(e["gross_pay"] for e in employees), 2)
+
+        cur.close()
+
+        return render_template(
+            "owner_pay.html",
+            employees=employees,
+            total_hours=total_hours,
+            total_gross=total_gross
+        )
+
+    finally:
+        conn.close()
 
 @app.route('/owner/clients')
 @owner_required

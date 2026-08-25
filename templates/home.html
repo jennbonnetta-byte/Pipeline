@@ -6,6 +6,9 @@
 
     <title>PipeLine</title>
 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
     <style>
         * {
             box-sizing: border-box;
@@ -24,66 +27,59 @@
             color: inherit;
         }
 
-        /* =========================
-           HEADER
-        ========================= */
+        /* HEADER */
 
         .topbar {
-            height: 122px;
+            height: 92px;
             background: linear-gradient(135deg, #061d35, #0b3154);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 22px 28px;
+            padding: 16px 22px;
             color: white;
-            box-shadow: 0 5px 18px rgba(0, 30, 60, 0.20);
+            box-shadow: 0 5px 18px rgba(0, 30, 60, .20);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         .logo {
-            width: 68px;
-            height: 68px;
-            border-radius: 16px;
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            box-shadow: 0 5px 14px rgba(0,0,0,.20);
+            overflow: hidden;
         }
 
         .logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 16px;
-            display: block;
         }
 
         .brand-name {
-            font-size: 25px;
+            font-size: 21px;
             font-weight: 800;
-            letter-spacing: 6px;
+            letter-spacing: 5px;
         }
 
         .menu-button {
             border: 0;
             background: transparent;
             color: white;
-            font-size: 39px;
+            font-size: 34px;
             line-height: 1;
             padding: 5px;
             cursor: pointer;
         }
 
-        /* =========================
-           SIDE MENU
-        ========================= */
+        /* SIDE MENU */
 
         .menu-overlay {
             position: fixed;
@@ -108,6 +104,7 @@
             box-shadow: -8px 0 30px rgba(0,0,0,.25);
             transition: right .25s ease;
             padding: 25px;
+            overflow-y: auto;
         }
 
         .side-menu.open {
@@ -120,7 +117,7 @@
             align-items: center;
             font-size: 22px;
             font-weight: 800;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .close-menu {
@@ -134,610 +131,609 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 17px 10px;
+            padding: 15px 8px;
             border-bottom: 1px solid #edf0f4;
             font-weight: 650;
             color: #162943;
         }
 
         .menu-icon {
-            width: 42px;
+            width: 38px;
             text-align: center;
-            font-size: 25px;
+            font-size: 23px;
         }
 
         .menu-logout {
-            margin-top: 25px;
+            margin-top: 20px;
             color: #d52f45;
         }
 
-        /* =========================
-           MAIN
-        ========================= */
+        /* MAIN */
 
         .content {
-            max-width: 900px;
+            max-width: 760px;
             margin: 0 auto;
-            padding: 42px 30px 60px;
+            padding: 28px 18px 50px;
+        }
+
+        .welcome {
+            margin-bottom: 22px;
         }
 
         .welcome h1 {
             margin: 0;
-            font-size: 42px;
+            font-size: 31px;
             line-height: 1.1;
-            letter-spacing: -1.2px;
+            letter-spacing: -.7px;
         }
 
         .welcome p {
-            margin: 10px 0 30px;
-            font-size: 21px;
+            margin: 7px 0 0;
+            font-size: 16px;
             color: #77869a;
         }
 
-        /* =========================
-           DASHBOARD GRID
-        ========================= */
-
-        /* =========================
-           EMPLOYEE QUICK ACTIONS
-        ========================= */
-
-        .quick-actions {
-            margin: 0 0 34px;
+        .section {
+            margin-bottom: 18px;
         }
 
-        .schedule-card {
+        .section-heading {
             display: flex;
             align-items: center;
-            gap: 17px;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 850;
+        }
+
+        .view-link {
+            color: #1685c5;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        /* CALENDAR OVERVIEW */
+
+        .calendar-card {
             background: white;
-            border: 1px solid #e1e9f2;
+            border: 1px solid #dfe8f1;
+            border-radius: 18px;
+            box-shadow: 0 5px 18px rgba(22,54,86,.07);
+            overflow: hidden;
+        }
+
+        .calendar-summary {
+            padding: 16px;
+            background: linear-gradient(145deg, #f7fcff, #edf8fd);
+            border-bottom: 1px solid #e1edf4;
+        }
+
+        .today-label {
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+        }
+
+        .calendar-date {
+            margin-top: 3px;
+            font-size: 21px;
+            font-weight: 850;
+        }
+
+        .calendar-list {
+            padding: 2px 16px;
+        }
+
+        .calendar-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid #edf1f5;
+        }
+
+        .calendar-item:last-child {
+            border-bottom: 0;
+        }
+
+        .calendar-icon {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: #e8f4fb;
+            font-size: 18px;
+        }
+
+        .calendar-icon.event {
+            background: #f1ecff;
+        }
+
+        .calendar-icon.timeoff {
+            background: #fff0ee;
+        }
+
+        .calendar-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .calendar-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #243447;
+        }
+
+        .calendar-meta {
+            margin-top: 3px;
+            color: #718096;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .calendar-status {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #edf5fa;
+            color: #24739d;
+            font-size: 9px;
+            font-weight: 850;
+            text-transform: uppercase;
+        }
+
+        .empty-calendar {
+            padding: 20px 4px;
+            text-align: center;
+            color: #718096;
+            font-size: 13px;
+        }
+
+        /* EMPLOYEE DASHBOARD PAY */
+
+        main.content .employee-pay-card {
+            display: block !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            height: auto !important;
+            background: linear-gradient(145deg, #102f4d, #164d75) !important;
+            color: #ffffff !important;
+            border: 0 !important;
+            border-radius: 18px !important;
+            padding: 18px !important;
+            margin: 0 !important;
+            box-shadow: 0 7px 22px rgba(10,47,76,.18) !important;
+            overflow: hidden !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-top {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-label {
+            display: block !important;
+            color: #ffffff !important;
+            font-size: 10px !important;
+            font-weight: 750 !important;
+            opacity: .78 !important;
+            text-transform: uppercase !important;
+            letter-spacing: .6px !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-title {
+            display: block !important;
+            color: #ffffff !important;
+            margin-top: 3px !important;
+            font-size: 19px !important;
+            line-height: 1.2 !important;
+            font-weight: 850 !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-icon {
+            width: 42px !important;
+            height: 42px !important;
+            min-width: 42px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255,255,255,.13) !important;
+            font-size: 21px !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-stats {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+            margin-top: 15px !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-stat {
+            display: block !important;
+            background: rgba(255,255,255,.10) !important;
+            border: 0 !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            min-height: 0 !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-stat-label {
+            display: block !important;
+            color: #ffffff !important;
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+            opacity: .72 !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-stat-value {
+            display: block !important;
+            color: #ffffff !important;
+            margin-top: 4px !important;
+            font-size: 19px !important;
+            line-height: 1.2 !important;
+            font-weight: 850 !important;
+        }
+
+        main.content .employee-pay-card .employee-pay-link {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-top: 12px !important;
+            padding-top: 12px !important;
+            border-top: 1px solid rgba(255,255,255,.13) !important;
+            color: #ffffff !important;
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+            font-weight: 800 !important;
+        }
+
+        /* QUICK LINKS */
+
+        /* =========================
+           CALENDAR HUB CARD
+        ========================= */
+
+        .calendar-hub-card {
+            grid-column: span 2;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e5ebf2;
             border-radius: 22px;
-            padding: 21px;
-            min-height: 92px;
             box-shadow: 0 7px 22px rgba(22, 54, 86, .07);
         }
 
-        .schedule-card:active {
-            transform: scale(.985);
-        }
-
-        .schedule-card-icon {
+        .calendar-hub-icon {
             width: 58px;
             height: 58px;
-            flex-shrink: 0;
             border-radius: 18px;
             background: #edf7ff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 31px;
+            flex-shrink: 0;
         }
 
-        .schedule-card-info {
+        .calendar-hub-content {
             flex: 1;
             min-width: 0;
         }
 
-        .schedule-card-title {
-            font-size: 19px;
+        .calendar-hub-title {
+            font-size: 20px;
             font-weight: 800;
+            color: #10213b;
         }
 
-        .schedule-card-description {
-            margin-top: 4px;
+        .calendar-hub-description {
             color: #8995a5;
-            font-size: 14px;
-            line-height: 1.3;
+            font-size: 13px;
+            margin-top: 2px;
+            margin-bottom: 12px;
         }
 
-        .schedule-card-arrow {
-            color: #9aa6b4;
-            font-size: 30px;
-            flex-shrink: 0;
-        }
-
-        .upcoming-section {
-            margin-top: 0;
-            margin-bottom: 38px;
-        }
-
-        .dashboard-grid {
+        .calendar-hub-options {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 24px;
-            margin-bottom: 44px;
+            gap: 10px;
         }
 
-        .dashboard-card {
-            background: white;
-            border-radius: 24px;
-            min-height: 220px;
-            padding: 28px 18px 24px;
+        .calendar-hub-option {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            text-align: center;
+            gap: 9px;
+            padding: 11px;
             border: 1px solid #e5ebf2;
-            box-shadow: 0 8px 24px rgba(22, 54, 86, .08);
-            transition: transform .15s ease, box-shadow .15s ease;
-            cursor: pointer;
+            border-radius: 15px;
+            background: #fbfdff;
+            min-width: 0;
         }
 
-        .dashboard-card:active {
-            transform: scale(.97);
-            box-shadow: 0 4px 12px rgba(22, 54, 86, .10);
+        .calendar-hub-option:active {
+            transform: scale(.98);
         }
 
-        .card-icon {
-            width: 76px;
-            height: 76px;
-            border-radius: 22px;
+        .calendar-hub-option-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             background: #edf7ff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 42px;
-            margin-bottom: 18px;
-        }
-
-        .card-title {
-            font-size: 21px;
-            font-weight: 800;
-            margin-bottom: 7px;
-        }
-
-        .card-description {
-            color: #8995a5;
-            font-size: 16px;
-            line-height: 1.25;
-        }
-
-        .coming-soon {
-            opacity: .72;
-            cursor: default;
-        }
-
-        /* =========================
-           UPCOMING JOBS
-        ========================= */
-
-
-        .upcoming-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .upcoming-heading h2 {
-            margin: 0;
-            font-size: 27px;
-        }
-
-        .upcoming-card {
-            background: white;
-            border-radius: 22px;
-            border: 1px solid #e5ebf2;
-            box-shadow: 0 7px 22px rgba(22, 54, 86, .07);
-            overflow: hidden;
-        }
-
-        .upcoming-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 18px;
-            border-bottom: 1px solid #edf0f4;
-        }
-
-        .upcoming-row:last-child {
-            border-bottom: none;
-        }
-
-        .upcoming-date {
-            width: 58px;
-            min-width: 58px;
-            height: 58px;
-            border-radius: 16px;
-            background: #edf7ff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .upcoming-day {
             font-size: 20px;
-            font-weight: 850;
-            line-height: 1;
-            color: #087bc4;
-        }
-
-        .upcoming-month {
-            margin-top: 4px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #6f8296;
-        }
-
-        .upcoming-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .upcoming-title {
-            font-weight: 800;
-            font-size: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .upcoming-meta {
-            color: #8b98a8;
-            margin-top: 5px;
-            font-size: 14px;
-            line-height: 1.35;
-        }
-
-        .upcoming-status {
-            display: inline-block;
-            margin-top: 7px;
-            padding: 4px 9px;
-            border-radius: 999px;
-            background: #eef7ef;
-            color: #3d7a45;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .3px;
-        }
-
-        .upcoming-arrow {
-            color: #9aa6b4;
-            font-size: 26px;
-        }
-
-        /* =========================
-           RECENT ACTIVITY
-        ========================= */
-
-        .activity-section {
-            margin-top: 0;
-            padding-top: 4px;
-        }
-
-        .activity-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .activity-heading h2 {
-            margin: 0;
-            font-size: 27px;
-        }
-
-        .view-all {
-            color: #087bc4;
-            font-weight: 750;
-            font-size: 16px;
-        }
-
-        .activity-card {
-            background: white;
-            border-radius: 22px;
-            border: 1px solid #e5ebf2;
-            box-shadow: 0 7px 22px rgba(22, 54, 86, .07);
-            overflow: hidden;
-        }
-
-        .activity-row {
-            display: flex;
-            align-items: center;
-            padding: 18px 18px;
-            border-bottom: 1px solid #edf0f4;
-        }
-
-        .activity-row:last-child {
-            border-bottom: none;
-        }
-
-        .activity-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #0787d1;
-            margin-right: 15px;
             flex-shrink: 0;
-            box-shadow: 0 0 0 6px #eaf6ff;
         }
 
-        .activity-info {
-            flex: 1;
+        .calendar-hub-option-text {
+            display: flex;
+            flex-direction: column;
             min-width: 0;
+            flex: 1;
         }
 
-        .activity-title {
-            font-weight: 750;
-            font-size: 16px;
+        .calendar-hub-option-text strong {
+            color: #087bc4;
+            font-size: 14px;
+            font-weight: 800;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .activity-meta {
-            color: #8b98a8;
-            margin-top: 4px;
-            font-size: 14px;
+        .calendar-hub-option-text small {
+            color: #8995a5;
+            font-size: 11px;
+            margin-top: 2px;
         }
 
-        .activity-arrow {
+        .calendar-hub-arrow {
             color: #9aa6b4;
-            font-size: 26px;
+            font-size: 24px;
+            flex-shrink: 0;
         }
 
-        .empty-state {
-            padding: 35px 20px;
-            text-align: center;
-            color: #8b98a8;
-        }
+        @media (max-width: 600px) {
 
-        /* =========================
-           DESKTOP
-        ========================= */
-
-        @media (min-width: 700px) {
-            .topbar {
-                height: 105px;
+            .calendar-hub-card {
+                grid-column: span 2;
+                padding: 16px;
+                gap: 12px;
             }
 
-            .content {
-                padding-top: 55px;
+            .calendar-hub-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 15px;
+                font-size: 27px;
             }
 
-            .dashboard-card {
-                min-height: 240px;
-            }
-        }
-
-        /* =========================
-           SMALL PHONES
-        ========================= */
-
-        @media (max-width: 430px) {
-            .topbar {
-                height: 105px;
-                padding: 18px 20px;
-            }
-
-            .logo {
-                width: 60px;
-                height: 60px;
-            }
-
-            .logo-p {
-                font-size: 42px;
-            }
-
-            .brand-name {
-                font-size: 22px;
-                letter-spacing: 5px;
-            }
-
-            .menu-button {
-                font-size: 35px;
-            }
-
-            .content {
-                padding: 35px 20px 50px;
-            }
-
-            .welcome h1 {
-                font-size: 35px;
-            }
-
-            .welcome p {
-                font-size: 19px;
-                margin-bottom: 25px;
-            }
-
-            .dashboard-grid {
-                gap: 15px;
-            }
-
-            .dashboard-card {
-                min-height: 190px;
-                padding: 22px 10px;
-                border-radius: 22px;
-            }
-
-            .card-icon {
-                width: 66px;
-                height: 66px;
-                font-size: 35px;
-                border-radius: 19px;
-                margin-bottom: 14px;
-            }
-
-            .card-title {
+            .calendar-hub-title {
                 font-size: 18px;
             }
 
-            .card-description {
-                font-size: 14px;
+            .calendar-hub-options {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-hub-option {
+                padding: 10px;
             }
         }
 
-        /* ===== ACTIVE APPEARANCE PREFERENCES ===== */
-
-        body {
-            background: var(--page-bg) !important;
-            color: var(--text) !important;
-            font-size: var(--app-font-size) !important;
+        .quick-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 11px;
         }
 
-        .dashboard-card {
-            background: var(--surface) !important;
-            color: var(--text) !important;
-            border-color: var(--border) !important;
-            border-radius: var(--card-radius) !important;
-            padding: var(--card-padding) !important;
+        .quick-card {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            background: white;
+            border: 1px solid #dfe8f1;
+            border-radius: 15px;
+            padding: 14px;
+            min-height: 76px;
+            box-shadow: 0 4px 14px rgba(22,54,86,.05);
         }
 
-        .dashboard-card .card-title {
-            color: var(--text) !important;
+        .quick-icon {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border-radius: 11px;
+            background: #e8f4fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
         }
 
-        .dashboard-card .card-description {
-            color: var(--muted) !important;
+        .quick-title {
+            font-size: 13px;
+            font-weight: 800;
         }
 
-        .menu-item {
-            color: var(--text) !important;
+        .quick-description {
+            margin-top: 2px;
+            color: #718096;
+            font-size: 10px;
+            line-height: 1.3;
         }
 
-        /* Theme */
-        .theme-dark {
-            --page-bg: #101820 !important;
-            --surface: #18232e !important;
-            --text: #edf4fa !important;
-            --muted: #a9b7c5 !important;
-            --border: #2b3a47 !important;
+        /* RECENT */
+
+        .recent-card {
+            background: white;
+            border: 1px solid #dfe8f1;
+            border-radius: 17px;
+            overflow: hidden;
         }
 
-        .theme-light {
-            --page-bg: #f3f7fc !important;
-            --surface: #ffffff !important;
-            --text: #10213b !important;
-            --muted: #7c8999 !important;
-            --border: #e3eaf2 !important;
+        .recent-row {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 13px 15px;
+            border-bottom: 1px solid #edf1f5;
         }
 
-        /* Accent colours */
-        .accent-blue {
-            --accent: #087bc4 !important;
-            --accent-dark: #075fa4 !important;
+        .recent-row:last-child {
+            border-bottom: 0;
         }
 
-        .accent-teal {
-            --accent: #008f8c !important;
-            --accent-dark: #006f6c !important;
+        .recent-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #1685c5;
+            flex: 0 0 9px;
         }
 
-        .accent-green {
-            --accent: #2f9e44 !important;
-            --accent-dark: #237a35 !important;
+        .recent-info {
+            flex: 1;
+            min-width: 0;
         }
 
-        .accent-purple {
-            --accent: #7950f2 !important;
-            --accent-dark: #5f3dc4 !important;
+        .recent-title {
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .accent-orange {
-            --accent: #e67700 !important;
-            --accent-dark: #c45f00 !important;
+        .recent-meta {
+            margin-top: 3px;
+            color: #718096;
+            font-size: 10px;
         }
 
-        .accent-red {
-            --accent: #d6333f !important;
-            --accent-dark: #ad2731 !important;
+        .recent-arrow {
+            color: #1685c5;
+            font-size: 20px;
         }
 
-        /* Density */
-        .density-compact {
-            --card-padding: 13px;
-            --grid-gap: 10px;
+        .empty-state {
+            padding: 22px 15px;
+            text-align: center;
+            color: #718096;
+            font-size: 12px;
         }
 
-        .density-comfortable {
-            --card-padding: 20px;
-            --grid-gap: 16px;
+        @media (min-width: 700px) {
+            .content {
+                padding-left: 28px;
+                padding-right: 28px;
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
-        .density-spacious {
-            --card-padding: 26px;
-            --grid-gap: 24px;
+        /* DARK MODE */
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
         }
 
-        .dashboard-grid {
-            gap: var(--grid-gap) !important;
+        body.theme-dark .calendar-card,
+        body.pipeline-theme-dark .calendar-card,
+        body.theme-dark .quick-card,
+        body.pipeline-theme-dark .quick-card,
+        body.theme-dark .recent-card,
+        body.pipeline-theme-dark .recent-card {
+            background: #111c27;
+            border-color: #263847;
         }
 
-        /* Card style */
-        .cards-standard {
-            --card-radius: 10px;
+        body.theme-dark .calendar-summary,
+        body.pipeline-theme-dark .calendar-summary {
+            background: #182532;
+            border-color: #263847;
         }
 
-        .cards-rounded {
-            --card-radius: 20px;
+        body.theme-dark .calendar-item,
+        body.pipeline-theme-dark .calendar-item,
+        body.theme-dark .recent-row,
+        body.pipeline-theme-dark .recent-row {
+            border-color: #263847;
         }
 
-        .cards-minimal {
-            --card-radius: 8px;
+        body.theme-dark .calendar-title,
+        body.pipeline-theme-dark .calendar-title,
+        body.theme-dark .quick-title,
+        body.pipeline-theme-dark .quick-title,
+        body.theme-dark .recent-title,
+        body.pipeline-theme-dark .recent-title {
+            color: #edf4fa;
         }
 
-        .cards-minimal .dashboard-card {
-            box-shadow: none !important;
+        body.theme-dark .calendar-meta,
+        body.pipeline-theme-dark .calendar-meta,
+        body.theme-dark .quick-description,
+        body.pipeline-theme-dark .quick-description,
+        body.theme-dark .recent-meta,
+        body.pipeline-theme-dark .recent-meta,
+        body.theme-dark .empty-calendar,
+        body.pipeline-theme-dark .empty-calendar {
+            color: #b9c6d3;
         }
 
-        /* Font size */
-        .font-small {
-            --app-font-size: 14px;
+        body.theme-dark .side-menu,
+        body.pipeline-theme-dark .side-menu {
+            background: #111c27;
         }
 
-        .font-default {
-            --app-font-size: 16px;
+        body.theme-dark .menu-item,
+        body.pipeline-theme-dark .menu-item {
+            color: #edf4fa;
+            border-color: #263847;
         }
-
-        .font-large {
-            --app-font-size: 18px;
-        }
-
-        /* Dashboard layout */
-        .dashboard-compact .dashboard-card {
-            min-height: auto !important;
-        }
-
-        .dashboard-expanded .dashboard-card {
-            min-height: 150px !important;
-        }
-
-        /* Animation setting */
-        .no-animations *,
-        .no-animations *::before,
-        .no-animations *::after {
-            animation: none !important;
-            transition: none !important;
-        }
-
-        /* Make accent colour visible on dashboard cards */
-        .dashboard-card:hover {
-            border-color: var(--accent) !important;
-        }
-
-        .card-icon {
-            color: var(--accent) !important;
-        }
-
-</style>
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/appearance.css') }}">
+    </style>
 </head>
 
 <body
- class="theme-{{ appearance.theme }} pipeline-theme-{{ appearance.theme }} accent-{{ appearance.accent_color }} pipeline-accent-{{ appearance.accent_color }} density-{{ appearance.layout_density }} pipeline-density-{{ appearance.layout_density }} cards-{{ appearance.card_style }} pipeline-cards-{{ appearance.card_style }} font-{{ appearance.font_size }} pipeline-font-{{ appearance.font_size }} pipeline-dashboard-{{ appearance.dashboard_layout }} {% if not appearance.animations %}pipeline-no-animations{% endif %}">
+    class="theme-{{ appearance.theme }}
+           pipeline-theme-{{ appearance.theme }}
+           accent-{{ appearance.accent_color }}
+           pipeline-accent-{{ appearance.accent_color }}
+           density-{{ appearance.layout_density }}
+           pipeline-density-{{ appearance.layout_density }}
+           cards-{{ appearance.card_style }}
+           pipeline-cards-{{ appearance.card_style }}
+           font-{{ appearance.font_size }}
+           pipeline-font-{{ appearance.font_size }}
+           pipeline-dashboard-{{ appearance.dashboard_layout }}
+           {% if not appearance.animations %}pipeline-no-animations{% endif %}">
 
 <header class="topbar">
     <div class="brand">
-        <a href="{{ url_for('home') }}" class="logo home-logo" aria-label="Return to home" title="Return to home">
-        <img src="{{ url_for('static', filename='pipeline-icon.png') }}" alt="PipeLine">
-    </a>
+        <a href="{{ url_for('home') }}" class="logo home-logo"
+           aria-label="Return to home" title="Return to home">
+            <img src="{{ url_for('static', filename='pipeline-icon.png') }}"
+                 alt="PipeLine">
+        </a>
         <div class="brand-name">PIPELINE</div>
     </div>
 
@@ -746,13 +742,9 @@
     </button>
 </header>
 
-
-<!-- MENU OVERLAY -->
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-<!-- SIDE MENU -->
 <nav class="side-menu" id="sideMenu">
-
     <div class="menu-title">
         <span>PipeLine</span>
         <button class="close-menu" onclick="closeMenu()">×</button>
@@ -761,6 +753,16 @@
     <a href="{{ url_for('home') }}" class="menu-item">
         <span class="menu-icon">🏠</span>
         Dashboard
+    </a>
+
+    <a href="{{ url_for('employee_schedule') }}" class="menu-item">
+        <span class="menu-icon">🗓️</span>
+        My Schedule
+    </a>
+
+    <a href="{{ url_for('company_calendar') }}" class="menu-item">
+        <span class="menu-icon">📅</span>
+        Company Calendar
     </a>
 
     <a href="{{ url_for('index') }}" class="menu-item">
@@ -783,9 +785,9 @@
         Reports
     </a>
 
-    <a href="{{ url_for('pay_summary', period='weekly') }}" class="menu-item">
+    <a href="{{ url_for('pay_summary', period='biweekly') }}" class="menu-item">
         <span class="menu-icon">💰</span>
-        Pay
+        Pay & Timesheets
     </a>
 
     <a href="{{ url_for('sent_reports') }}" class="menu-item">
@@ -807,229 +809,264 @@
         <span class="menu-icon">🚪</span>
         Log Out
     </a>
-
 </nav>
-
 
 <main class="content">
 
     <section class="welcome">
         <h1>Welcome Back!</h1>
-        <p>Keep your jobs flowing.</p>
+        <p>Here's what's coming up.</p>
     </section>
 
+    <!-- CALENDAR OVERVIEW -->
 
-    <section class="upcoming-section">
-
-        <div class="upcoming-heading">
-            <h2>Upcoming Jobs</h2>
-
-            <a href="{{ url_for('history') }}" class="view-all">
-                View All
+    <section class="section">
+        <div class="section-heading">
+            <div class="section-title">📅 Calendar Overview</div>
+            <a href="{{ url_for('company_calendar') }}" class="view-link">
+                View Calendar →
             </a>
         </div>
 
-        <div class="upcoming-card">
+        <div class="calendar-card">
 
-            {% if upcoming_jobs is defined and upcoming_jobs %}
+            <div class="calendar-summary">
+                <div class="today-label">Today</div>
+                <div class="calendar-date">
+                    {{ today_display }}
+                </div>
+            </div>
 
-                {% for job in upcoming_jobs[:5] %}
+            <div class="calendar-list">
 
-                <a href="{{ url_for('edit_job', job_id=job.id) }}"
-                   class="upcoming-row">
+                {% if calendar_events %}
 
-                    <div class="upcoming-date">
-                        <div class="upcoming-day">
-                            {{ job.date.split('-')[2] if job.date and '-' in job.date else '—' }}
+                    {% for event in calendar_events[:6] %}
+
+                    <a
+                        {% if event.source == 'job' and event.job_id %}
+                            href="{{ url_for('edit_job', job_id=event.job_id) }}"
+                        {% else %}
+                            href="{{ url_for('company_calendar') }}"
+                        {% endif %}
+                        class="calendar-item">
+
+                        <div class="calendar-icon
+                            {% if event.event_type in ['appointment', 'personal'] %}event
+                            {% elif event.event_type in ['day_off', 'vacation', 'time_off'] %}timeoff
+                            {% endif %}">
+                            {% if event.event_type == 'job' %}
+                                🔧
+                            {% elif event.event_type in ['day_off', 'vacation', 'time_off'] %}
+                                🌴
+                            {% else %}
+                                📌
+                            {% endif %}
                         </div>
 
-                        <div class="upcoming-month">
-                            {{ job.date.split('-')[1] if job.date and '-' in job.date else '' }}
+                        <div class="calendar-info">
+                            <div class="calendar-title">
+                                {{ event.title }}
+                            </div>
+
+                            <div class="calendar-meta">
+                                {{ event.date }}
+
+                                {% if event.start_time %}
+                                    · {{ event.start_time }}
+                                    {% if event.end_time %}
+                                        – {{ event.end_time }}
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if event.employee_name %}
+                                    · {{ event.employee_name }}
+                                {% endif %}
+                            </div>
+
+                            <span class="calendar-status">
+                                {% if event.event_type == 'job' %}
+                                    Job
+                                {% elif event.event_type in ['day_off', 'vacation', 'time_off'] %}
+                                    Time Off
+                                {% else %}
+                                    {{ event.event_type|replace('_', ' ')|title }}
+                                {% endif %}
+                            </span>
                         </div>
+
+                        <div class="recent-arrow">›</div>
+                    </a>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-calendar">
+                        Your calendar is clear. No upcoming jobs or reminders.
                     </div>
 
-                    <div class="upcoming-info">
+                {% endif %}
 
-                        <div class="upcoming-title">
-                            {% if job.client_name %}
-                                {{ job.client_name }}
-                            {% else %}
-                                Job #{{ job.id }}
-                            {% endif %}
-                        </div>
+            </div>
+        </div>
+    </section>
 
-                        <div class="upcoming-meta">
-                            {% if job.start_time %}
-                                {{ job.start_time }}
-                                {% if job.end_time %}–{{ job.end_time }}{% endif %}
-                            {% else %}
-                                Time not set
-                            {% endif %}
+    <!-- PAY -->
 
+    <section class="section">
+        <div class="section-heading">
+            <div class="section-title">💰 Pay & Timesheets</div>
+            <a href="{{ url_for('pay_summary', period='biweekly') }}"
+               class="view-link">
+                View Pay →
+            </a>
+        </div>
+
+        <a href="{{ url_for('pay_summary', period='biweekly') }}"
+           class="employee-pay-card">
+
+            <div class="employee-pay-top">
+                <div>
+                    <div class="employee-pay-label">Current Pay Period</div>
+                    <div class="employee-pay-title">
+                        Your Earnings
+                    </div>
+                </div>
+
+                <div class="employee-pay-icon">💰</div>
+            </div>
+
+            <div class="employee-pay-stats">
+
+                <div class="employee-pay-stat">
+                    <div class="employee-pay-stat-label">Hours</div>
+                    <div class="employee-pay-stat-value">
+                        {{ "%.2f"|format(pay_hours|default(0)) }}
+                    </div>
+                </div>
+
+                <div class="employee-pay-stat">
+                    <div class="employee-pay-stat-label">Estimated Gross</div>
+                    <div class="employee-pay-stat-value">
+                        ${{ "%.2f"|format(pay_summary.gross_pay|default(0)) }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="employee-pay-link">
+                <span>View full pay breakdown</span>
+                <span>→</span>
+            </div>
+
+        </a>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+
+    <section class="section">
+        <div class="section-heading">
+            <div class="section-title">Quick Access</div>
+        </div>
+
+        <div class="quick-grid">
+
+            <div class="calendar-hub-card">
+
+                <div class="calendar-hub-icon">📅</div>
+
+                <div class="calendar-hub-content">
+                    <div class="calendar-hub-title">Calendar</div>
+                    <div class="calendar-hub-description">
+                        Schedule &amp; company events
+                    </div>
+
+                    <div class="calendar-hub-options">
+
+                        <a href="{{ url_for('employee_schedule') }}"
+                           class="calendar-hub-option">
+                            <span class="calendar-hub-option-icon">🗓️</span>
+                            <span class="calendar-hub-option-text">
+                                <strong>My Schedule</strong>
+                                <small>Assigned jobs</small>
+                            </span>
+                            <span class="calendar-hub-arrow">›</span>
+                        </a>
+
+                        <a href="{{ url_for('company_calendar') }}"
+                           class="calendar-hub-option">
+                            <span class="calendar-hub-option-icon">🏢</span>
+                            <span class="calendar-hub-option-text">
+                                <strong>Company Calendar</strong>
+                                <small>Shared events</small>
+                            </span>
+                            <span class="calendar-hub-arrow">›</span>
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('index') }}" class="quick-card">
+                <div class="quick-icon">➕</div>
+                <div>
+                    <div class="quick-title">Daily Entry</div>
+                    <div class="quick-description">Log hours & work</div>
+                </div>
+            </a>
+
+            <a href="{{ url_for('history') }}" class="quick-card">
+                <div class="quick-icon">📋</div>
+                <div>
+                    <div class="quick-title">Job History</div>
+                    <div class="quick-description">Past jobs</div>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- RECENT ACTIVITY -->
+
+    <section class="section">
+        <div class="section-heading">
+            <div class="section-title">Recent Activity</div>
+            <a href="{{ url_for('history') }}" class="view-link">
+                View All →
+            </a>
+        </div>
+
+        <div class="recent-card">
+
+            {% if recent_jobs %}
+
+                {% for job in recent_jobs %}
+
+                <a href="{{ url_for('edit_job', job_id=job.id) }}"
+                   class="recent-row">
+
+                    <div class="recent-dot"></div>
+
+                    <div class="recent-info">
+                        <div class="recent-title">
+                            Job #{{ job.id }}
                             {% if job.destination %}
                                 · {{ job.destination }}
                             {% endif %}
                         </div>
 
-                        <div class="upcoming-status">
-                            {{ job.status|replace('_', ' ') }}
-                        </div>
-
-                    </div>
-
-                    <div class="upcoming-arrow">›</div>
-
-                </a>
-
-                {% endfor %}
-
-            {% else %}
-
-                <div class="empty-state">
-                    No upcoming jobs assigned.<br>
-                    Your schedule is clear.
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </section>
-
-    <section class="quick-actions">
-
-        <a href="{{ url_for('employee_schedule') }}" class="schedule-card">
-            <div class="schedule-card-icon">🗓️</div>
-            <div class="schedule-card-info">
-                <div class="schedule-card-title">My Schedule</div>
-                <div class="schedule-card-description">
-                    View assigned jobs and upcoming work
-                </div>
-            </div>
-            <div class="schedule-card-arrow">›</div>
-        </a>
-
-        <a href="{{ url_for('company_calendar') }}" class="schedule-card">
-            <div class="schedule-card-icon">📅</div>
-            <div class="schedule-card-info">
-                <div class="schedule-card-title">Company Calendar</div>
-                <div class="schedule-card-description">
-                    View the shared company calendar
-                </div>
-            </div>
-            <div class="schedule-card-arrow">›</div>
-        </a>
-
-    </section>
-
-    <section class="dashboard-grid">
-
-        <a href="{{ url_for('index') }}" class="dashboard-card">
-            <div class="card-icon">＋</div>
-            <div class="card-title">New Daily Entry</div>
-            <div class="card-description">
-                Log hours, materials &amp; photos
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('history') }}" class="dashboard-card">
-            <div class="card-icon">📋</div>
-            <div class="card-title">Job History</div>
-            <div class="card-description">
-                View and manage past jobs
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('gallery') }}" class="dashboard-card">
-            <div class="card-icon">📷</div>
-            <div class="card-title">Photos</div>
-            <div class="card-description">
-                Browse job pictures
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('weekly') }}" class="dashboard-card">
-            <div class="card-icon">📈</div>
-            <div class="card-title">Reports</div>
-            <div class="card-description">
-                Hours &amp; job summaries
-            </div>
-        </a>
-
-        <a href="{{ url_for('pay_summary', period='weekly') }}" class="dashboard-card">
-            <div class="card-icon">💰</div>
-            <div class="card-title">Pay</div>
-            <div class="card-description">
-                Daily, weekly &amp; bi-weekly earnings
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('sent_reports') }}" class="dashboard-card">
-            <div class="card-icon">📨</div>
-            <div class="card-title">Sent Reports</div>
-            <div class="card-description">
-                View reports sent to others
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('clients') }}" class="dashboard-card">
-            <div class="card-icon">👥</div>
-            <div class="card-title">Clients</div>
-            <div class="card-description">
-                Manage contacts &amp; addresses
-            </div>
-        </a>
-
-
-        <a href="{{ url_for('settings') }}" class="dashboard-card">
-            <div class="card-icon">⚙️</div>
-            <div class="card-title">Settings</div>
-        </a>
-
-    </section>
-
-
-    <section class="activity-section">
-
-        <div class="activity-heading">
-            <h2>Recent Activity</h2>
-
-            <a href="{{ url_for('history') }}" class="view-all">
-                View All
-            </a>
-        </div>
-
-
-        <div class="activity-card">
-
-            {% if recent_jobs is defined and recent_jobs %}
-
-                {% for job in recent_jobs %}
-
-                <a href="{{ url_for('edit_job', job_id=job.id) }}"
-                   class="activity-row">
-
-                    <div class="activity-dot"></div>
-
-                    <div class="activity-info">
-
-                        <div class="activity-title">
-                            Job #{{ job.id }}{% if job.destination %} · {{ job.destination }}{% endif %}
-                        </div>
-
-                        <div class="activity-meta">
+                        <div class="recent-meta">
                             {{ job.date or 'No date' }}
-                            {% if job.hours %} · {{ job.hours }} hours{% endif %}
-                        </div>
 
+                            {% if job.hours %}
+                                · {{ job.hours }} hours
+                            {% endif %}
+                        </div>
                     </div>
 
-                    <div class="activity-arrow">›</div>
+                    <div class="recent-arrow">›</div>
 
                 </a>
 
@@ -1038,31 +1075,28 @@
             {% else %}
 
                 <div class="empty-state">
-                    No recent jobs yet.<br>
-                    Create your first daily entry.
+                    No recent jobs yet.
                 </div>
 
             {% endif %}
 
         </div>
-
     </section>
 
 </main>
 
-
 <script>
-    function openMenu() {
-        document.getElementById("sideMenu").classList.add("open");
-        document.getElementById("menuOverlay").classList.add("open");
-        document.body.style.overflow = "hidden";
-    }
+function openMenu() {
+    document.getElementById("sideMenu").classList.add("open");
+    document.getElementById("menuOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+}
 
-    function closeMenu() {
-        document.getElementById("sideMenu").classList.remove("open");
-        document.getElementById("menuOverlay").classList.remove("open");
-        document.body.style.overflow = "";
-    }
+function closeMenu() {
+    document.getElementById("sideMenu").classList.remove("open");
+    document.getElementById("menuOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+}
 </script>
 
 </body>
