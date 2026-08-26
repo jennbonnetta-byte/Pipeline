@@ -5064,9 +5064,11 @@ def owner_employee_profile(employee_id):
 
 
 @app.route('/notifications')
-@login_required
 def employee_notifications():
     """Display notifications for the currently logged-in employee."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = get_db()
 
     try:
@@ -5102,9 +5104,11 @@ def employee_notifications():
 
 
 @app.route('/notifications/<int:notification_id>/read', methods=['POST'])
-@login_required
 def mark_notification_read(notification_id):
     """Mark one notification as read for the logged-in user."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = get_db()
 
     try:
