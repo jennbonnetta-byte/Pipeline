@@ -250,6 +250,11 @@
         </div>
 
         <a class="dashboard-button"
+           href="{{ url_for('new_client') }}">
+            + Add Client
+        </a>
+
+        <a class="dashboard-button"
            href="{{ url_for('owner_dashboard') }}">
             Dashboard
         </a>
@@ -268,8 +273,27 @@
 
                 <div class="client-card">
 
-                    <div class="client-name">
-                        {{ client[1] }}
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:space-between;
+                        gap:12px;
+                        margin-bottom:12px;
+                    ">
+                        <div class="client-name" style="margin-bottom:0;">
+                            {{ client[1] }}
+                        </div>
+
+                        <a href="{{ url_for('edit_client', client_id=client[0]) }}"
+                           style="
+                               color:#1685c5;
+                               text-decoration:none;
+                               font-size:13px;
+                               font-weight:800;
+                               white-space:nowrap;
+                           ">
+                            Edit
+                        </a>
                     </div>
 
                     {% if client[2] %}
