@@ -1671,16 +1671,130 @@ def index():
         settings_autosave_drafts=autosave_drafts
     )
 
-def get_job_by_id(user_id, job_id):
+def get_company_job_history():
+    """Return the complete company-wide job history for the owner."""
     conn = get_db()
+
     try:
         cur = conn.cursor()
+
         cur.execute(
-            """SELECT id, date, hours, notes, destination, materials, photos
-               FROM jobs
-               WHERE id = %s AND user_id = %s""",
-            (job_id, user_id)
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.hours,
+                j.start_time,
+                j.end_time,
+                j.notes,
+                j.destination,
+                j.materials,
+                j.photos,
+                j.client_id,
+                c.name AS client_name,
+                u.username AS created_by_name,
+                COALESCE(
+                    STRING_AGG(
+                        DISTINCT assigned.username,
+                        ', '
+                        ORDER BY assigned.username
+                    ),
+                    ''
+                ) AS assigned_employee_names
+            FROM jobs j
+
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+
+            LEFT JOIN users u
+                ON u.id = j.user_id
+
+            LEFT JOIN job_assignments ja
+                ON ja.job_id = j.id
+               AND COALESCE(ja.status, 'assigned')
+                   NOT IN ('cancelled')
+
+            LEFT JOIN users assigned
+                ON assigned.id = ja.employee_id
+
+            GROUP BY
+                j.id,
+                j.date,
+                j.hours,
+                j.start_time,
+                j.end_time,
+                j.notes,
+                j.destination,
+                j.materials,
+                j.photos,
+                j.client_id,
+                c.name,
+                u.username
+
+            ORDER BY
+                j.date DESC,
+                j.id DESC
+            """
         )
+
+        rows = cur.fetchall()
+        cur.close()
+
+        return [
+            {
+                "id": row[0],
+                "date": row[1],
+                "hours": row[2],
+                "start_time": row[3],
+                "end_time": row[4],
+                "notes": row[5] or "",
+                "destination": row[6] or "",
+                "materials": row[7] or "",
+                "photos": row[8] or [],
+                "client_id": row[9],
+                "client_name": row[10] or "",
+                "created_by_name": row[11] or "",
+                "assigned_employee_names": row[12] or ""
+            }
+            for row in rows
+        ]
+
+    finally:
+        conn.close()
+
+
+def get_company_job_by_id(job_id):
+    """Return any company job. Owner-only callers should use this."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.hours,
+                j.start_time,
+                j.end_time,
+                j.notes,
+                j.destination,
+                j.materials,
+                j.photos,
+                j.client_id,
+                c.name AS client_name,
+                u.username AS created_by_name
+            FROM jobs j
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN users u
+                ON u.id = j.user_id
+            WHERE j.id = %s
+            """,
+            (job_id,)
+        )
+
         row = cur.fetchone()
         cur.close()
 
@@ -1691,28 +1805,143 @@ def get_job_by_id(user_id, job_id):
             "id": row[0],
             "date": row[1],
             "hours": row[2],
-            "notes": row[3],
-            "destination": row[4],
-            "materials": row[5],
-            "photos": row[6] or []
+            "start_time": row[3],
+            "end_time": row[4],
+            "notes": row[5],
+            "destination": row[6],
+            "materials": row[7],
+            "photos": row[8] or [],
+            "client_id": row[9],
+            "client_name": row[10] or "",
+            "created_by_name": row[11] or ""
         }
+
+    finally:
+        conn.close()
+
+
+def get_job_by_id(user_id, job_id):
+    """
+    Return a job the current employee is allowed to access.
+
+    Employees may access:
+      1. Jobs they created.
+      2. Jobs assigned to them.
+
+    Owners should use get_company_job_by_id().
+    """
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT
+                j.id,
+                j.date,
+                j.hours,
+                j.start_time,
+                j.end_time,
+                j.notes,
+                j.destination,
+                j.materials,
+                j.photos,
+                j.client_id,
+                c.name AS client_name,
+                u.username AS created_by_name
+            FROM jobs j
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN users u
+                ON u.id = j.user_id
+            WHERE j.id = %s
+              AND (
+                    j.user_id = %s
+                    OR EXISTS (
+                        SELECT 1
+                        FROM job_assignments ja
+                        WHERE ja.job_id = j.id
+                          AND ja.employee_id = %s
+                          AND COALESCE(ja.status, 'assigned')
+                              NOT IN ('cancelled')
+                    )
+              )
+            """,
+            (job_id, user_id, user_id)
+        )
+
+        row = cur.fetchone()
+        cur.close()
+
+        if not row:
+            return None
+
+        return {
+            "id": row[0],
+            "date": row[1],
+            "hours": row[2],
+            "start_time": row[3],
+            "end_time": row[4],
+            "notes": row[5],
+            "destination": row[6],
+            "materials": row[7],
+            "photos": row[8] or [],
+            "client_id": row[9],
+            "client_name": row[10] or "",
+            "created_by_name": row[11] or ""
+        }
+
     finally:
         conn.close()
 
 
 def update_job(user_id, job_id, job):
+    """
+    Update a job.
+
+    Owner:
+        Can update any company job.
+
+    Employee:
+        Can update a job they created or are assigned to.
+    """
     conn = get_db()
+
     try:
         cur = conn.cursor()
+
+        if session.get('role') == 'owner':
+            access_condition = "j.id = %s"
+            access_params = (job_id,)
+        else:
+            access_condition = """
+                j.id = %s
+                AND (
+                    j.user_id = %s
+                    OR EXISTS (
+                        SELECT 1
+                        FROM job_assignments ja
+                        WHERE ja.job_id = j.id
+                          AND ja.employee_id = %s
+                          AND COALESCE(ja.status, 'assigned')
+                              NOT IN ('cancelled')
+                    )
+                )
+            """
+            access_params = (job_id, user_id, user_id)
+
         cur.execute(
-            """UPDATE jobs
-               SET date = %s,
-                   hours = %s,
-                   notes = %s,
-                   destination = %s,
-                   materials = %s,
-                   photos = %s
-               WHERE id = %s AND user_id = %s""",
+            f"""
+            UPDATE jobs j
+            SET date = %s,
+                hours = %s,
+                notes = %s,
+                destination = %s,
+                materials = %s,
+                photos = %s
+            WHERE {access_condition}
+            """,
             (
                 job.get("date"),
                 job.get("hours"),
@@ -1720,26 +1949,50 @@ def update_job(user_id, job_id, job):
                 job.get("destination"),
                 job.get("materials"),
                 json.dumps(job.get("photos", [])),
-                job_id,
-                user_id
+                *access_params
             )
         )
+
         conn.commit()
         cur.close()
+
     finally:
         conn.close()
 
 
 def delete_job_from_db(user_id, job_id):
+    """
+    Delete a job.
+
+    Owners can delete any company job.
+    Employees can delete only jobs they created.
+    """
     conn = get_db()
+
     try:
         cur = conn.cursor()
-        cur.execute(
-            "DELETE FROM jobs WHERE id = %s AND user_id = %s",
-            (job_id, user_id)
-        )
+
+        if session.get('role') == 'owner':
+            cur.execute(
+                """
+                DELETE FROM jobs
+                WHERE id = %s
+                """,
+                (job_id,)
+            )
+        else:
+            cur.execute(
+                """
+                DELETE FROM jobs
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (job_id, user_id)
+            )
+
         conn.commit()
         cur.close()
+
     finally:
         conn.close()
 
@@ -1963,11 +2216,15 @@ def history():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    user_history = get_user_jobs(session['user_id'])
+    if session.get('role') == 'owner':
+        user_history = get_company_job_history()
+    else:
+        user_history = get_user_jobs(session['user_id'])
 
     return render_template(
         'history.html',
-        history=user_history
+        history=user_history,
+        is_owner=session.get('role') == 'owner'
     )
 
 
@@ -2767,7 +3024,13 @@ def job_photos(job_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    job = get_job_by_id(session['user_id'], job_id)
+    if session.get('role') == 'owner':
+        job = get_company_job_by_id(job_id)
+    else:
+        job = get_job_by_id(
+            session['user_id'],
+            job_id
+        )
 
     if job:
         return render_template(
@@ -2796,10 +3059,13 @@ def edit_job(job_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    target_job = get_job_by_id(
-        session['user_id'],
-        job_id
-    )
+    if session.get('role') == 'owner':
+        target_job = get_company_job_by_id(job_id)
+    else:
+        target_job = get_job_by_id(
+            session['user_id'],
+            job_id
+        )
 
     if not target_job:
         return redirect(url_for('history'))
