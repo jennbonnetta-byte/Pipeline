@@ -765,6 +765,11 @@
         Company Calendar
     </a>
 
+    <a href="{{ url_for('employee_time_off') }}" class="menu-item">
+        <span class="menu-icon">🌴</span>
+        Time Off
+    </a>
+
     <a href="{{ url_for('index') }}" class="menu-item">
         <span class="menu-icon">➕</span>
         New Daily Entry
@@ -1022,6 +1027,14 @@
                 <div>
                     <div class="quick-title">Job History</div>
                     <div class="quick-description">Past jobs</div>
+                </div>
+            </a>
+
+            <a href="{{ url_for('employee_time_off') }}" class="quick-card">
+                <div class="quick-icon">🌴</div>
+                <div>
+                    <div class="quick-title">Time Off</div>
+                    <div class="quick-description">Request time off</div>
                 </div>
             </a>
 

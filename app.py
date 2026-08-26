@@ -3992,6 +3992,226 @@ def get_shared_calendar_events(start_date, end_date, user_id):
         conn.close()
 
 
+
+@app.route('/employee/time-off', methods=['GET', 'POST'])
+def employee_time_off():
+    """Employee time-off request page."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if session.get('role') == 'owner':
+        return redirect(url_for('company_calendar'))
+
+    error = None
+
+    if request.method == 'POST':
+        request_type = (request.form.get('request_type') or '').strip().lower()
+        start_date = (request.form.get('start_date') or '').strip()
+        end_date = (request.form.get('end_date') or '').strip()
+        start_time = (request.form.get('start_time') or '').strip() or None
+        end_time = (request.form.get('end_time') or '').strip() or None
+        notes = (request.form.get('notes') or '').strip()
+
+        allowed_types = {'vacation', 'appointment', 'personal'}
+
+        if request_type not in allowed_types:
+            error = 'Please select a valid request type.'
+        elif not start_date or not end_date:
+            error = 'Please select a start and end date.'
+        elif end_date < start_date:
+            error = 'End date cannot be before the start date.'
+        elif (start_time and not end_time) or (end_time and not start_time):
+            error = 'Please provide both a start and end time, or leave both blank.'
+        else:
+            conn = get_db()
+
+            try:
+                cur = conn.cursor()
+
+                # Find the owner who should receive the request.
+                cur.execute("""
+                    SELECT id
+                    FROM users
+                    WHERE role = 'owner'
+                    ORDER BY id
+                    LIMIT 1
+                """)
+                owner_row = cur.fetchone()
+
+                if not owner_row:
+                    error = 'No owner account is available to review requests.'
+                else:
+                    cur.execute("""
+                        INSERT INTO employee_time_off_requests (
+                            employee_id,
+                            request_type,
+                            start_date,
+                            end_date,
+                            start_time,
+                            end_time,
+                            notes,
+                            status,
+                            created_at,
+                            updated_at
+                        )
+                        VALUES (
+                            %s, %s, %s, %s, %s, %s, %s,
+                            'pending',
+                            CURRENT_TIMESTAMP,
+                            CURRENT_TIMESTAMP
+                        )
+                        RETURNING id
+                    """, (
+                        session['user_id'],
+                        request_type,
+                        start_date,
+                        end_date,
+                        start_time,
+                        end_time,
+                        notes
+                    ))
+
+                    request_id = cur.fetchone()[0]
+
+                    # Get the employee's display name.
+                    cur.execute("""
+                        SELECT username
+                        FROM users
+                        WHERE id = %s
+                    """, (session['user_id'],))
+
+                    employee_row = cur.fetchone()
+                    employee_name = (
+                        employee_row[0]
+                        if employee_row
+                        else session.get('user', 'Employee')
+                    )
+
+                    type_labels = {
+                        'vacation': 'Vacation',
+                        'appointment': 'Appointment',
+                        'personal': 'Personal'
+                    }
+
+                    request_label = type_labels[request_type]
+
+                    if start_date == end_date:
+                        date_text = start_date
+                    else:
+                        date_text = f'{start_date} to {end_date}'
+
+                    if start_time and end_time:
+                        time_text = f' · {start_time}–{end_time}'
+                    else:
+                        time_text = ' · All day'
+
+                    cur.execute("""
+                        INSERT INTO notifications (
+                            user_id,
+                            job_id,
+                            type,
+                            title,
+                            message,
+                            is_read,
+                            created_at
+                        )
+                        VALUES (
+                            %s,
+                            NULL,
+                            'time_off_request',
+                            %s,
+                            %s,
+                            FALSE,
+                            CURRENT_TIMESTAMP
+                        )
+                    """, (
+                        owner_row[0],
+                        f'New {request_label.lower()} request',
+                        f'{employee_name} requested {request_label.lower()} time off for '
+                        f'{date_text}{time_text}.'
+                    ))
+
+                    conn.commit()
+
+                    cur.close()
+
+                    return redirect(
+                        url_for('employee_time_off_requests')
+                    )
+
+            except Exception:
+                conn.rollback()
+                raise
+
+            finally:
+                conn.close()
+
+    return render_template(
+        'employee_time_off.html',
+        error=error,
+        username=session.get('user')
+    )
+
+
+@app.route('/employee/time-off/requests')
+def employee_time_off_requests():
+    """Show an employee's submitted time-off requests."""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if session.get('role') == 'owner':
+        return redirect(url_for('company_calendar'))
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                id,
+                request_type,
+                start_date,
+                end_date,
+                start_time,
+                end_time,
+                notes,
+                status,
+                created_at,
+                reviewed_at
+            FROM employee_time_off_requests
+            WHERE employee_id = %s
+            ORDER BY start_date DESC, id DESC
+        """, (session['user_id'],))
+
+        requests = []
+
+        for row in cur.fetchall():
+            requests.append({
+                'id': row[0],
+                'request_type': row[1],
+                'start_date': str(row[2]) if row[2] else '',
+                'end_date': str(row[3]) if row[3] else '',
+                'start_time': str(row[4])[:5] if row[4] else '',
+                'end_time': str(row[5])[:5] if row[5] else '',
+                'notes': row[6] or '',
+                'status': row[7] or 'pending',
+                'created_at': row[8],
+                'reviewed_at': row[9]
+            })
+
+        cur.close()
+
+        return render_template(
+            'employee_time_off_requests.html',
+            requests=requests,
+            username=session.get('user')
+        )
+
+    finally:
+        conn.close()
+
+
 @app.route('/calendar')
 def company_calendar():
     """Shared monthly company calendar."""
@@ -4695,14 +4915,25 @@ def owner_notifications():
         cur.execute(
             """
             SELECT
-                id,
-                title,
-                message,
-                is_read,
-                created_at
-            FROM notifications
-            WHERE user_id = %s
-            ORDER BY created_at DESC
+                n.id,
+                n.title,
+                n.message,
+                n.is_read,
+                n.created_at,
+                n.type,
+                r.id AS time_off_request_id
+            FROM notifications n
+            LEFT JOIN employee_time_off_requests r
+                ON n.type = 'time_off_request'
+                AND r.employee_id IS NOT NULL
+                AND n.message LIKE '%' || (
+                    SELECT u.username
+                    FROM users u
+                    WHERE u.id = r.employee_id
+                ) || '%'
+                AND r.status = 'pending'
+            WHERE n.user_id = %s
+            ORDER BY n.created_at DESC
             LIMIT 100
             """,
             (session['user_id'],)
@@ -4732,6 +4963,267 @@ def owner_notifications():
     finally:
         conn.close()
 
+
+
+@app.route('/owner/time-off/<int:request_id>/<action>', methods=['POST'])
+@owner_required
+def owner_time_off_action(request_id, action):
+    """Approve or reject an employee time-off request."""
+    if action not in ('approve', 'reject'):
+        return redirect(url_for('owner_notifications'))
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                r.id,
+                r.employee_id,
+                r.request_type,
+                r.start_date,
+                r.end_date,
+                r.start_time,
+                r.end_time,
+                r.notes,
+                r.status,
+                r.calendar_event_id,
+                u.username
+            FROM employee_time_off_requests r
+            INNER JOIN users u
+                ON u.id = r.employee_id
+            WHERE r.id = %s
+            FOR UPDATE
+        """, (request_id,))
+
+        row = cur.fetchone()
+
+        if not row:
+            cur.close()
+            return redirect(url_for('owner_notifications'))
+
+        (
+            request_id,
+            employee_id,
+            request_type,
+            start_date,
+            end_date,
+            start_time,
+            end_time,
+            notes,
+            current_status,
+            calendar_event_id,
+            employee_name
+        ) = row
+
+        # Do not process an already-reviewed request again.
+        if current_status != 'pending':
+            cur.close()
+            return redirect(url_for('owner_notifications'))
+
+        if action == 'approve':
+            type_labels = {
+                'vacation': 'Vacation',
+                'appointment': 'Appointment',
+                'personal': 'Personal'
+            }
+
+            label = type_labels.get(
+                request_type,
+                request_type.replace('_', ' ').title()
+            )
+
+            title = f"{employee_name} — {label}"
+
+            description_parts = [
+                f"Approved {label.lower()} time off for {employee_name}."
+            ]
+
+            if notes:
+                description_parts.append(notes)
+
+            description = " ".join(description_parts)
+
+            # Create the shared calendar event.
+            cur.execute("""
+                INSERT INTO company_calendar_events (
+                    event_type,
+                    title,
+                    description,
+                    event_date,
+                    start_time,
+                    end_time,
+                    created_by,
+                    employee_id,
+                    status,
+                    visibility,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    'approved', 'company',
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
+                )
+                RETURNING id
+            """, (
+                'time_off',
+                title,
+                description,
+                start_date,
+                start_time,
+                end_time,
+                session['user_id'],
+                employee_id
+            ))
+
+            calendar_event_id = cur.fetchone()[0]
+
+            # For multi-day requests, create one calendar event
+            # for each additional day.
+            current_date = start_date
+
+            while current_date < end_date:
+                from datetime import timedelta
+                current_date += timedelta(days=1)
+
+                cur.execute("""
+                    INSERT INTO company_calendar_events (
+                        event_type,
+                        title,
+                        description,
+                        event_date,
+                        start_time,
+                        end_time,
+                        created_by,
+                        employee_id,
+                        status,
+                        visibility,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s,
+                        'approved', 'company',
+                        CURRENT_TIMESTAMP,
+                        CURRENT_TIMESTAMP
+                    )
+                """, (
+                    'time_off',
+                    title,
+                    description,
+                    current_date,
+                    start_time,
+                    end_time,
+                    session['user_id'],
+                    employee_id
+                ))
+
+            cur.execute("""
+                UPDATE employee_time_off_requests
+                SET
+                    status = 'approved',
+                    reviewed_by = %s,
+                    reviewed_at = CURRENT_TIMESTAMP,
+                    calendar_event_id = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                session['user_id'],
+                calendar_event_id,
+                request_id
+            ))
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    job_id,
+                    type,
+                    title,
+                    message,
+                    is_read,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    NULL,
+                    'time_off_approved',
+                    %s,
+                    %s,
+                    FALSE,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                employee_id,
+                'Time off approved',
+                f'Your {label.lower()} request for '
+                f'{start_date}'
+                + (
+                    f' to {end_date}'
+                    if start_date != end_date
+                    else ''
+                )
+                + ' has been approved.'
+            ))
+
+        else:
+            # Reject without creating a calendar event.
+            cur.execute("""
+                UPDATE employee_time_off_requests
+                SET
+                    status = 'rejected',
+                    reviewed_by = %s,
+                    reviewed_at = CURRENT_TIMESTAMP,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                session['user_id'],
+                request_id
+            ))
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    job_id,
+                    type,
+                    title,
+                    message,
+                    is_read,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    NULL,
+                    'time_off_rejected',
+                    'Time off request declined',
+                    %s,
+                    FALSE,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                employee_id,
+                f'Your time off request for {start_date}'
+                + (
+                    f' to {end_date}'
+                    if start_date != end_date
+                    else ''
+                )
+                + ' was declined.'
+            ))
+
+        conn.commit()
+        cur.close()
+
+        return redirect(url_for('owner_notifications'))
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
 
 @app.route('/owner/schedule', methods=['GET', 'POST'])
 @owner_required
@@ -5030,11 +5522,87 @@ def owner_schedule():
         conn.close()
 
 
+
+# Ensure employee time-off request storage exists when PipeLine starts.
+def ensure_employee_time_off_table():
+    """Create employee time-off request storage if it does not exist."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS employee_time_off_requests (
+                id SERIAL PRIMARY KEY,
+
+                employee_id INTEGER NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+
+                request_type VARCHAR(30) NOT NULL,
+
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+
+                start_time TIME,
+                end_time TIME,
+
+                notes TEXT,
+
+                status VARCHAR(20) NOT NULL DEFAULT 'pending',
+
+                reviewed_by INTEGER
+                    REFERENCES users(id) ON DELETE SET NULL,
+
+                reviewed_at TIMESTAMPTZ,
+
+                calendar_event_id INTEGER
+                    REFERENCES company_calendar_events(id)
+                    ON DELETE SET NULL,
+
+                created_at TIMESTAMPTZ
+                    DEFAULT CURRENT_TIMESTAMP,
+
+                updated_at TIMESTAMPTZ
+                    DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_time_off_employee
+            ON employee_time_off_requests(employee_id)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_time_off_status
+            ON employee_time_off_requests(status)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_time_off_dates
+            ON employee_time_off_requests(start_date, end_date)
+        """)
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+
 # Ensure shared company calendar storage exists when PipeLine starts.
 try:
     ensure_company_calendar_table()
 except Exception as e:
     print(f"Shared calendar table initialization warning: {e}")
+
+# Ensure employee time-off request storage exists when PipeLine starts.
+try:
+    ensure_employee_time_off_table()
+except Exception as e:
+    print(f"Employee time-off table initialization warning: {e}")
 
 # Ensure password reset storage exists when PipeLine starts.
 try:

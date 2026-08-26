@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Time Off — PipeLine</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, Arial, sans-serif;
+            background: #f3f7fc;
+            color: #10213b;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .back {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .page {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 18px 50px;
+        }
+
+        .intro {
+            margin-bottom: 20px;
+        }
+
+        .intro h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+        .intro p {
+            margin: 0;
+            color: #718096;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 7px 22px rgba(22,54,86,.07);
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 750;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #d7e1eb;
+            border-radius: 13px;
+            padding: 13px 14px;
+            font: inherit;
+            color: #10213b;
+            background: #fbfdff;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .date-grid,
+        .time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .error {
+            background: #fff1f1;
+            border: 1px solid #f1c5c5;
+            color: #a33;
+            border-radius: 13px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+        }
+
+        .hint {
+            color: #8a96a6;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .button {
+            flex: 1;
+            border: 0;
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .primary {
+            background: #087bc4;
+            color: white;
+        }
+
+        .secondary {
+            background: #edf3f8;
+            color: #29415b;
+        }
+
+        @media (max-width: 560px) {
+            .date-grid,
+            .time-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="back" href="{{ url_for('home') }}">‹</a>
+    <div class="title">PipeLine · Time Off</div>
+</header>
+
+<main class="page">
+
+    <div class="intro">
+        <h1>Request Time Off</h1>
+        <p>Submit a request for vacation, an appointment, or personal time.</p>
+    </div>
+
+    <form class="card" method="POST">
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <div class="field">
+            <label for="request_type">Request Type</label>
+            <select id="request_type" name="request_type" required>
+                <option value="">Choose one...</option>
+                <option value="vacation">Vacation</option>
+                <option value="appointment">Appointment</option>
+                <option value="personal">Personal</option>
+            </select>
+        </div>
+
+        <div class="date-grid">
+
+            <div class="field">
+                <label for="start_date">Start Date</label>
+                <input
+                    id="start_date"
+                    name="start_date"
+                    type="date"
+                    required>
+            </div>
+
+            <div class="field">
+                <label for="end_date">End Date</label>
+                <input
+                    id="end_date"
+                    name="end_date"
+                    type="date"
+                    required>
+            </div>
+
+        </div>
+
+        <div class="time-grid">
+
+            <div class="field">
+                <label for="start_time">Start Time</label>
+                <input
+                    id="start_time"
+                    name="start_time"
+                    type="time">
+            </div>
+
+            <div class="field">
+                <label for="end_time">End Time</label>
+                <input
+                    id="end_time"
+                    name="end_time"
+                    type="time">
+            </div>
+
+        </div>
+
+        <div class="hint">
+            Leave the times blank for an all-day request.
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+            <label for="notes">Notes</label>
+            <textarea
+                id="notes"
+                name="notes"
+                placeholder="Add any information your manager should know..."></textarea>
+        </div>
+
+        <div class="actions">
+            <a class="button secondary" href="{{ url_for('home') }}">
+                Cancel
+            </a>
+
+            <button class="button primary" type="submit">
+                Submit Request
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+</body>
+</html>

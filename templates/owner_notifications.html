@@ -68,6 +68,35 @@
         .empty {
             color: #718096;
         }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .notification-actions form {
+            margin: 0;
+        }
+
+        .notification-actions button {
+            border: 0;
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .approve-button {
+            background: #1685c5;
+            color: white;
+        }
+
+        .reject-button {
+            background: #f1f5f9;
+            color: #b42318;
+            border: 1px solid #fecaca !important;
+        }
     </style>
 </head>
 
@@ -101,6 +130,20 @@
                     <div class="date">
                         {{ notification[4] }}
                     </div>
+
+                    {% if notification[5] == 'time_off_request' and notification[6] %}
+                        <div class="notification-actions">
+                            <form method="POST"
+                                  action="{{ url_for('owner_time_off_action', request_id=notification[6], action='approve') }}">
+                                <button type="submit" class="approve-button">✓ Approve</button>
+                            </form>
+
+                            <form method="POST"
+                                  action="{{ url_for('owner_time_off_action', request_id=notification[6], action='reject') }}">
+                                <button type="submit" class="reject-button">✕ Reject</button>
+                            </form>
+                        </div>
+                    {% endif %}
 
                 </div>
 
