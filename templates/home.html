@@ -710,7 +710,82 @@
             color: #edf4fa;
             border-color: #263847;
         }
-    </style>
+
+        /* =================================================
+           QUICK ACCESS REDESIGN
+           Flat cards — no nested Calendar hub
+           ================================================= */
+
+        .quick-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 12px !important;
+            align-items: stretch !important;
+        }
+
+        .quick-grid .quick-card {
+            width: 100% !important;
+            height: 112px !important;
+            min-height: 112px !important;
+            margin: 0 !important;
+            padding: 15px !important;
+
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+
+            border-radius: 18px !important;
+            box-sizing: border-box !important;
+        }
+
+        .quick-grid .quick-icon {
+            flex: 0 0 52px !important;
+            width: 52px !important;
+            height: 52px !important;
+
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .quick-grid .quick-title {
+            line-height: 1.15 !important;
+        }
+
+        .quick-grid .quick-description {
+            line-height: 1.3 !important;
+        }
+
+        @media (max-width: 600px) {
+            .quick-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 10px !important;
+            }
+
+            .quick-grid .quick-card {
+                height: 108px !important;
+                min-height: 108px !important;
+                padding: 12px !important;
+                gap: 9px !important;
+            }
+
+            .quick-grid .quick-icon {
+                flex: 0 0 46px !important;
+                width: 46px !important;
+                height: 46px !important;
+                font-size: 22px !important;
+            }
+
+            .quick-grid .quick-title {
+                font-size: 14px !important;
+            }
+
+            .quick-grid .quick-description {
+                font-size: 11px !important;
+            }
+        }
+
+</style>
 </head>
 
 <body
@@ -917,56 +992,7 @@
         </div>
     </section>
 
-    <!-- PAY -->
 
-    <section class="section">
-        <div class="section-heading">
-            <div class="section-title">💰 Pay & Timesheets</div>
-            <a href="{{ url_for('pay_summary', period='biweekly') }}"
-               class="view-link">
-                View Pay →
-            </a>
-        </div>
-
-        <a href="{{ url_for('pay_summary', period='biweekly') }}"
-           class="employee-pay-card">
-
-            <div class="employee-pay-top">
-                <div>
-                    <div class="employee-pay-label">Current Pay Period</div>
-                    <div class="employee-pay-title">
-                        Your Earnings
-                    </div>
-                </div>
-
-                <div class="employee-pay-icon">💰</div>
-            </div>
-
-            <div class="employee-pay-stats">
-
-                <div class="employee-pay-stat">
-                    <div class="employee-pay-stat-label">Hours</div>
-                    <div class="employee-pay-stat-value">
-                        {{ "%.2f"|format(pay_hours|default(0)) }}
-                    </div>
-                </div>
-
-                <div class="employee-pay-stat">
-                    <div class="employee-pay-stat-label">Estimated Gross</div>
-                    <div class="employee-pay-stat-value">
-                        ${{ "%.2f"|format(pay_summary.gross_pay|default(0)) }}
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="employee-pay-link">
-                <span>View full pay breakdown</span>
-                <span>→</span>
-            </div>
-
-        </a>
-    </section>
 
     <!-- QUICK ACTIONS -->
 
@@ -977,48 +1003,27 @@
 
         <div class="quick-grid">
 
-            <div class="calendar-hub-card">
-
-                <div class="calendar-hub-icon">📅</div>
-
-                <div class="calendar-hub-content">
-                    <div class="calendar-hub-title">Calendar</div>
-                    <div class="calendar-hub-description">
-                        Schedule &amp; company events
-                    </div>
-
-                    <div class="calendar-hub-options">
-
-                        <a href="{{ url_for('employee_schedule') }}"
-                           class="calendar-hub-option">
-                            <span class="calendar-hub-option-icon">🗓️</span>
-                            <span class="calendar-hub-option-text">
-                                <strong>My Schedule</strong>
-                                <small>Assigned jobs</small>
-                            </span>
-                            <span class="calendar-hub-arrow">›</span>
-                        </a>
-
-                        <a href="{{ url_for('company_calendar') }}"
-                           class="calendar-hub-option">
-                            <span class="calendar-hub-option-icon">🏢</span>
-                            <span class="calendar-hub-option-text">
-                                <strong>Company Calendar</strong>
-                                <small>Shared events</small>
-                            </span>
-                            <span class="calendar-hub-arrow">›</span>
-                        </a>
-
-                    </div>
+            <a href="{{ url_for('employee_schedule') }}" class="quick-card">
+                <div class="quick-icon">🗓️</div>
+                <div>
+                    <div class="quick-title">My Schedule</div>
+                    <div class="quick-description">Assigned jobs</div>
                 </div>
+            </a>
 
-            </div>
+            <a href="{{ url_for('company_calendar') }}" class="quick-card">
+                <div class="quick-icon">🏢</div>
+                <div>
+                    <div class="quick-title">Company Calendar</div>
+                    <div class="quick-description">Shared events</div>
+                </div>
+            </a>
 
             <a href="{{ url_for('index') }}" class="quick-card">
                 <div class="quick-icon">➕</div>
                 <div>
                     <div class="quick-title">Daily Entry</div>
-                    <div class="quick-description">Log hours & work</div>
+                    <div class="quick-description">Log hours &amp; work</div>
                 </div>
             </a>
 
@@ -1050,7 +1055,7 @@
                         {% endif %}
                     </div>
                     <div class="quick-description">
-                        Job assignments & updates
+                        Job assignments &amp; updates
                     </div>
                 </div>
             </a>
@@ -1113,6 +1118,58 @@
         </div>
     </section>
 
+
+
+    <!-- PAY -->
+
+    <section class="section">
+        <div class="section-heading">
+            <div class="section-title">💰 Pay & Timesheets</div>
+            <a href="{{ url_for('pay_summary', period='biweekly') }}"
+               class="view-link">
+                View Pay →
+            </a>
+        </div>
+
+        <a href="{{ url_for('pay_summary', period='biweekly') }}"
+           class="employee-pay-card">
+
+            <div class="employee-pay-top">
+                <div>
+                    <div class="employee-pay-label">Current Pay Period</div>
+                    <div class="employee-pay-title">
+                        Your Earnings
+                    </div>
+                </div>
+
+                <div class="employee-pay-icon">💰</div>
+            </div>
+
+            <div class="employee-pay-stats">
+
+                <div class="employee-pay-stat">
+                    <div class="employee-pay-stat-label">Hours</div>
+                    <div class="employee-pay-stat-value">
+                        {{ "%.2f"|format(pay_hours|default(0)) }}
+                    </div>
+                </div>
+
+                <div class="employee-pay-stat">
+                    <div class="employee-pay-stat-label">Estimated Gross</div>
+                    <div class="employee-pay-stat-value">
+                        ${{ "%.2f"|format(pay_summary.gross_pay|default(0)) }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="employee-pay-link">
+                <span>View full pay breakdown</span>
+                <span>→</span>
+            </div>
+
+        </a>
+    </section>
 </main>
 
 <script>
