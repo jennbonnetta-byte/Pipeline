@@ -4686,6 +4686,314 @@ def owner_settings():
     return render_template('settings.html')
 
 
+
+@app.route('/owner/open-jobs')
+@owner_required
+def owner_open_jobs():
+    """Owner list of company jobs that are not completed or cancelled."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                c.name AS client_name,
+                COALESCE(
+                    STRING_AGG(
+                        DISTINCT assigned.username,
+                        ', '
+                        ORDER BY assigned.username
+                    ),
+                    ''
+                ) AS employee_names
+            FROM jobs j
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN job_assignments ja
+                ON ja.job_id = j.id
+               AND COALESCE(ja.status, 'assigned') NOT IN ('cancelled')
+            LEFT JOIN users assigned
+                ON assigned.id = ja.employee_id
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM job_assignments completed_ja
+                WHERE completed_ja.job_id = j.id
+                  AND COALESCE(completed_ja.status, '') = 'completed'
+            )
+            GROUP BY
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                c.name
+            ORDER BY
+                j.date ASC NULLS LAST,
+                j.start_time ASC NULLS LAST,
+                j.id DESC
+        """)
+
+        rows = cur.fetchall()
+        cur.close()
+
+        open_jobs = [
+            {
+                "id": row[0],
+                "date": row[1],
+                "start_time": row[2],
+                "end_time": row[3],
+                "destination": row[4] or "",
+                "notes": row[5] or "",
+                "hours": row[6] or "",
+                "client_name": row[7] or "",
+                "employee_names": row[8] or "Unassigned"
+            }
+            for row in rows
+        ]
+
+    finally:
+        conn.close()
+
+    return render_template(
+        "owner_open_jobs.html",
+        jobs=open_jobs
+    )
+
+
+def get_owner_completed_report(period):
+    """Return completed company jobs and employee totals for an owner report."""
+
+    if period not in ("daily", "biweekly"):
+        period = "daily"
+
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        if period == "daily":
+            date_condition = """
+                AND j.date::date = CURRENT_DATE
+            """
+            params = ()
+
+        else:
+            # Use the owner's pay-period anchor when available.
+            cur.execute("""
+                SELECT payday_anchor_date
+                FROM pay_settings
+                WHERE user_id = %s
+            """, (session["user_id"],))
+
+            anchor_row = cur.fetchone()
+
+            anchor = (
+                anchor_row[0]
+                if anchor_row and anchor_row[0]
+                else "2026-08-27"
+            )
+
+            date_condition = """
+                AND j.date::date >= (
+                    %s::date -
+                    (
+                        FLOOR(
+                            (%s::date - CURRENT_DATE) / 14.0
+                        ) * 14
+                    )::integer
+                )
+                AND j.date::date < (
+                    %s::date -
+                    (
+                        FLOOR(
+                            (%s::date - CURRENT_DATE) / 14.0
+                        ) * 14
+                    )::integer
+                    + 14
+                )
+            """
+
+            params = (
+                anchor,
+                anchor,
+                anchor,
+                anchor
+            )
+
+        cur.execute(
+            f"""
+            SELECT
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                c.name AS client_name,
+                COALESCE(
+                    STRING_AGG(
+                        DISTINCT assigned.username,
+                        ', '
+                        ORDER BY assigned.username
+                    ),
+                    u.username
+                ) AS employee_names
+            FROM jobs j
+            LEFT JOIN clients c
+                ON c.id = j.client_id
+            LEFT JOIN users u
+                ON u.id = j.user_id
+            LEFT JOIN job_assignments ja
+                ON ja.job_id = j.id
+               AND COALESCE(ja.status, 'assigned') = 'completed'
+            LEFT JOIN users assigned
+                ON assigned.id = ja.employee_id
+            WHERE (
+                EXISTS (
+                    SELECT 1
+                    FROM job_assignments completed_ja
+                    WHERE completed_ja.job_id = j.id
+                      AND COALESCE(completed_ja.status, '') = 'completed'
+                )
+                OR (
+                    NOT EXISTS (
+                        SELECT 1
+                        FROM job_assignments any_ja
+                        WHERE any_ja.job_id = j.id
+                    )
+                    AND COALESCE(j.hours, '') ~ '^[0-9]+(\\.[0-9]+)?$'
+                    AND j.hours::numeric > 0
+                )
+            )
+            {date_condition}
+            GROUP BY
+                j.id,
+                j.date,
+                j.start_time,
+                j.end_time,
+                j.destination,
+                j.notes,
+                j.hours,
+                c.name,
+                u.username
+            ORDER BY
+                j.date DESC,
+                j.id DESC
+            """,
+            params
+        )
+
+        rows = cur.fetchall()
+
+        jobs = []
+
+        for row in rows:
+            raw_hours = str(row[6] or "")
+            match = re.search(
+                r"[-+]?\d*\.?\d+",
+                raw_hours
+            )
+
+            hours = float(match.group()) if match else 0
+
+            employee_names = row[8] or "Unassigned"
+
+            jobs.append({
+                "id": row[0],
+                "date": str(row[1]) if row[1] else "",
+                "start_time": str(row[2])[:5] if row[2] else "",
+                "end_time": str(row[3])[:5] if row[3] else "",
+                "destination": row[4] or "",
+                "notes": row[5] or "",
+                "hours": hours,
+                "client_name": row[7] or "",
+                "employee_names": employee_names
+            })
+
+        employee_totals = {}
+
+        for job in jobs:
+            names = [
+                name.strip()
+                for name in job["employee_names"].split(",")
+                if name.strip()
+            ]
+
+            if not names:
+                names = ["Unassigned"]
+
+            # A job's recorded hours belong to the employee(s)
+            # assigned to that completed job.
+            for name in names:
+                employee_totals[name] = (
+                    employee_totals.get(name, 0)
+                    + job["hours"]
+                )
+
+        employee_totals = sorted(
+            [
+                {
+                    "name": name,
+                    "hours": round(hours, 2)
+                }
+                for name, hours in employee_totals.items()
+            ],
+            key=lambda item: item["name"].lower()
+        )
+
+        total_hours = round(
+            sum(job["hours"] for job in jobs),
+            2
+        )
+
+        return {
+            "jobs": jobs,
+            "employee_totals": employee_totals,
+            "total_hours": total_hours
+        }
+
+    finally:
+        conn.close()
+
+
+@app.route('/owner/reports/<period>')
+@owner_required
+def owner_reports(period):
+    """Owner completed-job report."""
+
+    if period not in ("daily", "biweekly"):
+        return redirect(
+            url_for(
+                "owner_dashboard"
+            )
+        )
+
+    report = get_owner_completed_report(period)
+
+    labels = {
+        "daily": "Daily Report",
+        "biweekly": "Bi-Weekly Report"
+    }
+
+    return render_template(
+        "owner_report.html",
+        report=report,
+        period=period,
+        period_label=labels[period]
+    )
+
+
 @app.route('/owner')
 @owner_required
 def owner_dashboard():

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PipeLine — Open Jobs</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Roboto, sans-serif;
+            background: #f4f7fa;
+            color: #17212b;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .back,
+        .dashboard {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .back {
+            width: 42px;
+            background: white;
+            border: 1px solid #dfe7ef;
+            color: #17324a;
+            font-size: 22px;
+        }
+
+        .heading {
+            flex: 1;
+        }
+
+        .eyebrow {
+            color: #1685c5;
+            font-size: 11px;
+            font-weight: 850;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 3px 0 0;
+            font-size: 28px;
+        }
+
+        .dashboard {
+            padding: 0 15px;
+            background: #0b2239;
+            color: white;
+            font-size: 13px;
+        }
+
+        .summary {
+            margin-bottom: 16px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .job-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .job {
+            display: block;
+            background: white;
+            border: 1px solid #dfe7ef;
+            border-radius: 17px;
+            padding: 17px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 5px 18px rgba(22,54,86,.06);
+        }
+
+        .job-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .job-title {
+            font-size: 17px;
+            font-weight: 850;
+        }
+
+        .job-date {
+            color: #1685c5;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .job-client {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 12px;
+        }
+
+        .pill {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #edf5fa;
+            color: #24739d;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .job-notes {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #edf1f5;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .empty {
+            padding: 45px 20px;
+            background: white;
+            border: 1px solid #dfe7ef;
+            border-radius: 18px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .empty strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #334155;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+
+            .dashboard {
+                padding: 0 10px;
+            }
+        }
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .job,
+        body.pipeline-theme-dark .job,
+        body.theme-dark .back,
+        body.pipeline-theme-dark .back,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            background: #111c27;
+            border-color: #263847;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .job-client,
+        body.pipeline-theme-dark .job-client,
+        body.theme-dark .job-notes,
+        body.pipeline-theme-dark .job-notes,
+        body.theme-dark .summary,
+        body.pipeline-theme-dark .summary {
+            color: #b9c6d3;
+        }
+
+        body.theme-dark .job-notes,
+        body.pipeline-theme-dark .job-notes {
+            border-color: #263847;
+        }
+
+        body.theme-dark .empty strong,
+        body.pipeline-theme-dark .empty strong {
+            color: #edf4fa;
+        }
+    </style>
+</head>
+
+<body class="theme-{{ appearance.theme }}
+             pipeline-theme-{{ appearance.theme }}
+             accent-{{ appearance.accent_color }}
+             pipeline-accent-{{ appearance.accent_color }}
+             density-{{ appearance.layout_density }}
+             pipeline-density-{{ appearance.layout_density }}
+             cards-{{ appearance.card_style }}
+             pipeline-cards-{{ appearance.card_style }}
+             font-{{ appearance.font_size }}
+             pipeline-font-{{ appearance.font_size }}">
+
+<div class="page">
+
+    <div class="topbar">
+        <a class="back"
+           href="{{ url_for('owner_dashboard') }}">‹</a>
+
+        <div class="heading">
+            <div class="eyebrow">Owner Hub</div>
+            <h1>Open Jobs</h1>
+        </div>
+
+        <a class="dashboard"
+           href="{{ url_for('owner_dashboard') }}">
+            Dashboard
+        </a>
+    </div>
+
+    <div class="summary">
+        {{ jobs|length }} open job{% if jobs|length != 1 %}s{% endif %}
+    </div>
+
+    {% if jobs %}
+
+        <div class="job-list">
+
+            {% for job in jobs %}
+
+                <a class="job"
+                   href="{{ url_for('edit_job', job_id=job.id) }}">
+
+                    <div class="job-top">
+
+                        <div>
+                            <div class="job-title">
+                                {{ job.destination or 'Job #' ~ job.id }}
+                            </div>
+
+                            {% if job.client_name %}
+                                <div class="job-client">
+                                    {{ job.client_name }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="job-date">
+                            {{ job.date or 'No date' }}
+                        </div>
+
+                    </div>
+
+                    <div class="job-meta">
+
+                        <span class="pill">
+                            👤 {{ job.employee_names }}
+                        </span>
+
+                        {% if job.start_time %}
+                            <span class="pill">
+                                🕐 {{ job.start_time }}
+                                {% if job.end_time %}
+                                    – {{ job.end_time }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+
+                        {% if job.hours %}
+                            <span class="pill">
+                                ⏱ {{ job.hours }} hrs
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    {% if job.notes %}
+                        <div class="job-notes">
+                            {{ job.notes }}
+                        </div>
+                    {% endif %}
+
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            <strong>All caught up 🎉</strong>
+            There are no open jobs right now.
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

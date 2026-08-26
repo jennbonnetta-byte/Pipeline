@@ -662,12 +662,36 @@
         </a>
 
         <a class="stat-link"
-           href="{{ url_for('owner_schedule') }}">
+           href="{{ url_for('owner_open_jobs') }}">
             <div class="stat">
                 <div class="stat-icon">🔧</div>
                 <div class="stat-number">{{ open_jobs }}</div>
                 <div class="stat-label">Open Jobs</div>
-                <div class="stat-action">View open jobs →</div>
+                <div class="stat-action">View open job list →</div>
+            </div>
+        </a>
+
+        <a class="stat-link"
+           href="{{ url_for('owner_reports', period='daily') }}">
+            <div class="stat">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">Daily Report</div>
+                <div class="stat-description">
+                    Completed jobs & employee hours
+                </div>
+                <div class="stat-action">View daily report →</div>
+            </div>
+        </a>
+
+        <a class="stat-link"
+           href="{{ url_for('owner_reports', period='biweekly') }}">
+            <div class="stat">
+                <div class="stat-icon">📈</div>
+                <div class="stat-label">Bi-Weekly Report</div>
+                <div class="stat-description">
+                    Pay-period jobs & employee hours
+                </div>
+                <div class="stat-action">View bi-weekly report →</div>
             </div>
         </a>
 
