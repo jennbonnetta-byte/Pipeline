@@ -27,6 +27,21 @@
             <label>Hours Worked:</label>
             <input type="text" name="hours" value="{{ job.hours }}" required>
 
+            <label>Client:</label>
+            <select name="client_id">
+                <option value="">No Client / Other Job</option>
+
+                {% for client in clients %}
+                    <option value="{{ client.id }}"
+                        {% if job.client_id|string == client.id|string %}selected{% endif %}>
+                        {{ client.name }}
+                        {% if client.contact_person %}
+                            — {{ client.contact_person }}
+                        {% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+
             <label>Job Address:</label>
             <input type="text" name="destination" value="{{ job.destination }}" required>
 

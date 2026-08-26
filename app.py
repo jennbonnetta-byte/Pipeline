@@ -796,6 +796,17 @@ def save_job(user_id, job):
 
             calculated_hours = f"{(end_minutes - start_minutes) / 60:.2f}"
 
+        client_id = job.get("client_id") or None
+
+        # Only attach an existing company client.
+        if client_id:
+            cur.execute(
+                "SELECT id FROM clients WHERE id = %s",
+                (client_id,)
+            )
+            if not cur.fetchone():
+                client_id = None
+
         cur.execute(
             """INSERT INTO jobs
                (user_id, date, hours, start_time, end_time,
@@ -812,7 +823,7 @@ def save_job(user_id, job):
                 job.get("destination"),
                 job.get("materials"),
                 json.dumps(job.get("photos", [])),
-                job.get("client_id") or None
+                client_id
             )
         )
 
@@ -1632,13 +1643,13 @@ def index():
     try:
         cur = conn.cursor()
 
+        # Shared company client book.
+        # Employees can assign any company client to a job.
         cur.execute(
             "SELECT id, name, contact_person, phone, email, "
             "address, city, province, postal_code "
             "FROM clients "
-            "WHERE user_id = %s "
-            "ORDER BY name ASC",
-            (session['user_id'],)
+            "ORDER BY name ASC"
         )
 
         rows = cur.fetchall()
@@ -1958,7 +1969,8 @@ def update_job(user_id, job_id, job):
                 notes = %s,
                 destination = %s,
                 materials = %s,
-                photos = %s
+                photos = %s,
+                client_id = %s
             WHERE {access_condition}
             """,
             (
@@ -1968,6 +1980,7 @@ def update_job(user_id, job_id, job):
                 job.get("destination"),
                 job.get("materials"),
                 json.dumps(job.get("photos", [])),
+                job.get("client_id"),
                 *access_params
             )
         )
@@ -3101,6 +3114,27 @@ def edit_job(job_id):
             ]
         })
 
+        # Employees and owners can assign any shared company client.
+        client_id = request.form.get('client_id') or None
+
+        if client_id:
+            conn = get_db()
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT id FROM clients WHERE id = %s",
+                    (client_id,)
+                )
+                if cur.fetchone():
+                    target_job['client_id'] = int(client_id)
+                else:
+                    target_job['client_id'] = None
+                cur.close()
+            finally:
+                conn.close()
+        else:
+            target_job['client_id'] = None
+
         new_urls = upload_to_cloudinary(
             request.files.getlist('photos')
         )
@@ -3118,9 +3152,33 @@ def edit_job(job_id):
 
         return redirect(url_for('history'))
 
+    # Shared company client book.
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT id, name, contact_person
+               FROM clients
+               ORDER BY name ASC"""
+        )
+        client_rows = cur.fetchall()
+        cur.close()
+    finally:
+        conn.close()
+
+    clients = [
+        {
+            'id': row[0],
+            'name': row[1],
+            'contact_person': row[2]
+        }
+        for row in client_rows
+    ]
+
     return render_template(
         'edit.html',
-        job=target_job
+        job=target_job,
+        clients=clients
     )
 
 
@@ -3133,13 +3191,13 @@ def clients():
     conn = get_db()
     try:
         cur = conn.cursor()
+        # Shared company client book.
+        # All authenticated employees can view all clients.
         cur.execute(
             """SELECT id, name, contact_person, phone, email,
                       address, city, province, postal_code, notes
                FROM clients
-               WHERE user_id = %s
-               ORDER BY name ASC""",
-            (session['user_id'],)
+               ORDER BY name ASC"""
         )
         rows = cur.fetchall()
         cur.close()
@@ -3227,7 +3285,7 @@ def edit_client(client_id):
                        postal_code = %s,
                        notes = %s,
                        updated_at = CURRENT_TIMESTAMP
-                   WHERE id = %s AND user_id = %s""",
+                   WHERE id = %s""",
                 (
                     request.form.get('name', '').strip(),
                     request.form.get('contact_person', '').strip(),
@@ -3238,8 +3296,7 @@ def edit_client(client_id):
                     request.form.get('province', '').strip(),
                     request.form.get('postal_code', '').strip(),
                     request.form.get('notes', '').strip(),
-                    client_id,
-                    session['user_id']
+                    client_id
                 )
             )
             conn.commit()
@@ -3250,8 +3307,8 @@ def edit_client(client_id):
             """SELECT id, name, contact_person, phone, email,
                       address, city, province, postal_code, notes
                FROM clients
-               WHERE id = %s AND user_id = %s""",
-            (client_id, session['user_id'])
+               WHERE id = %s""",
+            (client_id,)
         )
         row = cur.fetchone()
         cur.close()
@@ -3278,26 +3335,6 @@ def edit_client(client_id):
         )
     finally:
         conn.close()
-
-
-@app.route('/clients/<int:client_id>/delete', methods=['POST'])
-def delete_client(client_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    conn = get_db()
-    try:
-        cur = conn.cursor()
-        cur.execute(
-            "DELETE FROM clients WHERE id = %s AND user_id = %s",
-            (client_id, session['user_id'])
-        )
-        conn.commit()
-        cur.close()
-    finally:
-        conn.close()
-
-    return redirect(url_for('clients'))
 
 
 @app.route('/settings')
@@ -4618,6 +4655,28 @@ def owner_required(view):
         return view(*args, **kwargs)
 
     return wrapped
+
+
+@app.route('/clients/<int:client_id>/delete', methods=['POST'])
+@owner_required
+def delete_client(client_id):
+    """Only the company owner can permanently delete a client."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM clients WHERE id = %s",
+            (client_id,)
+        )
+        conn.commit()
+        cur.close()
+    finally:
+        conn.close()
+
+    return redirect(url_for('clients'))
+
+
 
 
 @app.route('/owner/settings')
