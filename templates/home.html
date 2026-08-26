@@ -1038,6 +1038,23 @@
                 </div>
             </a>
 
+            <a href="{{ url_for('employee_notifications') }}" class="quick-card">
+                <div class="quick-icon">🔔</div>
+                <div>
+                    <div class="quick-title">
+                        Notifications
+                        {% if unread_notifications %}
+                            <span class="notification-count">
+                                {{ unread_notifications }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="quick-description">
+                        Job assignments & updates
+                    </div>
+                </div>
+            </a>
+
         </div>
     </section>
 

@@ -681,7 +681,20 @@
             </div>
         </a>
 
-    </section>
+
+        <a class="stat-link"
+           href="{{ url_for('owner_settings') }}">
+            <div class="stat">
+                <div class="stat-icon">⚙️</div>
+                <div class="stat-label">Settings</div>
+                <div class="stat-description">
+                    Business, payroll, reports &amp; app preferences
+                </div>
+                <div class="stat-action">Open settings →</div>
+            </div>
+        </a>
+
+</section>
 
         <a class="logout"
        href="{{ url_for('logout') }}">

@@ -1459,11 +1459,30 @@ def home():
     appearance = get_appearance_settings(session['user_id'])
     dashboard_data = get_employee_dashboard_data(session['user_id'])
 
+    # Unread employee notifications.
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM notifications
+            WHERE user_id = %s
+              AND is_read = FALSE
+            """,
+            (session['user_id'],)
+        )
+        unread_notifications = cur.fetchone()[0]
+        cur.close()
+    finally:
+        conn.close()
+
     return render_template(
         'home.html',
         recent_jobs=recent_jobs,
         upcoming_jobs=upcoming_jobs,
         appearance=appearance,
+        unread_notifications=unread_notifications,
         calendar_events=dashboard_data['calendar_events'],
         pay_summary=dashboard_data['pay_summary'],
         pay_hours=dashboard_data['pay_hours'],
@@ -4601,6 +4620,13 @@ def owner_required(view):
     return wrapped
 
 
+@app.route('/owner/settings')
+@owner_required
+def owner_settings():
+    """Owner entry point for company and application settings."""
+    return render_template('settings.html')
+
+
 @app.route('/owner')
 @owner_required
 def owner_dashboard():
@@ -5275,17 +5301,6 @@ def owner_notifications():
 
         notifications = cur.fetchall()
 
-        cur.execute(
-            """
-            UPDATE notifications
-            SET is_read = TRUE
-            WHERE user_id = %s
-              AND is_read = FALSE
-            """,
-            (session['user_id'],)
-        )
-
-        conn.commit()
         cur.close()
 
         return render_template(
@@ -5857,6 +5872,64 @@ def owner_schedule():
 
 
 
+# Ensure notification storage exists when PipeLine starts.
+def ensure_notifications_table():
+    """Create notification storage if it does not already exist."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+
+                job_id INTEGER
+                    REFERENCES jobs(id) ON DELETE CASCADE,
+
+                time_off_request_id INTEGER,
+
+                type VARCHAR(50) NOT NULL,
+
+                title VARCHAR(255) NOT NULL,
+
+                message TEXT,
+
+                is_read BOOLEAN NOT NULL DEFAULT FALSE,
+
+                created_at TIMESTAMPTZ
+                    DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_notifications_user
+            ON notifications(user_id)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_notifications_user_unread
+            ON notifications(user_id, is_read)
+        """)
+
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_notifications_created
+            ON notifications(created_at DESC)
+        """)
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+
 # Ensure notification storage has a direct time-off request link.
 def ensure_notification_request_link():
     conn = get_db()
@@ -5951,6 +6024,11 @@ try:
     ensure_company_calendar_table()
 except Exception as e:
     print(f"Shared calendar table initialization warning: {e}")
+
+try:
+    ensure_notifications_table()
+except Exception as e:
+    print(f"Notification table initialization warning: {e}")
 
 try:
     ensure_notification_request_link()
