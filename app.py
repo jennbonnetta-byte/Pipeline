@@ -4375,6 +4375,7 @@ def employee_time_off():
                         INSERT INTO notifications (
                             user_id,
                             job_id,
+                            time_off_request_id,
                             type,
                             title,
                             message,
@@ -4392,6 +4393,7 @@ def employee_time_off():
                         )
                     """, (
                         owner_row[0],
+                        request_id,
                         f'New {request_label.lower()} request',
                         f'{employee_name} requested {request_label.lower()} time off for '
                         f'{date_text}{time_text}.'
@@ -5190,13 +5192,7 @@ def owner_notifications():
                 r.id AS time_off_request_id
             FROM notifications n
             LEFT JOIN employee_time_off_requests r
-                ON n.type = 'time_off_request'
-                AND r.employee_id IS NOT NULL
-                AND n.message LIKE '%' || (
-                    SELECT u.username
-                    FROM users u
-                    WHERE u.id = r.employee_id
-                ) || '%'
+                ON n.time_off_request_id = r.id
                 AND r.status = 'pending'
             WHERE n.user_id = %s
             ORDER BY n.created_at DESC
@@ -5789,6 +5785,26 @@ def owner_schedule():
 
 
 
+# Ensure notification storage has a direct time-off request link.
+def ensure_notification_request_link():
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            ALTER TABLE notifications
+            ADD COLUMN IF NOT EXISTS time_off_request_id INTEGER
+        """)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS
+            idx_notifications_time_off_request
+            ON notifications(time_off_request_id)
+        """)
+        conn.commit()
+        cur.close()
+    finally:
+        conn.close()
+
+
 # Ensure employee time-off request storage exists when PipeLine starts.
 def ensure_employee_time_off_table():
     """Create employee time-off request storage if it does not exist."""
@@ -5863,6 +5879,11 @@ try:
     ensure_company_calendar_table()
 except Exception as e:
     print(f"Shared calendar table initialization warning: {e}")
+
+try:
+    ensure_notification_request_link()
+except Exception as e:
+    print(f"Notification request-link initialization warning: {e}")
 
 # Ensure employee time-off request storage exists when PipeLine starts.
 try:
