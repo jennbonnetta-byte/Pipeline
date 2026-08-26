@@ -5062,6 +5062,73 @@ def owner_employee_profile(employee_id):
 
 
 
+
+@app.route('/notifications')
+@login_required
+def employee_notifications():
+    """Display notifications for the currently logged-in employee."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                id,
+                title,
+                message,
+                created_at,
+                is_read,
+                type,
+                job_id
+            FROM notifications
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 100
+        """, (session['user_id'],))
+
+        notifications = cur.fetchall()
+
+        cur.close()
+
+        return render_template(
+            'employee_notifications.html',
+            notifications=notifications,
+            username=session.get('user')
+        )
+
+    finally:
+        conn.close()
+
+
+@app.route('/notifications/<int:notification_id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    """Mark one notification as read for the logged-in user."""
+    conn = get_db()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            UPDATE notifications
+            SET is_read = TRUE
+            WHERE id = %s
+              AND user_id = %s
+            """,
+            (notification_id, session['user_id'])
+        )
+
+        conn.commit()
+        cur.close()
+
+    finally:
+        conn.close()
+
+    return redirect(url_for('employee_notifications'))
+
+
 @app.route('/owner/pay')
 @owner_required
 def owner_pay():

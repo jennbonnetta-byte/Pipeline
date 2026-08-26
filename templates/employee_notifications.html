@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>PipeLine — Notifications</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/appearance.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f3f7fc;
+            color: #10213b;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #061d35, #0b3154);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 5px 18px rgba(0,30,60,.18);
+        }
+
+        .back {
+            color: white;
+            text-decoration: none;
+            font-size: 30px;
+            width: 40px;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+
+        .content {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 25px 17px 60px;
+        }
+
+        .heading {
+            margin-bottom: 18px;
+        }
+
+        .heading h1 {
+            margin: 0;
+            font-size: 29px;
+        }
+
+        .heading p {
+            margin: 6px 0 0;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .notification-list {
+            display: grid;
+            gap: 11px;
+        }
+
+        .notification {
+            display: block;
+            background: white;
+            border: 1px solid #dfe8f1;
+            border-radius: 17px;
+            padding: 16px;
+            box-shadow: 0 5px 18px rgba(22,54,86,.06);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .notification.unread {
+            border-left: 4px solid #1685c5;
+            background: #f8fcff;
+        }
+
+        .notification-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .icon {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            background: #e8f4fb;
+        }
+
+        .notification-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .title {
+            font-size: 15px;
+            font-weight: 850;
+        }
+
+        .message {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .date {
+            margin-top: 7px;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .new-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #1685c5;
+            color: white;
+            font-size: 9px;
+            font-weight: 850;
+            text-transform: uppercase;
+        }
+
+        .notification-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .notification-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .notification-action.primary {
+            background: #1685c5;
+            color: white;
+        }
+
+        .notification-action.secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #d7e0e8;
+        }
+
+        .read-form {
+            margin: 0;
+        }
+
+        .empty {
+            background: white;
+            border: 1px solid #dfe8f1;
+            border-radius: 18px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .empty-icon {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        .empty-title {
+            color: #334155;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .empty-text {
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        body.theme-dark,
+        body.pipeline-theme-dark {
+            background: #09131d;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .notification,
+        body.pipeline-theme-dark .notification,
+        body.theme-dark .empty,
+        body.pipeline-theme-dark .empty {
+            background: #111c27;
+            border-color: #263847;
+            color: #edf4fa;
+        }
+
+        body.theme-dark .notification.unread,
+        body.pipeline-theme-dark .notification.unread {
+            background: #142532;
+        }
+
+        body.theme-dark .message,
+        body.pipeline-theme-dark .message,
+        body.theme-dark .date,
+        body.pipeline-theme-dark .date,
+        body.theme-dark .heading p,
+        body.pipeline-theme-dark .heading p {
+            color: #b9c6d3;
+        }
+
+        body.theme-dark .empty-title,
+        body.pipeline-theme-dark .empty-title {
+            color: #edf4fa;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px 12px 50px;
+            }
+
+            .heading h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body class="theme-{{ appearance.theme }}
+             pipeline-theme-{{ appearance.theme }}
+             accent-{{ appearance.accent_color }}
+             pipeline-accent-{{ appearance.accent_color }}
+             density-{{ appearance.layout_density }}
+             pipeline-density-{{ appearance.layout_density }}
+             cards-{{ appearance.card_style }}
+             pipeline-cards-{{ appearance.card_style }}
+             font-{{ appearance.font_size }}
+             pipeline-font-{{ appearance.font_size }}">
+
+<header class="topbar">
+    <a href="{{ url_for('home') }}" class="back">‹</a>
+    <div class="brand">PIPELINE</div>
+</header>
+
+<main class="content">
+
+    <div class="heading">
+        <h1>Notifications</h1>
+        <p>Updates about your jobs, schedule and requests.</p>
+    </div>
+
+    {% if notifications %}
+
+        <div class="notification-list">
+
+            {% for notification in notifications %}
+
+                {% set notification_type = notification[5] %}
+
+                <div class="notification
+                          {% if notification[4] %}{% else %}unread{% endif %}">
+
+
+                    <div class="notification-top">
+
+                        <div class="icon">
+                            {% if notification_type == 'job_assigned' %}
+                                🔧
+                            {% elif notification_type == 'time_off_approved' %}
+                                ✅
+                            {% elif notification_type == 'time_off_rejected' %}
+                                ❌
+                            {% elif notification_type == 'time_off_request' %}
+                                📅
+                            {% else %}
+                                🔔
+                            {% endif %}
+                        </div>
+
+                        <div class="notification-main">
+
+                            <div class="title">
+                                {{ notification[1] }}
+
+                                {% if not notification[4] %}
+                                    <span class="new-badge">New</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="message">
+                                {{ notification[2] }}
+                            </div>
+
+                            <div class="date">
+                                {{ notification[3] }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="notification-actions">
+
+                        {% if notification[6] %}
+                            <a class="notification-action primary"
+                               href="{{ url_for('edit_job', job_id=notification[6]) }}"
+                               onclick="markNotificationRead(event, {{ notification[0] }}, this.href)">
+                                View Job →
+                            </a>
+                        {% endif %}
+
+                        {% if not notification[4] %}
+                            <form method="POST"
+                                  action="{{ url_for('mark_notification_read', notification_id=notification[0]) }}"
+                                  class="read-form">
+                                <button type="submit"
+                                        class="notification-action secondary">
+                                    ✓ Mark as read
+                                </button>
+                            </form>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            <div class="empty-icon">🔔</div>
+            <div class="empty-title">You're all caught up</div>
+            <div class="empty-text">
+                New job assignments and important updates will appear here.
+            </div>
+        </div>
+
+    {% endif %}
+
+</main>
+
+<script>
+function markNotificationRead(event, notificationId, destination) {
+    event.preventDefault();
+
+    fetch(
+        "{{ url_for('mark_notification_read', notification_id=0) }}".replace(
+            "/0",
+            "/" + notificationId
+        ),
+        {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        }
+    ).finally(function () {
+        window.location.href = destination;
+    });
+}
+</script>
+
+</body>
+</html>
