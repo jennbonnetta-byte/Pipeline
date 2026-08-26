@@ -4385,6 +4385,7 @@ def employee_time_off():
                         VALUES (
                             %s,
                             NULL,
+                            %s,
                             'time_off_request',
                             %s,
                             %s,
