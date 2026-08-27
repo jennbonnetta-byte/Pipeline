@@ -176,6 +176,44 @@
             font-weight: 800;
             margin-bottom: 6px;
         }
+
+        .job-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .status-completed {
+            background: #e7f7ed;
+            color: #187a42;
+        }
+
+        .status-progress {
+            background: #fff5d9;
+            color: #9a6800;
+        }
+
+        .status-assigned {
+            background: #e8f4fb;
+            color: #087bb8;
+        }
+
+        .job-action {
+            color: #1685c5;
+            font-size: 12px;
+            font-weight: 800;
+        }
     </style>
 </head>
 
@@ -264,9 +302,25 @@
                     </div>
                 {% endif %}
 
-                <span class="status">
-                    {{ job.status }}
-                </span>
+                <div class="job-footer">
+                    {% if job.status == 'completed' %}
+                        <span class="status status-completed">
+                            🟢 Completed
+                        </span>
+                    {% elif job.status == 'in_progress' %}
+                        <span class="status status-progress">
+                            🟡 In Progress
+                        </span>
+                    {% else %}
+                        <span class="status status-assigned">
+                            🔵 Assigned
+                        </span>
+                    {% endif %}
+
+                    <span class="job-action">
+                        Tap to update →
+                    </span>
+                </div>
 
             </a>
 

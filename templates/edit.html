@@ -12,6 +12,49 @@
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
         .box { background: #f9f9f9; padding: 12px; border: 1px dashed #bbb; margin-top: 5px; border-radius: 6px; }
         button { background: #28a745; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+
+        .job-status-section {
+            margin: 15px 0 20px;
+        }
+
+        .status-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .status-option {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .status-option input {
+            display: none;
+        }
+
+        .status-option span {
+            display: block;
+            padding: 13px 10px;
+            text-align: center;
+            border: 2px solid #dfe6ed;
+            border-radius: 10px;
+            background: #fff;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .status-option input:checked + span {
+            border-color: #1685c5;
+            background: #edf8ff;
+            color: #087bb8;
+        }
+
+        @media (max-width: 500px) {
+            .status-options {
+                grid-template-columns: 1fr;
+            }
+        }
         .cancel-btn { display: block; text-align: center; background: #6c757d; color: white; padding: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; font-size: 15px; }
     </style>
     <link rel="stylesheet"
@@ -24,8 +67,48 @@
             <label>Date:</label>
             <input type="date" name="date" value="{{ job.date }}" required>
 
+            {% if not is_owner %}
+            <div class="job-status-section">
+                <label>Job Status:</label>
+
+                <div class="status-options">
+                    <label class="status-option">
+                        <input type="radio"
+                               name="assignment_status"
+                               value="in_progress"
+                               {% if current_status == 'in_progress' %}checked{% endif %}>
+                        <span>🟡 In Progress</span>
+                    </label>
+
+                    <label class="status-option">
+                        <input type="radio"
+                               name="assignment_status"
+                               value="completed"
+                               {% if current_status == 'completed' %}checked{% endif %}>
+                        <span>🟢 Completed</span>
+                    </label>
+                </div>
+            </div>
+            {% endif %}
+
+            <label>Start Time:</label>
+            <input type="time"
+                   id="start_time"
+                   name="start_time"
+                   value="{{ job.start_time or '' }}">
+
+            <label>End Time:</label>
+            <input type="time"
+                   id="end_time"
+                   name="end_time"
+                   value="{{ job.end_time or '' }}">
+
             <label>Hours Worked:</label>
-            <input type="text" name="hours" value="{{ job.hours }}" required>
+            <input type="text"
+                   id="hours"
+                   name="hours"
+                   value="{{ job.hours or '' }}"
+                   readonly>
 
             <label>Client:</label>
             <select name="client_id">
@@ -58,5 +141,38 @@
         </form>
         <a href="/history" class="cancel-btn">Cancel</a>
     </div>
+
+<script>
+function calculateJobHours() {
+    const start = document.getElementById("start_time");
+    const end = document.getElementById("end_time");
+    const hours = document.getElementById("hours");
+
+    if (!start || !end || !hours || !start.value || !end.value) {
+        return;
+    }
+
+    const [sh, sm] = start.value.split(":").map(Number);
+    const [eh, em] = end.value.split(":").map(Number);
+
+    let startMinutes = sh * 60 + sm;
+    let endMinutes = eh * 60 + em;
+
+    if (endMinutes < startMinutes) {
+        endMinutes += 24 * 60;
+    }
+
+    hours.value = ((endMinutes - startMinutes) / 60).toFixed(2);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const start = document.getElementById("start_time");
+    const end = document.getElementById("end_time");
+
+    if (start) start.addEventListener("change", calculateJobHours);
+    if (end) end.addEventListener("change", calculateJobHours);
+});
+</script>
+
 </body>
 </html>

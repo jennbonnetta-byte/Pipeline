@@ -3091,78 +3091,179 @@ def edit_job(job_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    if session.get('role') == 'owner':
+    user_id = session['user_id']
+    is_owner = session.get('role') == 'owner'
+
+    # Owners can view/edit any company job.
+    # Employees can edit jobs they created OR jobs assigned to them.
+    if is_owner:
         target_job = get_company_job_by_id(job_id)
     else:
-        target_job = get_job_by_id(
-            session['user_id'],
-            job_id
-        )
+        target_job = get_job_by_id(user_id, job_id)
 
     if not target_job:
         return redirect(url_for('history'))
 
     if request.method == 'POST':
+
+        # ---------------------------------------------------------
+        # EMPLOYEE / OWNER JOB UPDATE
+        # ---------------------------------------------------------
         target_job.update({
-            k: request.form.get(k)
-            for k in [
-                'date',
-                'hours',
-                'destination',
-                'notes',
-                'materials'
-            ]
+            'date': request.form.get('date'),
+            'hours': request.form.get('hours'),
+            'start_time': request.form.get('start_time') or None,
+            'end_time': request.form.get('end_time') or None,
+            'destination': request.form.get('destination'),
+            'notes': request.form.get('notes'),
+            'materials': request.form.get('materials')
         })
 
-        # Employees and owners can assign any shared company client.
+        # Calculate hours automatically when start/end are supplied.
+        start_time = request.form.get('start_time')
+        end_time = request.form.get('end_time')
+
+        if start_time and end_time:
+            try:
+                sh, sm = [int(x) for x in start_time.split(':')[:2]]
+                eh, em = [int(x) for x in end_time.split(':')[:2]]
+
+                start_minutes = sh * 60 + sm
+                end_minutes = eh * 60 + em
+
+                if end_minutes < start_minutes:
+                    end_minutes += 24 * 60
+
+                target_job['hours'] = f"{(end_minutes - start_minutes) / 60:.2f}"
+            except (ValueError, TypeError):
+                pass
+
+        # ---------------------------------------------------------
+        # CLIENT
+        # ---------------------------------------------------------
         client_id = request.form.get('client_id') or None
 
-        if client_id:
-            conn = get_db()
-            try:
-                cur = conn.cursor()
+        conn = get_db()
+        try:
+            cur = conn.cursor()
+
+            if client_id:
                 cur.execute(
                     "SELECT id FROM clients WHERE id = %s",
                     (client_id,)
                 )
+
                 if cur.fetchone():
                     target_job['client_id'] = int(client_id)
                 else:
                     target_job['client_id'] = None
+            else:
+                target_job['client_id'] = None
+
+            # -----------------------------------------------------
+            # PHOTOS
+            # -----------------------------------------------------
+            new_urls = upload_to_cloudinary(
+                request.files.getlist('photos')
+            )
+
+            target_job['photos'] = (
+                target_job.get('photos', []) + new_urls
+            )
+
+            cur.close()
+        finally:
+            conn.close()
+
+        # ---------------------------------------------------------
+        # ASSIGNMENT STATUS
+        # ---------------------------------------------------------
+        requested_status = (
+            request.form.get('assignment_status')
+            or request.form.get('status')
+            or ''
+        ).strip().lower()
+
+        if requested_status in ('assigned', 'in_progress', 'completed'):
+            conn = get_db()
+            try:
+                cur = conn.cursor()
+
+                if is_owner:
+                    cur.execute(
+                        """
+                        UPDATE job_assignments
+                        SET status = %s
+                        WHERE job_id = %s
+                        """,
+                        (requested_status, job_id)
+                    )
+                else:
+                    cur.execute(
+                        """
+                        UPDATE job_assignments
+                        SET status = %s
+                        WHERE job_id = %s
+                          AND employee_id = %s
+                          AND COALESCE(status, 'assigned')
+                              NOT IN ('cancelled')
+                        """,
+                        (requested_status, job_id, user_id)
+                    )
+
+                conn.commit()
                 cur.close()
             finally:
                 conn.close()
-        else:
-            target_job['client_id'] = None
 
-        new_urls = upload_to_cloudinary(
-            request.files.getlist('photos')
+        update_job(user_id, job_id, target_job)
+
+        # Return employees to the calendar after updating an assigned job.
+        if not is_owner:
+            return redirect(url_for('employee_schedule'))
+
+        return redirect(
+            url_for('owner_schedule')
         )
 
-        target_job['photos'] = (
-            target_job.get('photos', [])
-            + new_urls
-        )
-
-        update_job(
-            session['user_id'],
-            job_id,
-            target_job
-        )
-
-        return redirect(url_for('history'))
-
-    # Shared company client book.
+    # -------------------------------------------------------------
+    # SHARED COMPANY CLIENT BOOK
+    # -------------------------------------------------------------
     conn = get_db()
+
     try:
         cur = conn.cursor()
+
         cur.execute(
-            """SELECT id, name, contact_person
-               FROM clients
-               ORDER BY name ASC"""
+            """
+            SELECT id, name, contact_person
+            FROM clients
+            ORDER BY name ASC
+            """
         )
+
         client_rows = cur.fetchall()
+
+        # Get current assignment status for the job.
+        cur.execute(
+            """
+            SELECT
+                ja.employee_id,
+                ja.status,
+                u.username
+            FROM job_assignments ja
+            LEFT JOIN users u
+                ON u.id = ja.employee_id
+            WHERE ja.job_id = %s
+              AND COALESCE(ja.status, 'assigned') != 'cancelled'
+            ORDER BY u.username
+            """,
+            (job_id,)
+        )
+
+        assignment_rows = cur.fetchall()
         cur.close()
+
     finally:
         conn.close()
 
@@ -3175,12 +3276,29 @@ def edit_job(job_id):
         for row in client_rows
     ]
 
+    assignments = [
+        {
+            'employee_id': row[0],
+            'status': row[1] or 'assigned',
+            'employee_name': row[2] or ''
+        }
+        for row in assignment_rows
+    ]
+
+    current_status = (
+        assignments[0]['status']
+        if assignments
+        else 'assigned'
+    )
+
     return render_template(
         'edit.html',
         job=target_job,
-        clients=clients
+        clients=clients,
+        assignments=assignments,
+        current_status=current_status,
+        is_owner=is_owner
     )
-
 
 
 @app.route('/clients')
