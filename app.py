@@ -4421,7 +4421,8 @@ def get_shared_calendar_events(start_date, end_date, user_id):
                 "employee_id": row[7],
                 "job_id": row[0],
                 "status": row[9] or "assigned",
-                "employee_name": row[8] or ""
+                "employee_name": row[8] or "",
+                "client_name": row[6] or ""
             })
 
         cur.close()

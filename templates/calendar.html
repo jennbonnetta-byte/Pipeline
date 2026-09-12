@@ -329,8 +329,14 @@
 <body>
 
 <header class="topbar">
-    <a href="{{ url_for('home') }}" class="back">‹</a>
+    {% if role == 'owner' %}
+        <a href="{{ url_for('owner_dashboard') }}" class="back">‹</a>
+    {% else %}
+        <a href="{{ url_for('home') }}" class="back">‹</a>
+    {% endif %}
+
     <div class="brand">PIPELINE</div>
+
     <div style="width:42px;"></div>
 </header>
 
