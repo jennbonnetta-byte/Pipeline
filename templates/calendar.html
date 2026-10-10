@@ -246,6 +246,28 @@
             gap: 12px;
         }
 
+        .event-kind {
+            display: inline-block;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #edf4fb;
+            color: #365b7b;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .event-card {
+            overflow-wrap: anywhere;
+        }
+
+        .event-card:focus-visible {
+            outline: 3px solid #087bc4;
+            outline-offset: 3px;
+        }
+
         .event-title {
             font-size: 17px;
             font-weight: 800;
@@ -311,6 +333,50 @@
             width: 9px;
             height: 9px;
             border-radius: 50%;
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 16px 10px 36px;
+            }
+
+            .month-title h1 {
+                font-size: 21px;
+            }
+
+            .day-cell {
+                min-height: 64px;
+                padding: 4px 2px;
+            }
+
+            .day-number {
+                width: 23px;
+                height: 23px;
+                font-size: 12px;
+            }
+
+            .event-chip {
+                padding: 3px 2px;
+                font-size: 9px;
+            }
+
+            .event-top {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .event-title {
+                overflow-wrap: anywhere;
+            }
+
+            .event-time {
+                white-space: normal;
+                font-size: 13px;
+            }
+
+            .event-meta {
+                overflow-wrap: anywhere;
+            }
         }
 
         @media (min-width: 700px) {
@@ -554,30 +620,56 @@ function renderAgenda() {
     }
 
     container.innerHTML = dayEvents.map(event => {
-
-        let href = "#";
-
-        if (event.source === "job") {
-            href = "/edit/" + event.job_id;
-        }
+        const isJob = event.source === "job";
+        const href = isJob
+            ? "/edit/" + encodeURIComponent(event.job_id)
+            : "";
 
         const time = event.start_time
             ? event.start_time +
-              (event.end_time
-                ? " – " + event.end_time
-                : "")
+              (event.end_time ? " – " + event.end_time : "")
             : "All day";
 
-        const employee = event.employee_name
-            ? "👷 " + escapeHtml(event.employee_name)
+        const typeLabels = {
+            job: "Company job",
+            appointment: "Appointment",
+            vacation: "Vacation",
+            time_off: "Time off",
+            day_off: "Day off",
+            company: "Company event"
+        };
+
+        const typeLabel =
+            typeLabels[isJob ? "job" : event.event_type] ||
+            String(event.event_type || "Event")
+                .replace(/_/g, " ");
+
+        const details = [];
+
+        if (event.employee_name) {
+            details.push("Employee: " + escapeHtml(event.employee_name));
+        }
+
+        if (event.client_name) {
+            details.push("Client: " + escapeHtml(event.client_name));
+        }
+
+        const status = event.status
+            ? `<span class="event-status">${escapeHtml(event.status)}</span>`
             : "";
 
-        const client = event.client_name
-            ? " · " + escapeHtml(event.client_name)
-            : "";
+        const tagOpen = isJob
+            ? `<a class="event-card" href="${href}">`
+            : '<article class="event-card">';
+
+        const tagClose = isJob ? "</a>" : "</article>";
 
         return `
-            <a class="event-card" href="${href}">
+            ${tagOpen}
+                <div class="event-kind">
+                    ${escapeHtml(typeLabel)}
+                </div>
+
                 <div class="event-top">
                     <div class="event-title">
                         ${escapeHtml(event.title)}
@@ -588,22 +680,18 @@ function renderAgenda() {
                     </div>
                 </div>
 
-                <div class="event-meta">
-                    ${employee}${client}
-                </div>
+                ${details.length
+                    ? `<div class="event-meta">${details.join(" · ")}</div>`
+                    : ""}
 
-                ${
-                    event.description
+                ${event.description
                     ? `<div class="event-notes">
                          ${escapeHtml(event.description)}
                        </div>`
-                    : ""
-                }
+                    : ""}
 
-                <span class="event-status">
-                    ${escapeHtml(event.status)}
-                </span>
-            </a>
+                ${status}
+            ${tagClose}
         `;
     }).join("");
 }
