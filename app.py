@@ -3056,6 +3056,8 @@ def job_photos(job_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    employee_id = request.args.get('employee_id', type=int)
+
     if session.get('role') == 'owner':
         job = get_company_job_by_id(job_id)
     else:
@@ -3065,9 +3067,22 @@ def job_photos(job_id):
         )
 
     if job:
+        back_url = url_for('history')
+        back_label = 'Back to History'
+
+        # When opened from an employee profile, return to that profile.
+        if session.get('role') == 'owner' and employee_id:
+            back_url = url_for(
+                'owner_employee_profile',
+                employee_id=employee_id
+            )
+            back_label = 'Back to Employee Profile'
+
         return render_template(
             'job_photos.html',
-            job=job
+            job=job,
+            back_url=back_url,
+            back_label=back_label
         )
 
     return redirect(url_for('history'))
@@ -5411,26 +5426,38 @@ def owner_employee_profile(employee_id):
             cur.close()
             return "Employee not found.", 404
 
-        # Assigned jobs.
+        # Complete job history for this employee.
+        # DISTINCT ON prevents duplicate cards if assignment rows repeat.
         cur.execute(
             """
-            SELECT
-                j.id,
-                j.date,
-                j.start_time,
-                j.end_time,
-                j.destination,
-                j.notes,
-                ja.status,
-                c.name AS client_name
-            FROM jobs j
-            INNER JOIN job_assignments ja
-                ON ja.job_id = j.id
-            LEFT JOIN clients c
-                ON c.id = j.client_id
-            WHERE ja.employee_id = %s
-            ORDER BY j.date DESC, j.id DESC
-            LIMIT 100
+            SELECT *
+            FROM (
+                SELECT DISTINCT ON (j.id)
+                    j.id,
+                    j.date,
+                    j.start_time,
+                    j.end_time,
+                    j.destination,
+                    j.notes,
+                    j.materials,
+                    j.photos,
+                    ja.status,
+                    c.name AS client_name
+                FROM jobs j
+                INNER JOIN job_assignments ja
+                    ON ja.job_id = j.id
+                LEFT JOIN clients c
+                    ON c.id = j.client_id
+                WHERE ja.employee_id = %s
+                ORDER BY
+                    j.id,
+                    CASE
+                        WHEN COALESCE(ja.status, 'assigned') = 'completed'
+                        THEN 0
+                        ELSE 1
+                    END
+            ) employee_jobs
+            ORDER BY date DESC NULLS LAST, id DESC
             """,
             (employee_id,)
         )
@@ -5447,8 +5474,10 @@ def owner_employee_profile(employee_id):
                 'end_time': str(row[3])[:5] if row[3] else '',
                 'destination': row[4] or '',
                 'notes': row[5] or '',
-                'status': row[6] or 'assigned',
-                'client': row[7] or ''
+                'materials': row[6] or '',
+                'photos': row[7] or [],
+                'status': row[8] or 'assigned',
+                'client': row[9] or ''
             })
 
         # Hours this week.
