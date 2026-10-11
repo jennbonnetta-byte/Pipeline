@@ -367,6 +367,97 @@ body.pipeline-theme-dark .current-job {
 }
 .job-detail-link:hover { background: #dceeff; }
 
+
+/* Employee job-history filters */
+.job-filters {
+    padding: 14px;
+    margin-bottom: 16px;
+    border: 1px solid #dfe7ef;
+    border-radius: 12px;
+    background: #f8fbfe;
+}
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+}
+.filter-field label {
+    color: #526579;
+    font-size: 11px;
+    font-weight: 800;
+}
+.filter-field input,
+.filter-field select {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 10px;
+    border: 1px solid #d4dee8;
+    border-radius: 8px;
+    background: #fff;
+    color: #17212b;
+    font: inherit;
+    font-size: 13px;
+}
+.filter-search { margin-bottom: 12px; }
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.filter-count {
+    color: #526579;
+    font-size: 12px;
+    font-weight: 750;
+}
+#clearJobFilters {
+    padding: 9px 12px;
+    border: 1px solid #cbd8e5;
+    border-radius: 8px;
+    background: #fff;
+    color: #17324a;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+#clearJobFilters:hover { background: #edf6ff; }
+.job[hidden], #noMatchingJobs[hidden] { display: none !important; }
+body.theme-dark .job-filters,
+body.pipeline-theme-dark .job-filters {
+    background: #111c27;
+    border-color: #263847;
+}
+body.theme-dark .filter-field label,
+body.pipeline-theme-dark .filter-field label,
+body.theme-dark .filter-count,
+body.pipeline-theme-dark .filter-count {
+    color: #b9c6d3;
+}
+body.theme-dark .filter-field input,
+body.pipeline-theme-dark .filter-field input,
+body.theme-dark .filter-field select,
+body.pipeline-theme-dark .filter-field select,
+body.theme-dark #clearJobFilters,
+body.pipeline-theme-dark #clearJobFilters {
+    background: #182532;
+    border-color: #34495b;
+    color: #edf4fa;
+}
+@media (max-width: 480px) {
+    .filter-row { flex-direction: column; }
+    .filter-actions { align-items: stretch; }
+    #clearJobFilters { width: 100%; }
+}
+
 </style>
 
 </head>
@@ -529,9 +620,61 @@ body.pipeline-theme-dark .current-job {
 
                 {% if jobs %}
 
+                    <div class="job-filters">
+                        <div class="filter-field filter-search">
+                            <label for="jobSearch">Search jobs</label>
+                            <input id="jobSearch" type="search"
+                                   placeholder="Job number, destination, client or notes">
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="filter-field">
+                                <label for="jobStatusFilter">Status</label>
+                                <select id="jobStatusFilter">
+                                    <option value="">All statuses</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-field">
+                                <label for="jobClientFilter">Client</label>
+                                <select id="jobClientFilter">
+                                    <option value="">All clients</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="filter-field">
+                                <label for="jobDateFrom">From date</label>
+                                <input id="jobDateFrom" type="date">
+                            </div>
+
+                            <div class="filter-field">
+                                <label for="jobDateTo">To date</label>
+                                <input id="jobDateTo" type="date">
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <div id="jobFilterCount" class="filter-count"
+                                 aria-live="polite"></div>
+                            <button id="clearJobFilters" type="button">
+                                Clear filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="noMatchingJobs" class="empty" hidden>
+                        No jobs match these filters. Try changing your search.
+                    </div>
+
                     {% for job in jobs %}
 
-                        <div class="job">
+                        <div class="job"
+                             data-job-id="{{ job.id }}"
+                             data-job-date="{{ job.date }}"
+                             data-job-status="{{ job.status|lower }}"
+                             data-job-client="{{ job.client|lower }}">
 
                             <div class="job-top">
 
@@ -666,6 +809,126 @@ body.pipeline-theme-dark .current-job {
     </div>
 
 </div>
+
+
+<script>
+(function () {
+    const search = document.getElementById('jobSearch');
+    const statusFilter = document.getElementById('jobStatusFilter');
+    const clientFilter = document.getElementById('jobClientFilter');
+    const dateFrom = document.getElementById('jobDateFrom');
+    const dateTo = document.getElementById('jobDateTo');
+    const clearButton = document.getElementById('clearJobFilters');
+    const count = document.getElementById('jobFilterCount');
+    const emptyMessage = document.getElementById('noMatchingJobs');
+
+    if (!search || !statusFilter || !clientFilter ||
+        !dateFrom || !dateTo || !clearButton || !count || !emptyMessage) {
+        return;
+    }
+
+    const cards = Array.from(
+        document.querySelectorAll('.section .job[data-job-id]')
+    );
+    const total = cards.length;
+
+    function readable(value) {
+        return value.replace(/_/g, ' ')
+                    .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    const statuses = [...new Set(
+        cards.map(card => card.dataset.jobStatus || 'assigned')
+    )].sort();
+
+    statuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = readable(status);
+        statusFilter.appendChild(option);
+    });
+
+    const clients = [...new Set(
+        cards.map(card => card.dataset.jobClient || '')
+             .filter(client => client !== '')
+    )].sort();
+
+    clients.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client;
+        option.textContent = client.replace(/\b\w/g, letter =>
+            letter.toUpperCase()
+        );
+        clientFilter.appendChild(option);
+    });
+
+    const hasUnassignedClient = cards.some(
+        card => !card.dataset.jobClient
+    );
+
+    if (hasUnassignedClient) {
+        const option = document.createElement('option');
+        option.value = '__no_client__';
+        option.textContent = 'No client';
+        clientFilter.appendChild(option);
+    }
+
+    function applyFilters() {
+        const query = search.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
+        const selectedClient = clientFilter.value;
+        const from = dateFrom.value;
+        const to = dateTo.value;
+
+        let visible = 0;
+
+        cards.forEach(card => {
+            const cardDate = card.dataset.jobDate || '';
+            const cardStatus = card.dataset.jobStatus || 'assigned';
+            const cardClient = card.dataset.jobClient || '';
+            const searchableText = (
+                card.textContent + ' ' +
+                card.dataset.jobId + ' ' +
+                cardClient
+            ).toLowerCase();
+
+            const matches =
+                (!query || searchableText.includes(query)) &&
+                (!selectedStatus || cardStatus === selectedStatus) &&
+                (!selectedClient ||
+                    (selectedClient === '__no_client__'
+                        ? !cardClient
+                        : cardClient === selectedClient)) &&
+                (!from || (cardDate && cardDate >= from)) &&
+                (!to || (cardDate && cardDate <= to));
+
+            card.hidden = !matches;
+
+            if (matches) visible++;
+        });
+
+        count.textContent = `Showing ${visible} of ${total} jobs`;
+        emptyMessage.hidden = visible !== 0;
+    }
+
+    [search, statusFilter, clientFilter, dateFrom, dateTo]
+        .forEach(control => {
+            control.addEventListener('input', applyFilters);
+            control.addEventListener('change', applyFilters);
+        });
+
+    clearButton.addEventListener('click', function () {
+        search.value = '';
+        statusFilter.value = '';
+        clientFilter.value = '';
+        dateFrom.value = '';
+        dateTo.value = '';
+        applyFilters();
+    });
+
+    applyFilters();
+})();
+</script>
 
 </body>
 </html>
