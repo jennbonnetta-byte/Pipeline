@@ -6129,7 +6129,7 @@ def owner_schedule():
 
             # Normal company job scheduling.
             client_id = request.form.get('client_id') or None
-            employee_id = request.form.get('employee_id')
+            employee_id = request.form.get('employee_id') or None
             date = request.form.get('date')
             start_time = request.form.get('start_time') or None
             end_time = request.form.get('end_time') or None
@@ -6137,7 +6137,7 @@ def owner_schedule():
             notes = request.form.get('notes', '').strip()
             materials = request.form.get('materials', '').strip()
 
-            if not employee_id or not date or not destination:
+            if not date or not destination:
                 cur.close()
                 return redirect(url_for('owner_schedule'))
 
@@ -6191,54 +6191,55 @@ def owner_schedule():
 
             job_id = cur.fetchone()[0]
 
-            cur.execute(
-                """
-                INSERT INTO job_assignments (
-                    job_id,
-                    employee_id,
-                    assigned_by,
-                    assigned_at,
-                    status
+            if employee_id:
+                cur.execute(
+                    """
+                    INSERT INTO job_assignments (
+                        job_id,
+                        employee_id,
+                        assigned_by,
+                        assigned_at,
+                        status
+                    )
+                    VALUES (
+                        %s, %s, %s, CURRENT_TIMESTAMP, 'assigned'
+                    )
+                    """,
+                    (
+                        job_id,
+                        employee_id,
+                        session['user_id']
+                    )
                 )
-                VALUES (
-                    %s, %s, %s, CURRENT_TIMESTAMP, 'assigned'
-                )
-                """,
-                (
-                    job_id,
-                    employee_id,
-                    session['user_id']
-                )
-            )
 
-            cur.execute(
-                """
-                INSERT INTO notifications (
-                    user_id,
-                    job_id,
-                    type,
-                    title,
-                    message,
-                    is_read,
-                    created_at
+                cur.execute(
+                    """
+                    INSERT INTO notifications (
+                        user_id,
+                        job_id,
+                        type,
+                        title,
+                        message,
+                        is_read,
+                        created_at
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        'job_assigned',
+                        %s,
+                        %s,
+                        FALSE,
+                        CURRENT_TIMESTAMP
+                    )
+                    """,
+                    (
+                        employee_id,
+                        job_id,
+                        'New job assigned',
+                        f'A new job has been assigned to you for {date} at {destination}.'
+                    )
                 )
-                VALUES (
-                    %s,
-                    %s,
-                    'job_assigned',
-                    %s,
-                    %s,
-                    FALSE,
-                    CURRENT_TIMESTAMP
-                )
-                """,
-                (
-                    employee_id,
-                    job_id,
-                    'New job assigned',
-                    f'A new job has been assigned to you for {date} at {destination}.'
-                )
-            )
 
             conn.commit()
 
@@ -6278,8 +6279,14 @@ def owner_schedule():
                 j.destination,
                 j.notes,
                 c.name AS client_name,
-                u.username AS employee_name,
-                ja.status
+                COALESCE(
+                    STRING_AGG(DISTINCT u.username, ', ' ORDER BY u.username),
+                    'Unassigned'
+                ) AS employee_name,
+                COALESCE(
+                    STRING_AGG(DISTINCT ja.status, ', ' ORDER BY ja.status),
+                    'unassigned'
+                ) AS status
             FROM jobs j
             LEFT JOIN clients c
                 ON c.id = j.client_id
@@ -6287,6 +6294,9 @@ def owner_schedule():
                 ON ja.job_id = j.id
             LEFT JOIN users u
                 ON u.id = ja.employee_id
+            GROUP BY
+                j.id, j.date, j.start_time, j.end_time,
+                j.destination, j.notes, c.name
             ORDER BY j.id DESC
             LIMIT 500
             """
