@@ -452,264 +452,121 @@ body.pipeline-theme-dark textarea {
 
     </section>
 
-    <!-- JOB CREATION -->
 
+    <!-- UNIFIED CALENDAR FORM -->
     <section class="section">
-
-        <div class="section-title">
-            Add & Assign Company Job
-        </div>
+        <div class="section-title">Add &amp; Assign Calendar Item</div>
 
         <form method="POST">
-
-            <input type="hidden"
-                   name="action"
-                   value="job">
+            <input type="hidden" name="action" value="job">
 
             <div class="form-grid">
-
                 <div class="field">
-                    <label>Client</label>
+                    <label for="calendarCategory">Category</label>
+                    <select name="category" id="calendarCategory"
+                            onchange="updateCategoryForm()">
+                        <option value="service_call">Service Call</option>
+                        <option value="vacation">Vacation</option>
+                        <option value="appointment">Appointment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
 
+                <div class="field" id="clientField">
+                    <label>Client</label>
                     <select name="client_id">
                         <option value="">Select client</option>
-
                         {% for client in clients %}
-                            <option value="{{ client[0] }}">
-                                {{ client[1] }}
-                            </option>
+                        <option value="{{ client[0] }}">{{ client[1] }}</option>
                         {% endfor %}
-
                     </select>
                 </div>
 
                 <div class="field">
                     <label>Assign Employee</label>
-
                     <select name="employee_id">
-
-                        <option value="">
-                            Leave unassigned for now
-                        </option>
-
+                        <option value="">Leave unassigned for now</option>
                         {% for employee in employees %}
-                            <option value="{{ employee[0] }}">
-                                {{ employee[1] }}
-                            </option>
+                        <option value="{{ employee[0] }}">{{ employee[1] }}</option>
                         {% endfor %}
-
                     </select>
-
                 </div>
 
                 <div class="field">
                     <label>Date</label>
-                    <input type="date"
-                           name="date"
-                           required>
+                    <input type="date" name="date" required>
                 </div>
 
                 <div class="field">
-                    <label>Location</label>
-                    <input type="text"
-                           name="destination"
-                           placeholder="Job address"
-                           required>
+                    <label id="destinationLabel">Location</label>
+                    <input type="text" name="destination" id="calendarTitle"
+                           placeholder="Job address" required>
                 </div>
 
                 <div class="field">
                     <label>Start Time</label>
-                    <input type="time"
-                           name="start_time">
+                    <input type="time" name="start_time">
                 </div>
 
                 <div class="field">
                     <label>End Time</label>
-                    <input type="time"
-                           name="end_time">
+                    <input type="time" name="end_time">
                 </div>
 
                 <div class="field full">
-                    <label>Job Notes</label>
-                    <textarea name="notes"
-                              placeholder="Work to be completed..."></textarea>
+                    <label id="notesLabel">Job Notes / Event Details</label>
+                    <textarea name="notes" id="calendarNotes"
+                              placeholder="Work to be completed or event details..."></textarea>
                 </div>
 
-                <div class="field full">
+                <div class="field full" id="materialsField">
                     <label>Materials</label>
                     <textarea name="materials"
                               placeholder="Materials required..."></textarea>
                 </div>
-
             </div>
 
-            <button class="primary"
-                    type="submit">
-                Schedule & Assign Job
+            <button class="primary" type="submit" id="calendarSubmit">
+                Schedule &amp; Assign Service Call
             </button>
-
         </form>
-
     </section>
-
-    <!-- PERSONAL CALENDAR ITEMS -->
-
-    <section class="section">
-
-        <div class="section-title">
-            Add Appointment or Time Off
-        </div>
-
-        <form method="POST">
-
-            <input type="hidden"
-                   name="action"
-                   value="personal">
-
-            <div class="form-grid">
-
-                <div class="field">
-                    <label>Type</label>
-
-                    <select name="event_type"
-                            id="personalEventType"
-                            onchange="updatePersonalForm()">
-
-                        <option value="appointment">
-                            Personal Appointment
-                        </option>
-
-                        <option value="day_off">
-                            Day Off
-                        </option>
-
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>Date</label>
-
-                    <input type="date"
-                           name="event_date"
-                           required>
-                </div>
-
-                <div class="field full">
-                    <label id="personalTitleLabel">
-                        Appointment
-                    </label>
-
-                    <input type="text"
-                           name="title"
-                           id="personalTitle"
-                           placeholder="Doctor, school, meeting..."
-                           required>
-                </div>
-
-                <div class="field">
-                    <label>Start Time</label>
-
-                    <input type="time"
-                           name="start_time"
-                           id="personalStart">
-                </div>
-
-                <div class="field">
-                    <label>End Time</label>
-
-                    <input type="time"
-                           name="end_time"
-                           id="personalEnd">
-                </div>
-
-                <div class="field full">
-                    <label>Notes</label>
-
-                    <textarea name="event_notes"
-                              id="personalNotes"
-                              placeholder="Add any notes..."></textarea>
-                </div>
-
-            </div>
-
-            <button class="primary"
-                    type="submit"
-                    id="personalSubmit">
-                Add Appointment
-            </button>
-
-        </form>
-
-    </section>
-
-
-
 </div>
 
 <script>
+function updateCategoryForm() {
+    const category = document.getElementById('calendarCategory').value;
+    const isService = category === 'service_call';
 
-function updatePersonalForm() {
+    document.getElementById('clientField').style.display =
+        isService ? '' : 'none';
+    document.getElementById('materialsField').style.display =
+        isService ? '' : 'none';
 
-    const type =
-        document.getElementById('personalEventType').value;
+    const label = document.getElementById('destinationLabel');
+    const title = document.getElementById('calendarTitle');
+    const notes = document.getElementById('calendarNotes');
+    const submit = document.getElementById('calendarSubmit');
 
-    const titleLabel =
-        document.getElementById('personalTitleLabel');
+    const settings = {
+        service_call: ['Location', 'Job address', 'Job Notes / Event Details',
+                       'Work to be completed...', 'Schedule & Assign Service Call'],
+        vacation: ['Vacation Label', 'e.g. Vacation or Personal Day',
+                   'Notes', 'Add vacation details...', 'Schedule Vacation'],
+        appointment: ['Appointment Title / Location', 'e.g. Doctor or Meeting',
+                      'Notes', 'Add appointment details...', 'Schedule Appointment'],
+        other: ['Event Title / Location', 'Enter an event title or location',
+                'Notes', 'Add event details...', 'Schedule Other Event']
+    };
 
-    const title =
-        document.getElementById('personalTitle');
-
-    const start =
-        document.getElementById('personalStart');
-
-    const end =
-        document.getElementById('personalEnd');
-
-    const notes =
-        document.getElementById('personalNotes');
-
-    const submit =
-        document.getElementById('personalSubmit');
-
-    if (type === 'day_off') {
-
-        titleLabel.textContent = 'Label';
-
-        title.value = 'Day Off';
-        title.placeholder = 'Vacation, personal day...';
-
-        start.value = '';
-        end.value = '';
-
-        start.disabled = true;
-        end.disabled = true;
-
-        notes.placeholder =
-            'Vacation, personal day, etc.';
-
-        submit.textContent = 'Add Day Off';
-
-    } else {
-
-        titleLabel.textContent = 'Appointment';
-
-        title.value = '';
-        title.placeholder =
-            'Doctor, school, meeting...';
-
-        start.disabled = false;
-        end.disabled = false;
-
-        notes.placeholder =
-            'Add any notes...';
-
-        submit.textContent =
-            'Add Appointment';
-    }
+    const values = settings[category] || settings.service_call;
+    label.textContent = values[0];
+    title.placeholder = values[1];
+    document.getElementById('notesLabel').textContent = values[2];
+    notes.placeholder = values[3];
+    submit.textContent = values[4];
 }
-
-updatePersonalForm();
-
+updateCategoryForm();
 </script>
 
 <script>
@@ -855,26 +712,58 @@ function renderCalendar() {
         personalEvents
             .filter(event => event.date === key)
             .forEach(eventData => {
+                const event = document.createElement('div');
+                const eventType = eventData.type || 'other';
 
-                const event =
-                    document.createElement('div');
+                const categoryInfo = {
+                    service_call: {
+                        label: 'Service Call',
+                        icon: '🔧',
+                        className: 'job-event'
+                    },
+                    vacation: {
+                        label: 'Vacation',
+                        icon: '🏖️',
+                        className: 'dayoff-event'
+                    },
+                    day_off: {
+                        label: 'Vacation',
+                        icon: '🏖️',
+                        className: 'dayoff-event'
+                    },
+                    appointment: {
+                        label: 'Appointment',
+                        icon: '📌',
+                        className: 'personal-event'
+                    },
+                    personal: {
+                        label: 'Appointment',
+                        icon: '📌',
+                        className: 'personal-event'
+                    },
+                    other: {
+                        label: 'Other',
+                        icon: '📅',
+                        className: 'personal-event'
+                    }
+                };
 
-                event.className =
-                    'calendar-event ' +
-                    (eventData.type === 'day_off'
-                        ? 'dayoff-event'
-                        : 'personal-event');
-
-                const icon =
-                    eventData.type === 'day_off'
-                        ? '🏖️'
-                        : '📌';
+                const category = categoryInfo[eventType] || categoryInfo.other;
+                event.className = 'calendar-event ' + category.className;
 
                 event.innerHTML =
                     '<div class="event-title">' +
-                    icon + ' ' +
+                    category.icon + ' ' +
                     escapeHtml(eventData.title) +
                     '</div>' +
+                    '<div class="event-meta">' +
+                    escapeHtml(category.label) +
+                    '</div>' +
+                    (eventData.employee
+                        ? '<div class="event-meta">Assigned: ' +
+                          escapeHtml(eventData.employee) +
+                          '</div>'
+                        : '') +
                     (eventData.start_time
                         ? '<div class="event-meta">' +
                           escapeHtml(eventData.start_time) +

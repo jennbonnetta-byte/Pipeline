@@ -6092,6 +6092,7 @@ def owner_time_off_action(request_id, action):
 @app.route('/owner/schedule', methods=['GET', 'POST'])
 @owner_required
 def owner_schedule():
+    ensure_company_calendar_table()
     conn = get_db()
 
     try:
@@ -6116,44 +6117,67 @@ def owner_schedule():
 
             action = request.form.get('action', 'job')
 
-            if action == 'personal':
+            category = request.form.get(
+                'category', 'service_call'
+            ).strip().lower()
 
-                event_type = request.form.get('event_type', 'appointment')
-                event_date = request.form.get('event_date')
-                title = request.form.get('title', '').strip()
+            allowed_categories = {
+                'service_call', 'vacation', 'appointment', 'other'
+            }
+
+            if category not in allowed_categories:
+                cur.close()
+                return redirect(url_for('owner_schedule'))
+
+            if category != 'service_call':
+                employee_id = request.form.get('employee_id') or None
+                event_date = request.form.get('date')
+                title = request.form.get('destination', '').strip()
                 start_time = request.form.get('start_time') or None
                 end_time = request.form.get('end_time') or None
-                notes = request.form.get('event_notes', '').strip()
+                notes = request.form.get('notes', '').strip()
 
-                if event_date and title:
+                if not event_date or not title:
+                    cur.close()
+                    return redirect(url_for('owner_schedule'))
+
+                cur.execute(
+                    """
+                    INSERT INTO company_calendar_events (
+                        event_type, title, description, event_date,
+                        start_time, end_time, created_by, employee_id,
+                        status, visibility
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+                            'approved', 'company')
+                    """,
+                    (
+                        category, title, notes, event_date,
+                        start_time, end_time, session['user_id'],
+                        employee_id
+                    )
+                )
+
+                if employee_id:
                     cur.execute(
                         """
-                        INSERT INTO owner_calendar_events (
-                            owner_id,
-                            event_type,
-                            event_date,
-                            title,
-                            start_time,
-                            end_time,
-                            notes
+                        INSERT INTO notifications (
+                            user_id, job_id, type, title, message,
+                            is_read, created_at
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, NULL, %s, %s, %s,
+                                FALSE, CURRENT_TIMESTAMP)
                         """,
                         (
-                            session['user_id'],
-                            event_type,
-                            event_date,
-                            title,
-                            start_time,
-                            end_time,
-                            notes
+                            employee_id,
+                            'calendar_event_assigned',
+                            f'{category.replace("_", " ").title()} scheduled',
+                            f'{title} is scheduled for {event_date}.'
                         )
                     )
 
-                    conn.commit()
-
+                conn.commit()
                 cur.close()
-
                 return redirect(url_for('owner_schedule'))
 
             # Normal company job scheduling.
@@ -6353,6 +6377,26 @@ def owner_schedule():
 
         personal_rows = cur.fetchall()
 
+        cur.execute(
+            """
+            SELECT
+                e.id,
+                e.event_type,
+                e.event_date,
+                e.title,
+                e.start_time,
+                e.end_time,
+                e.description,
+                COALESCE(u.username, '')
+            FROM company_calendar_events e
+            LEFT JOIN users u ON u.id = e.employee_id
+            WHERE e.visibility = 'company'
+              AND e.status = 'approved'
+            ORDER BY e.event_date, e.start_time NULLS LAST, e.id
+            """
+        )
+        company_event_rows = cur.fetchall()
+
         cur.close()
 
         jobs = []
@@ -6381,6 +6425,18 @@ def owner_schedule():
                 'start_time': str(row[4])[:5] if row[4] else '',
                 'end_time': str(row[5])[:5] if row[5] else '',
                 'notes': row[6] or ''
+            })
+
+        for row in company_event_rows:
+            personal_events.append({
+                'id': row[0],
+                'type': row[1],
+                'date': str(row[2]),
+                'title': row[3],
+                'start_time': str(row[4])[:5] if row[4] else '',
+                'end_time': str(row[5])[:5] if row[5] else '',
+                'notes': row[6] or '',
+                'employee': row[7] or ''
             })
 
         return render_template(
